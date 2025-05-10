@@ -10,18 +10,18 @@ export type User = {
 export type Match = {
   id: number;
   username: string;
-  jobType?: string;
-  experienceLevel?: string;
-  targetCompany?: string;
-  targetIndustry?: string;
+  jobType?: string | null;
+  experienceLevel?: string | null;
+  targetCompany?: string | null;
+  targetIndustry?: string | null;
   practicePreferences?: {
-    technicalInterview?: boolean;
-    behavioralInterview?: boolean;
-    caseAnalysis?: boolean;
+    technicalInterview?: boolean | null;
+    behavioralInterview?: boolean | null;
+    caseAnalysis?: boolean | null;
   };
   contactInfo?: {
-    email?: string;
-    wechat?: string;
+    email?: string | null;
+    wechat?: string | null;
   };
 };
 
