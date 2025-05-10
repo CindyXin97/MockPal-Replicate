@@ -45,7 +45,7 @@ export default function MatchesPage() {
       // Load successful matches
       const successfulResult = await fetchSuccessfulMatches(user.id);
       if (successfulResult.success && 'matches' in successfulResult) {
-        setSuccessfulMatches(successfulResult.matches);
+        setSuccessfulMatches(successfulResult.matches.filter(match => match !== null) as Match[]);
       }
     } catch (error) {
       console.error('Error loading matches:', error);
@@ -65,12 +65,12 @@ export default function MatchesPage() {
       const result = await likeUser(user.id, targetUser.id);
       
       if (result.success) {
-        if (result.match) {
+        if ('match' in result && result.match) {
           // If it's a match, reload the successful matches
           toast.success(result.message || '匹配成功！');
           const successfulResult = await fetchSuccessfulMatches(user.id);
           if (successfulResult.success && 'matches' in successfulResult) {
-            setSuccessfulMatches(successfulResult.matches);
+            setSuccessfulMatches(successfulResult.matches.filter(match => match !== null) as Match[]);
           }
         } else {
           toast.success(result.message || '已收到你的喜欢！');

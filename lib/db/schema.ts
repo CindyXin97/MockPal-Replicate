@@ -67,12 +67,10 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [userProfiles.userId],
   }),
   matchesAsUser1: many(matches, {
-    fields: [users.id],
-    references: [matches.user1Id],
+    relationName: 'user1',
   }),
   matchesAsUser2: many(matches, {
-    fields: [users.id],
-    references: [matches.user2Id],
+    relationName: 'user2',
   }),
 }));
 
