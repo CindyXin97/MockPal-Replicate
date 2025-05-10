@@ -35,7 +35,7 @@ export default function MatchesPage() {
     try {
       // Load potential matches
       const potentialResult = await fetchPotentialMatches(user.id);
-      if (potentialResult.success && 'matches' in potentialResult) {
+      if (potentialResult.success && 'matches' in potentialResult && potentialResult.matches) {
         setPotentialMatches(potentialResult.matches);
         setCurrentMatchIndex(0);
       } else if (potentialResult.message) {
@@ -44,7 +44,7 @@ export default function MatchesPage() {
 
       // Load successful matches
       const successfulResult = await fetchSuccessfulMatches(user.id);
-      if (successfulResult.success && 'matches' in successfulResult) {
+      if (successfulResult.success && 'matches' in successfulResult && successfulResult.matches) {
         setSuccessfulMatches(successfulResult.matches.filter(match => match !== null) as Match[]);
       }
     } catch (error) {
@@ -69,7 +69,7 @@ export default function MatchesPage() {
           // If it's a match, reload the successful matches
           toast.success(result.message || '匹配成功！');
           const successfulResult = await fetchSuccessfulMatches(user.id);
-          if (successfulResult.success && 'matches' in successfulResult) {
+          if (successfulResult.success && 'matches' in successfulResult && successfulResult.matches) {
             setSuccessfulMatches(successfulResult.matches.filter(match => match !== null) as Match[]);
           }
         } else {
