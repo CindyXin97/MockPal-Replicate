@@ -1,0 +1,39 @@
+'use server';
+
+import { getPotentialMatches, createMatch, rejectMatch, getSuccessfulMatches } from '@/lib/matching';
+
+// Get potential matches action
+export async function fetchPotentialMatches(userId: number) {
+  if (!userId) {
+    return { success: false, message: '用户未登录' };
+  }
+
+  return getPotentialMatches(userId);
+}
+
+// Like a user action
+export async function likeUser(userId: number, targetUserId: number) {
+  if (!userId || !targetUserId) {
+    return { success: false, message: '无效的用户信息' };
+  }
+
+  return createMatch(userId, targetUserId);
+}
+
+// Dislike a user action
+export async function dislikeUser(userId: number, targetUserId: number) {
+  if (!userId || !targetUserId) {
+    return { success: false, message: '无效的用户信息' };
+  }
+
+  return rejectMatch(userId, targetUserId);
+}
+
+// Get successful matches action
+export async function fetchSuccessfulMatches(userId: number) {
+  if (!userId) {
+    return { success: false, message: '用户未登录' };
+  }
+
+  return getSuccessfulMatches(userId);
+} 
