@@ -29,7 +29,7 @@ export default function LoginPage() {
 
       if (result.success && 'user' in result) {
         setIsAuthenticated(true);
-        setUser(result.user);
+        setUser(result.user || null);
         router.push('/matches');
         toast.success('登录成功');
       } else {

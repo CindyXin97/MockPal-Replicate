@@ -29,7 +29,7 @@ export default function RegisterPage() {
 
       if (result.success && 'user' in result) {
         setIsAuthenticated(true);
-        setUser(result.user);
+        setUser(result.user || null);
         router.push('/profile');
         toast.success('注册成功，请完善个人资料');
       } else {
