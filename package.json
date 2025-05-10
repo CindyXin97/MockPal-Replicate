@@ -26,7 +26,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.43.1",
     "jotai": "^2.7.1",
-    "kysely": "^0.28.2",
+    "kysely": "^0.27.6",
     "lucide-react": "^0.362.0",
     "next": "15.3.2",
     "next-auth": "5.0.0-beta.3",
