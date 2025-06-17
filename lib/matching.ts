@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
-import { users, userProfiles, matches, feedbacks } from '@/lib/db/schema';
+import { users, userProfiles, matches, feedbacks, userDailyViews } from '@/lib/db/schema';
 import { eq, and, or, not, desc, exists } from 'drizzle-orm';
+import { format } from 'date-fns';
 
 // Get potential matches for a user
 export async function getPotentialMatches(userId: number) {
@@ -13,6 +14,20 @@ export async function getPotentialMatches(userId: number) {
     if (!userProfile) {
       return { success: false, message: '请先完成个人资料' };
     }
+
+    // 获取今天日期
+    const today = format(new Date(), 'yyyy-MM-dd');
+    // 查询今天已浏览的用户ID和操作次数
+    const todayViews = await db.query.userDailyViews.findMany({
+      where: and(
+        eq(userDailyViews.userId, userId),
+        eq(userDailyViews.date, today)
+      ),
+    });
+    if (todayViews.length >= 5) {
+      return { success: true, matches: [] };
+    }
+    const viewedTodayIds = todayViews.map(v => v.viewedUserId);
 
     // Get users who haven't been matched with the current user yet
     const existingMatches = await db.query.matches.findMany({
@@ -33,8 +48,8 @@ export async function getPotentialMatches(userId: number) {
       match.user1Id === userId ? match.user2Id : match.user1Id
     );
 
-    // Add current user's ID to the list of excluded IDs
-    const excludedIds = [...matchedUserIds, userId];
+    // Add current user's ID和今日已浏览ID到排除列表
+    const excludedIds = [...matchedUserIds, userId, ...viewedTodayIds];
 
     // Find potential matches based on compatible tags
     const potentialMatches = await db.query.users.findMany({
@@ -74,9 +89,30 @@ export async function getPotentialMatches(userId: number) {
       return isNotExcluded && hasBasicInfo && hasPracticeContent && hasContactInfo;
     });
 
-    return { 
-      success: true, 
-      matches: filteredMatches.map(user => ({
+    // 优先级排序：内容重叠 > 岗位和经验都相同 > 其他
+    const overlapList: typeof filteredMatches = [];
+    const jobExpList: typeof filteredMatches = [];
+    const otherList: typeof filteredMatches = [];
+    for (const user of filteredMatches) {
+      const p = user.profile;
+      const overlap =
+        (user.profile?.technicalInterview && p.technicalInterview) ||
+        (user.profile?.behavioralInterview && p.behavioralInterview) ||
+        (user.profile?.caseAnalysis && p.caseAnalysis);
+      const jobMatch = user.profile?.jobType === p.jobType;
+      const expMatch = user.profile?.experienceLevel === p.experienceLevel;
+      if (overlap) {
+        overlapList.push(user);
+      } else if (jobMatch && expMatch) {
+        jobExpList.push(user);
+      } else {
+        otherList.push(user);
+      }
+    }
+    const finalList = [...overlapList, ...jobExpList, ...otherList].slice(0, 5);
+    return {
+      success: true,
+      matches: finalList.map(user => ({
         id: user.id,
         username: user.username,
         jobType: user.profile?.jobType,
@@ -99,6 +135,15 @@ export async function getPotentialMatches(userId: number) {
 // Create match (like a user)
 export async function createMatch(userId: number, targetUserId: number) {
   try {
+    // 记录今日浏览
+    const today = format(new Date(), 'yyyy-MM-dd');
+    await db.insert(userDailyViews).values({
+      userId,
+      viewedUserId: targetUserId,
+      date: today,
+      createdAt: new Date(),
+    });
+
     // Check if match already exists
     const existingMatch = await db.query.matches.findFirst({
       where: or(
@@ -168,6 +213,15 @@ export async function createMatch(userId: number, targetUserId: number) {
 // Reject match (dislike a user)
 export async function rejectMatch(userId: number, targetUserId: number) {
   try {
+    // 记录今日浏览
+    const today = format(new Date(), 'yyyy-MM-dd');
+    await db.insert(userDailyViews).values({
+      userId,
+      viewedUserId: targetUserId,
+      date: today,
+      createdAt: new Date(),
+    });
+
     // Check if match already exists
     const existingMatch = await db.query.matches.findFirst({
       where: or(

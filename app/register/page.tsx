@@ -31,7 +31,7 @@ export default function RegisterPage() {
         setIsAuthenticated(true);
         setUser(result.user || null);
         router.push('/profile');
-        toast.success('注册成功，请完善个人资料');
+        toast.success('注册成功，请先完善个人资料');
       } else {
         toast.error(result.message || '注册失败');
       }

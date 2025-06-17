@@ -238,7 +238,7 @@ export default function MatchesPage() {
               ) : (
                 <Card className="w-full max-w-2xl mx-auto">
                   <CardContent className="text-center py-12">
-                    <p className="text-xl mb-4">没有更多候选人了</p>
+                    <p className="text-xl mb-4">今日推荐已用完，请明天再来哦～</p>
                     <Button onClick={resetMatches}>重新加载</Button>
                   </CardContent>
                 </Card>
@@ -382,4 +382,4 @@ export default function MatchesPage() {
       </Tabs>
     </AuthLayout>
   );
-} 
+}

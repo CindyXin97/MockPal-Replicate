@@ -72,6 +72,15 @@ export const feedbacks = pgTable('feedbacks', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// 用户每日浏览记录
+export const userDailyViews = pgTable('user_daily_views', {
+  id: serial('id').primaryKey(),
+  userId: serial('user_id').references(() => users.id).notNull(),
+  viewedUserId: serial('viewed_user_id').references(() => users.id).notNull(),
+  date: varchar('date', { length: 10 }).notNull(), // 格式: YYYY-MM-DD
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(userProfiles, {

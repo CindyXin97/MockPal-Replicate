@@ -31,16 +31,8 @@ export default function LoginPage() {
       if (result.success && 'user' in result) {
         setIsAuthenticated(true);
         setUser(result.user || null);
-        
-        // 检查用户是否填写了个人资料
-        const profileResult = await getProfile(result.user.id);
-        if ('profile' in profileResult) {
-          router.push('/profile');
-          toast.success('登录成功，请确认个人资料');
-        } else {
-          router.push('/profile');
-          toast.success('登录成功，请完善个人资料');
-        }
+        router.push('/matches');
+        toast.success('登录成功');
       } else {
         toast.error(result.message || '登录失败');
       }
