@@ -13,6 +13,7 @@ export type ProfileFormData = {
   caseAnalysis: boolean;
   email?: string;
   wechat?: string;
+  linkedin?: string;
 };
 
 // Create or update user profile
@@ -24,7 +25,7 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
     });
 
     if (existingProfile) {
-      // Update existing profile
+      // 只更新资料
       await db
         .update(userProfiles)
         .set({
@@ -37,10 +38,10 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
           caseAnalysis: profileData.caseAnalysis,
           email: profileData.email || null,
           wechat: profileData.wechat || null,
+          linkedin: profileData.linkedin || null,
           updatedAt: new Date(),
         })
         .where(eq(userProfiles.userId, userId));
-
       return { success: true };
     } else {
       // Create new profile
@@ -55,6 +56,7 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
         caseAnalysis: profileData.caseAnalysis,
         email: profileData.email || null,
         wechat: profileData.wechat || null,
+        linkedin: profileData.linkedin || null,
       });
 
       return { success: true };

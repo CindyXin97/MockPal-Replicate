@@ -1,6 +1,6 @@
 'use server';
 
-import { getPotentialMatches, createMatch, rejectMatch, getSuccessfulMatches } from '@/lib/matching';
+import { getPotentialMatches, createMatch, rejectMatch, getSuccessfulMatches, saveFeedback } from '@/lib/matching';
 
 // Get potential matches action
 export async function fetchPotentialMatches(userId: number) {
@@ -36,4 +36,12 @@ export async function fetchSuccessfulMatches(userId: number) {
   }
 
   return getSuccessfulMatches(userId);
+}
+
+// 保存面试反馈 action
+export async function saveFeedbackAction({ matchId, userId, interviewStatus, content }: { matchId: number, userId: number, interviewStatus: string, content?: string }) {
+  if (!matchId || !userId || !interviewStatus) {
+    return { success: false, message: '参数不完整' };
+  }
+  return saveFeedback({ matchId, userId, interviewStatus, content });
 } 

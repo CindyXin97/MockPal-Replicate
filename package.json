@@ -24,6 +24,7 @@
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
     "jotai": "^2.7.1",
     "kysely": "^0.27.6",
@@ -46,6 +47,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^8.0.0",
     "tailwindcss": "^4",
     "tsx": "^4.7.1",
     "typescript": "^5"

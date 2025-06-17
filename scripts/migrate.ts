@@ -1,6 +1,10 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from '../lib/db/schema';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
 
 // Initialize Neon SQL with the database connection string from environment variables
 const sql = neon(process.env.DATABASE_URL!);

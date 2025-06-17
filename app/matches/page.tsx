@@ -6,12 +6,13 @@ import { useAtom } from 'jotai';
 import { toast } from 'sonner';
 import { userAtom, potentialMatchesAtom, currentMatchIndexAtom } from '@/lib/store';
 import { AuthLayout } from '@/components/auth-layout';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar } from '@/components/ui/avatar';
 import { fetchPotentialMatches, likeUser, dislikeUser, fetchSuccessfulMatches } from '@/app/actions/matching';
-import { Match } from '@/lib/store';
+import type { Match } from '@/lib/store';
+import React from 'react';
 
 export default function MatchesPage() {
   const router = useRouter();
@@ -21,6 +22,10 @@ export default function MatchesPage() {
   const [successfulMatches, setSuccessfulMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('browse');
+  const [interviewStatus, setInterviewStatus] = useState<{ [key: number]: 'yes' | 'no' | undefined }>({});
+  const [feedbacks, setFeedbacks] = useState<{ [key: number]: string }>({});
+  const [submitted, setSubmitted] = useState<{ [key: number]: boolean }>({});
+  const [showBanner, setShowBanner] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -117,6 +122,37 @@ export default function MatchesPage() {
     ? potentialMatches[currentMatchIndex]
     : null;
 
+  const handleInterviewChange = (id: number, value: 'yes' | 'no') => {
+    setInterviewStatus(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleFeedbackChange = (id: number, value: string) => {
+    setFeedbacks(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleFeedbackSubmit = async (matchId: number) => {
+    if (!user) return;
+    const interviewStatusValue = interviewStatus[matchId];
+    const feedbackContent = feedbacks[matchId] || '';
+    setSubmitted(prev => ({ ...prev, [matchId]: true }));
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        matchId,
+        userId: user.id,
+        interviewStatus: interviewStatusValue || '',
+        content: feedbackContent,
+      }),
+    }).then(r => r.json());
+    if (res.success) {
+      toast.success('反馈已提交');
+    } else {
+      toast.error(res.message || '提交失败');
+      setSubmitted(prev => ({ ...prev, [matchId]: false }));
+    }
+  };
+
   return (
     <AuthLayout>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -144,11 +180,11 @@ export default function MatchesPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">岗位类型</p>
-                        <p className="font-medium">{currentMatch.jobType}</p>
+                        <p className="font-medium">{currentMatch.jobType || '未设置'}</p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">经验水平</p>
-                        <p className="font-medium">{currentMatch.experienceLevel}</p>
+                        <p className="font-medium">{currentMatch.experienceLevel || '未设置'}</p>
                       </div>
                     </div>
 
@@ -216,6 +252,17 @@ export default function MatchesPage() {
             <div className="text-center py-12">加载中...</div>
           ) : (
             <>
+              {activeTab === 'matches' && showBanner && (
+                <div className="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-700 p-4 mb-4 flex items-center justify-between">
+                  <span>🎉 恭喜匹配成功！记得及时填写面试反馈，这将帮助系统为你和他人匹配到更合适的练习伙伴哦～</span>
+                  <button
+                    onClick={() => setShowBanner(false)}
+                    className="ml-4 px-3 py-1 rounded bg-yellow-300 hover:bg-yellow-400 text-yellow-900 font-medium transition-colors"
+                  >
+                    我知道了
+                  </button>
+                </div>
+              )}
               {successfulMatches.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {successfulMatches.map((match) => (
@@ -230,7 +277,7 @@ export default function MatchesPage() {
                           <div>
                             <CardTitle className="text-lg">{match.username}</CardTitle>
                             <p className="text-sm text-muted-foreground">
-                              {match.jobType} · {match.experienceLevel}
+                              {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
                             </p>
                           </div>
                         </div>
@@ -256,35 +303,76 @@ export default function MatchesPage() {
                             )}
                           </div>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium">联系方式</p>
-                          {match.contactInfo?.email && (
-                            <p className="text-sm">
-                              <span className="font-medium">邮箱：</span>
-                              {match.contactInfo.email}
-                            </p>
-                          )}
-                          {match.contactInfo?.wechat && (
-                            <p className="text-sm">
-                              <span className="font-medium">微信：</span>
-                              {match.contactInfo.wechat}
-                            </p>
-                          )}
-                          {!match.contactInfo?.email && !match.contactInfo?.wechat && (
-                            <p className="text-sm text-muted-foreground">用户未提供联系方式</p>
-                          )}
+                        {match.contactInfo && (
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium">联系方式</p>
+                            {match.contactInfo.email && (
+                              <p className="text-sm text-muted-foreground">
+                                邮箱：{match.contactInfo.email}
+                              </p>
+                            )}
+                            {match.contactInfo.wechat && (
+                              <p className="text-sm text-muted-foreground">
+                                微信：{match.contactInfo.wechat}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        <div className="mt-4 flex items-center gap-4">
+                          <span className="text-sm font-medium">是否进行面试？</span>
+                          <label className="flex items-center gap-1">
+                            <input
+                              type="radio"
+                              name={`interview_${match.id}`}
+                              value="yes"
+                              checked={interviewStatus[match.id] === 'yes'}
+                              onChange={() => handleInterviewChange(match.id, 'yes')}
+                            />
+                            是
+                          </label>
+                          <label className="flex items-center gap-1">
+                            <input
+                              type="radio"
+                              name={`interview_${match.id}`}
+                              value="no"
+                              checked={interviewStatus[match.id] === 'no'}
+                              onChange={() => handleInterviewChange(match.id, 'no')}
+                            />
+                            否
+                          </label>
                         </div>
+                        {interviewStatus[match.id] === 'yes' && (
+                          <div className="mt-2">
+                            <label className="block text-sm font-medium mb-1">请填写你的面试反馈：</label>
+                            <textarea
+                              className="w-full border rounded p-2 mb-2"
+                              rows={3}
+                              value={feedbacks[match.id] || ''}
+                              onChange={e => handleFeedbackChange(match.id, e.target.value)}
+                              placeholder="请描述你的面试体验、收获或建议"
+                              disabled={submitted[match.id]}
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => handleFeedbackSubmit(match.id)}
+                              disabled={submitted[match.id] || !feedbacks[match.id]}
+                            >
+                              {submitted[match.id] ? '已提交' : '提交反馈'}
+                            </Button>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
                 </div>
               ) : (
-                <Card className="w-full">
+                <Card className="w-full max-w-2xl mx-auto">
                   <CardContent className="text-center py-12">
-                    <p className="text-xl mb-4">暂无匹配成功的用户</p>
-                    <p className="text-muted-foreground">
-                      去「浏览候选人」选项卡匹配感兴趣的用户吧！
+                    <p className="text-xl mb-4">暂无成功匹配</p>
+                    <p className="text-muted-foreground mb-4">
+                      继续浏览候选人，找到你的练习伙伴
                     </p>
+                    <Button onClick={() => setActiveTab('browse')}>浏览候选人</Button>
                   </CardContent>
                 </Card>
               )}

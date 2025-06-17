@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
-import { users, userProfiles, matches } from '@/lib/db/schema';
-import { eq, and, or, not, desc } from 'drizzle-orm';
+import { users, userProfiles, matches, feedbacks } from '@/lib/db/schema';
+import { eq, and, or, not, desc, exists } from 'drizzle-orm';
 
 // Get potential matches for a user
 export async function getPotentialMatches(userId: number) {
@@ -16,9 +16,15 @@ export async function getPotentialMatches(userId: number) {
 
     // Get users who haven't been matched with the current user yet
     const existingMatches = await db.query.matches.findMany({
-      where: or(
-        eq(matches.user1Id, userId),
-        eq(matches.user2Id, userId)
+      where: and(
+        or(
+          eq(matches.user1Id, userId),
+          eq(matches.user2Id, userId)
+        ),
+        or(
+          eq(matches.status, 'accepted'),
+          eq(matches.status, 'rejected')
+        )
       ),
     });
 
@@ -31,22 +37,42 @@ export async function getPotentialMatches(userId: number) {
     const excludedIds = [...matchedUserIds, userId];
 
     // Find potential matches based on compatible tags
-    // For this demo, we'll simply find users with the same job type
-    // In a full version, you'd implement a more sophisticated algorithm
     const potentialMatches = await db.query.users.findMany({
-      where: not(
-        eq(users.id, userId)
+      where: and(
+        not(eq(users.id, userId)),
+        // 确保用户有个人资料
+        exists(
+          db.select()
+            .from(userProfiles)
+            .where(eq(userProfiles.userId, users.id))
+        )
       ),
       with: {
         profile: true,
       },
+      // 按创建时间降序排序，确保新用户优先显示
       orderBy: [desc(users.createdAt)],
     });
 
-    // Filter out users that are already matched or don't have a profile
-    const filteredMatches = potentialMatches.filter(user => 
-      !excludedIds.includes(user.id) && user.profile
-    );
+    // Filter out users that are already matched and ensure they have contact info
+    const filteredMatches = potentialMatches.filter(user => {
+      // 检查基本资料是否完整
+      const hasBasicInfo = user.profile?.jobType && user.profile?.experienceLevel;
+      // 检查是否选择了练习内容
+      const hasPracticeContent = (
+        user.profile?.technicalInterview ||
+        user.profile?.behavioralInterview ||
+        user.profile?.caseAnalysis
+      );
+      // 检查是否有联系方式
+      const hasContactInfo = (
+        (user.profile?.email && user.profile.email.trim() !== '') ||
+        (user.profile?.wechat && user.profile.wechat.trim() !== '') ||
+        (user.profile?.linkedin && user.profile.linkedin.trim() !== '')
+      );
+      const isNotExcluded = !excludedIds.includes(user.id);
+      return isNotExcluded && hasBasicInfo && hasPracticeContent && hasContactInfo;
+    });
 
     return { 
       success: true, 
@@ -234,5 +260,23 @@ export async function getSuccessfulMatches(userId: number) {
   } catch (error) {
     console.error('Get successful matches error:', error);
     return { success: false, message: '获取匹配失败，请稍后再试' };
+  }
+}
+
+// 保存面试反馈
+export async function saveFeedback({ matchId, userId, interviewStatus, content }: { matchId: number, userId: number, interviewStatus: string, content?: string }) {
+  try {
+    await db.insert(feedbacks).values({
+      matchId,
+      userId,
+      interviewStatus,
+      content: content || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Save feedback error:', error);
+    return { success: false, message: '保存反馈失败，请稍后再试' };
   }
 } 

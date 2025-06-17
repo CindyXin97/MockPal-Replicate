@@ -44,7 +44,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <PublicLayout>
+    <PublicLayout redirectIfAuthenticated={false}>
       <div className="flex justify-center items-center h-[80vh]">
         <Card className="w-full max-w-md">
           <CardHeader>

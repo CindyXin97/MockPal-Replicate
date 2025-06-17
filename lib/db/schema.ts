@@ -40,6 +40,7 @@ export const userProfiles = pgTable('user_profiles', {
   // Contact information (revealed after match)
   email: varchar('email', { length: 255 }),
   wechat: varchar('wechat', { length: 255 }),
+  linkedin: varchar('linkedin', { length: 255 }),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -58,6 +59,17 @@ export const matches = pgTable('matches', {
     // Ensure unique matches between users
     uniqMatch: primaryKey({ columns: [table.user1Id, table.user2Id] }),
   };
+});
+
+// Feedbacks schema
+export const feedbacks = pgTable('feedbacks', {
+  id: serial('id').primaryKey(),
+  matchId: serial('match_id').references(() => matches.id).notNull(),
+  userId: serial('user_id').references(() => users.id).notNull(),
+  interviewStatus: varchar('interview_status', { length: 10 }).notNull(), // 'yes' or 'no'
+  content: text('content'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 // Relations
@@ -95,4 +107,5 @@ export const matchesRelations = relations(matches, ({ one }) => ({
 // Types
 export type User = InferModel<typeof users>;
 export type UserProfile = InferModel<typeof userProfiles>;
-export type Match = InferModel<typeof matches>; 
+export type Match = InferModel<typeof matches>;
+export type Feedback = InferModel<typeof feedbacks>; 

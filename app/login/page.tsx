@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAtom } from 'jotai';
 import { toast } from 'sonner';
 import { login } from '@/app/actions/auth';
+import { getProfile } from '@/app/actions/profile';
 import { PublicLayout } from '@/components/public-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,8 +31,16 @@ export default function LoginPage() {
       if (result.success && 'user' in result) {
         setIsAuthenticated(true);
         setUser(result.user || null);
-        router.push('/matches');
-        toast.success('登录成功');
+        
+        // 检查用户是否填写了个人资料
+        const profileResult = await getProfile(result.user.id);
+        if (profileResult.success && profileResult.profile) {
+          router.push('/profile');
+          toast.success('登录成功，请确认个人资料');
+        } else {
+          router.push('/profile');
+          toast.success('登录成功，请完善个人资料');
+        }
       } else {
         toast.error(result.message || '登录失败');
       }
@@ -44,7 +53,7 @@ export default function LoginPage() {
   };
 
   return (
-    <PublicLayout>
+    <PublicLayout redirectIfAuthenticated={false}>
       <div className="flex justify-center items-center h-[80vh]">
         <Card className="w-full max-w-md">
           <CardHeader>

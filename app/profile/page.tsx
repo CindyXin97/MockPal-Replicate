@@ -31,6 +31,7 @@ export default function ProfilePage() {
     caseAnalysis: false,
     email: '',
     wechat: '',
+    linkedin: '',
   });
 
   // Fetch existing profile if available
@@ -57,6 +58,7 @@ export default function ProfilePage() {
           caseAnalysis: result.profile.caseAnalysis || false,
           email: result.profile.email || '',
           wechat: result.profile.wechat || '',
+          linkedin: result.profile.linkedin || '',
         });
       }
     } catch (error) {
@@ -104,7 +106,7 @@ export default function ProfilePage() {
       const result = await saveProfile(user.id, formData);
 
       if (result.success) {
-        toast.success('资料保存成功');
+        toast.success('资料保存成功，系统会为你推荐新的匹配对象');
         router.push('/matches');
       } else {
         toast.error(result.message || '保存失败');
@@ -224,26 +226,47 @@ export default function ProfilePage() {
 
                 <div className="space-y-3">
                   <Label>联系方式 (匹配成功后可见)</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">邮箱</Label>
-                      <Input
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                        邮箱
+                      </label>
+                      <input
+                        type="email"
                         id="email"
                         name="email"
-                        type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="your@email.com"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="wechat">微信号</Label>
-                      <Input
+
+                    <div>
+                      <label htmlFor="wechat" className="block text-sm font-medium text-gray-700">
+                        微信
+                      </label>
+                      <input
+                        type="text"
                         id="wechat"
                         name="wechat"
                         value={formData.wechat}
                         onChange={handleChange}
-                        placeholder="微信号"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
+                        LinkedIn
+                      </label>
+                      <input
+                        type="text"
+                        id="linkedin"
+                        name="linkedin"
+                        value={formData.linkedin}
+                        onChange={handleChange}
+                        placeholder="https://www.linkedin.com/in/your-profile"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                       />
                     </div>
                   </div>
