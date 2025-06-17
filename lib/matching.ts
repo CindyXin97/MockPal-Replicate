@@ -89,7 +89,8 @@ export async function getPotentialMatches(userId: number) {
       return isNotExcluded && hasBasicInfo && hasPracticeContent && hasContactInfo;
     });
 
-    // 优先级排序：内容重叠 > 岗位和经验都相同 > 其他
+    // 优先级排序：对方已发出邀请且内容重叠 > 内容重叠 > 岗位和经验都相同 > 其他
+    const invitedOverlapList: typeof filteredMatches = [];
     const overlapList: typeof filteredMatches = [];
     const jobExpList: typeof filteredMatches = [];
     const otherList: typeof filteredMatches = [];
@@ -101,7 +102,17 @@ export async function getPotentialMatches(userId: number) {
         (user.profile?.caseAnalysis && p.caseAnalysis);
       const jobMatch = user.profile?.jobType === p.jobType;
       const expMatch = user.profile?.experienceLevel === p.experienceLevel;
-      if (overlap) {
+      // 判断对方是否已发出邀请且内容重叠
+      const hasInvited = await db.query.matches.findFirst({
+        where: and(
+          eq(matches.user1Id, user.id),
+          eq(matches.user2Id, userId),
+          eq(matches.status, 'pending')
+        ),
+      });
+      if (hasInvited && overlap) {
+        invitedOverlapList.push(user);
+      } else if (overlap) {
         overlapList.push(user);
       } else if (jobMatch && expMatch) {
         jobExpList.push(user);
@@ -109,7 +120,7 @@ export async function getPotentialMatches(userId: number) {
         otherList.push(user);
       }
     }
-    const finalList = [...overlapList, ...jobExpList, ...otherList].slice(0, 5);
+    const finalList = [...invitedOverlapList, ...overlapList, ...jobExpList, ...otherList].slice(0, 5);
     return {
       success: true,
       matches: finalList.map(user => ({
