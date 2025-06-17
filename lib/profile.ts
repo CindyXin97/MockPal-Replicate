@@ -16,6 +16,10 @@ export type ProfileFormData = {
   linkedin?: string;
 };
 
+type GetProfileResult =
+  | { success: true; profile: any }
+  | { success: false; message: string };
+
 // Create or update user profile
 export async function saveUserProfile(userId: number, profileData: ProfileFormData) {
   try {
@@ -68,13 +72,16 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
 }
 
 // Get user profile
-export async function getUserProfile(userId: number) {
+export async function getUserProfile(userId: number): Promise<GetProfileResult> {
   try {
     const profile = await db.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, userId),
     });
-
-    return { success: true, profile };
+    if (profile) {
+      return { success: true, profile };
+    } else {
+      return { success: false, message: '未找到资料' };
+    }
   } catch (error) {
     console.error('Profile fetch error:', error);
     return { success: false, message: '获取资料失败，请稍后再试' };
