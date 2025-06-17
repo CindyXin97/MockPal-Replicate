@@ -26,6 +26,7 @@ export default function MatchesPage() {
   const [feedbacks, setFeedbacks] = useState<{ [key: number]: string }>({});
   const [submitted, setSubmitted] = useState<{ [key: number]: boolean }>({});
   const [showBanner, setShowBanner] = useState(true);
+  const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -261,6 +262,36 @@ export default function MatchesPage() {
                   >
                     我知道了
                   </button>
+                </div>
+              )}
+              {activeTab === 'matches' && (
+                <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-4 mb-4 rounded flex items-center justify-between">
+                  <span>🎯 已成功匹配！建议主动联系对方，约定模拟面试时间，体验更佳哦～</span>
+                  <button
+                    className="ml-4 px-3 py-1 rounded bg-blue-300 hover:bg-blue-400 text-blue-900 font-medium transition-colors"
+                    onClick={() => setShowGuide(true)}
+                  >
+                    查看面试指南
+                  </button>
+                </div>
+              )}
+              {showGuide && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+                  <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+                    <h2 className="text-lg font-bold mb-2">面试流程指引</h2>
+                    <ol className="list-decimal pl-5 space-y-1 text-sm text-gray-700 mb-4">
+                      <li>主动联系对方，约定模拟面试时间（建议30-60分钟）。</li>
+                      <li>双方可轮流扮演面试官和候选人，提前准备问题。</li>
+                      <li>面试结束后，互相给出反馈和建议。</li>
+                      <li>有问题可随时查看平台FAQ或联系客服。</li>
+                    </ol>
+                    <button
+                      className="mt-2 px-4 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white font-medium"
+                      onClick={() => setShowGuide(false)}
+                    >
+                      关闭
+                    </button>
+                  </div>
                 </div>
               )}
               {successfulMatches.length > 0 ? (

@@ -43,14 +43,14 @@ export default function Home() {
           </div>
         </div>
         
-        <div className="space-y-4 mt-6">
+        <div className="space-y-4 mt-6 flex flex-row gap-4 justify-center">
           <Button asChild>
             <Link href="/login">登录</Link>
           </Button>
-          <Button asChild variant="outline" className="ml-4">
+          <Button asChild variant="outline">
             <Link href="/register">注册</Link>
           </Button>
-          <Button asChild variant="secondary" className="ml-4">
+          <Button asChild variant="secondary">
             <Link href="/test-db">测试数据库</Link>
           </Button>
         </div>
