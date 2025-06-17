@@ -34,7 +34,7 @@ export default function LoginPage() {
         
         // 检查用户是否填写了个人资料
         const profileResult = await getProfile(result.user.id);
-        if (profileResult.success && profileResult.profile) {
+        if ('profile' in profileResult) {
           router.push('/profile');
           toast.success('登录成功，请确认个人资料');
         } else {
