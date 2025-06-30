@@ -187,6 +187,24 @@ export default function MatchesPage() {
                           <div className="font-bold text-lg text-gray-700">{currentMatch.jobType || '未设置'}</div>
                           <div className="mt-4 text-blue-500 font-semibold flex items-center gap-1 text-base">目标公司</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.targetCompany || '未设置'}</div>
+                          <div className="mt-4 text-blue-500 font-semibold text-base mb-1">期望练习内容</div>
+                          <div className="flex gap-2 flex-wrap mb-2">
+                            {currentMatch.practicePreferences?.technicalInterview && (
+                              <span className="rounded-full bg-blue-50 text-blue-600 px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm">
+                                🥊 技术面
+                              </span>
+                            )}
+                            {currentMatch.practicePreferences?.behavioralInterview && (
+                              <span className="rounded-full bg-blue-50 text-blue-600 px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm">
+                                🧑‍🤝‍🧑 行为面
+                              </span>
+                            )}
+                            {currentMatch.practicePreferences?.caseAnalysis && (
+                              <span className="rounded-full bg-blue-50 text-blue-600 px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm">
+                                🧩 案例分析
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div>
                           <div className="text-blue-500 font-semibold flex items-center gap-1 text-base">经验水平</div>
@@ -196,10 +214,10 @@ export default function MatchesPage() {
                         </div>
                       </div>
                       <div className="flex justify-center gap-6 mt-8">
-                        <Button variant="outline" size="lg" className="rounded-full px-8 py-2 text-lg font-bold border-blue-200 text-blue-500 bg-white hover:bg-blue-50 shadow transition-all">
+                        <Button variant="outline" size="lg" onClick={handleDislike} className="rounded-full px-8 py-2 text-lg font-bold border-blue-200 text-blue-500 bg-white hover:bg-blue-50 shadow transition-all">
                           跳过
                         </Button>
-                        <Button size="lg" className="rounded-full px-8 py-2 text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow hover:scale-105 transition-all">
+                        <Button size="lg" onClick={handleLike} className="rounded-full px-8 py-2 text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow hover:scale-105 transition-all">
                           匹配
                         </Button>
                       </div>
