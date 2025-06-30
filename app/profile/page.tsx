@@ -121,11 +121,13 @@ export default function ProfilePage() {
 
   return (
     <AuthLayout>
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">个人资料</h1>
-        <Card>
+      {/* 全屏背景渐变 */}
+      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-white to-gray-50 -z-10" aria-hidden="true"></div>
+      <div className="flex min-h-screen items-center justify-center w-full">
+        <Card className="w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10">
           <CardHeader>
-            <CardTitle>标签信息</CardTitle>
+            <CardTitle className="text-2xl font-extrabold text-center tracking-tight text-gray-900 mb-2">个人资料</CardTitle>
+            <p className="text-base text-gray-500 text-center font-medium">完善资料，获得更精准的匹配推荐</p>
           </CardHeader>
           <CardContent>
             {isFetching ? (
@@ -199,7 +201,7 @@ export default function ProfilePage() {
                           handleCheckboxChange('technicalInterview', checked as boolean)
                         }
                       />
-                      <Label htmlFor="technicalInterview" className="font-normal">技术面</Label>
+                      <Label htmlFor="technicalInterview">技术面</Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <Checkbox
@@ -209,7 +211,7 @@ export default function ProfilePage() {
                           handleCheckboxChange('behavioralInterview', checked as boolean)
                         }
                       />
-                      <Label htmlFor="behavioralInterview" className="font-normal">行为面</Label>
+                      <Label htmlFor="behavioralInterview">行为面</Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <Checkbox
@@ -219,67 +221,36 @@ export default function ProfilePage() {
                           handleCheckboxChange('caseAnalysis', checked as boolean)
                         }
                       />
-                      <Label htmlFor="caseAnalysis" className="font-normal">案例分析</Label>
+                      <Label htmlFor="caseAnalysis">案例分析</Label>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Label>联系方式 (匹配成功后可见)</Label>
-                  <div className="space-y-4">
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                        邮箱
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="wechat" className="block text-sm font-medium text-gray-700">
-                        微信
-                      </label>
-                      <input
-                        type="text"
-                        id="wechat"
-                        name="wechat"
-                        value={formData.wechat}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
-                        LinkedIn
-                      </label>
-                      <input
-                        type="text"
-                        id="linkedin"
-                        name="linkedin"
-                        value={formData.linkedin}
-                        onChange={handleChange}
-                        placeholder="https://www.linkedin.com/in/your-profile"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      />
-                    </div>
-                  </div>
+                  <Input
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="邮箱"
+                  />
+                  <Input
+                    id="wechat"
+                    name="wechat"
+                    value={formData.wechat}
+                    onChange={handleChange}
+                    placeholder="微信"
+                  />
+                  <Input
+                    id="linkedin"
+                    name="linkedin"
+                    value={formData.linkedin}
+                    onChange={handleChange}
+                    placeholder="LinkedIn https://www.linkedin.com/in/your-profile"
+                  />
                 </div>
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={
-                    isLoading ||
-                    !(formData.technicalInterview || formData.behavioralInterview || formData.caseAnalysis)
-                  }
-                >
+                <Button type="submit" className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600" disabled={isLoading}>
                   {isLoading ? '保存中...' : '保存资料'}
                 </Button>
               </form>

@@ -45,13 +45,18 @@ export default function RegisterPage() {
 
   return (
     <PublicLayout redirectIfAuthenticated={false}>
-      <div className="flex justify-center items-center h-[80vh]">
-        <Card className="w-full max-w-md">
+      {/* 全屏背景渐变 */}
+      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-white to-gray-50 -z-10" aria-hidden="true"></div>
+      <div className="flex min-h-[70vh] items-center justify-center w-full">
+        <Card className="w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10 -mt-16">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">注册 MockPal</CardTitle>
+            <CardTitle className="text-2xl font-extrabold text-center tracking-tight text-gray-900 mb-2">
+              <span className="text-blue-500">注册</span> MockPal
+            </CardTitle>
+            <p className="text-base text-gray-500 text-center font-medium">欢迎注册，开启你的模拟面试之旅</p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="username">用户名</Label>
                 <Input
@@ -83,7 +88,7 @@ export default function RegisterPage() {
                   minLength={6}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600" disabled={isLoading}>
                 {isLoading ? '注册中...' : '注册'}
               </Button>
             </form>
@@ -91,7 +96,7 @@ export default function RegisterPage() {
           <CardFooter className="flex justify-center">
             <p className="text-sm text-center">
               已有账号？{' '}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link href="/login" className="text-blue-600 font-semibold hover:underline">
                 立即登录
               </Link>
             </p>
