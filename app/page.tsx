@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { useAtom } from 'jotai';
 import { Button } from '@/components/ui/button';
-import { isAuthenticatedAtom } from '@/lib/store';
+import { isAuthenticatedAtom, userAtom } from '@/lib/store';
 import { PublicLayout } from '@/components/public-layout';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  const [user] = useAtom(userAtom);
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
@@ -64,12 +65,16 @@ export default function Home() {
               </div>
             </div>
             <div className="flex flex-row gap-6 justify-center mt-2">
-              <Button asChild className="px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600">
-                <Link href="/login">登录</Link>
-              </Button>
-              <Button asChild variant="outline" className="px-10 py-2 text-lg font-semibold border-blue-500 text-blue-600 hover:bg-blue-50">
-                <Link href="/register">注册</Link>
-              </Button>
+              {!isAuthenticated || !user ? (
+                <>
+                  <Button asChild className="px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600">
+                    <Link href="/login">登录</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="px-10 py-2 text-lg font-semibold border-blue-500 text-blue-600 hover:bg-blue-50">
+                    <Link href="/register">注册</Link>
+                  </Button>
+                </>
+              ) : null}
               <Button asChild variant="ghost" className="px-10 py-2 text-lg font-semibold border border-gray-200 text-gray-600 hover:bg-gray-100">
                 <Link href="/test-db">测试数据库</Link>
               </Button>

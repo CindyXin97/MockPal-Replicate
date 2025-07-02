@@ -135,6 +135,7 @@ export async function getPotentialMatches(userId: number) {
           behavioralInterview: user.profile?.behavioralInterview,
           caseAnalysis: user.profile?.caseAnalysis,
         },
+        bio: user.profile?.bio,
       }))
     };
   } catch (error) {
@@ -314,6 +315,7 @@ export async function getSuccessfulMatches(userId: number) {
             email: matchedUser.profile.email,
             wechat: matchedUser.profile.wechat,
           },
+          bio: matchedUser.profile.bio,
         };
       })
     );

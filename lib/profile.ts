@@ -4,8 +4,8 @@ import { eq } from 'drizzle-orm';
 
 // Profile type for form submission
 export type ProfileFormData = {
-  jobType: 'DA' | 'DS' | 'DE';
-  experienceLevel: '应届' | '1-3年' | '3年+';
+  jobType: 'DA' | 'DS' | 'DE' | 'BA';
+  experienceLevel: '应届' | '1-3年' | '3-5年' | '5年以上';
   targetCompany?: string;
   targetIndustry?: string;
   technicalInterview: boolean;
@@ -14,6 +14,7 @@ export type ProfileFormData = {
   email?: string;
   wechat?: string;
   linkedin?: string;
+  bio?: string;
 };
 
 type GetProfileResult =
@@ -43,6 +44,7 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
           email: profileData.email || null,
           wechat: profileData.wechat || null,
           linkedin: profileData.linkedin || null,
+          bio: profileData.bio || null,
           updatedAt: new Date(),
         })
         .where(eq(userProfiles.userId, userId));
@@ -61,6 +63,7 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
         email: profileData.email || null,
         wechat: profileData.wechat || null,
         linkedin: profileData.linkedin || null,
+        bio: profileData.bio || null,
       });
 
       return { success: true };

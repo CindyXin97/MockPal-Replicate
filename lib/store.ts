@@ -23,6 +23,7 @@ export type Match = {
     email?: string | null;
     wechat?: string | null;
   };
+  bio?: string | null;
 };
 
 // Auth state

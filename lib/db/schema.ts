@@ -42,6 +42,8 @@ export const userProfiles = pgTable('user_profiles', {
   wechat: varchar('wechat', { length: 255 }),
   linkedin: varchar('linkedin', { length: 255 }),
   
+  bio: varchar('bio', { length: 255 }),
+  
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

@@ -32,6 +32,7 @@ export default function ProfilePage() {
     email: '',
     wechat: '',
     linkedin: '',
+    bio: '',
   });
 
   // Fetch existing profile if available
@@ -59,6 +60,7 @@ export default function ProfilePage() {
           email: result.profile.email || '',
           wechat: result.profile.wechat || '',
           linkedin: result.profile.linkedin || '',
+          bio: result.profile.bio || '',
         });
       }
     } catch (error) {
@@ -99,6 +101,13 @@ export default function ProfilePage() {
 
     if (!user) {
       toast.error('用户未登录');
+      return;
+    }
+
+    // 联系方式校验
+    if (!formData.email && !formData.wechat && !formData.linkedin) {
+      toast.error('请至少填写一个联系方式（推荐添加微信）');
+      setIsLoading(false);
       return;
     }
 
@@ -148,6 +157,7 @@ export default function ProfilePage() {
                       <option value="DA">数据分析 (DA)</option>
                       <option value="DS">数据科学 (DS)</option>
                       <option value="DE">数据工程 (DE)</option>
+                      <option value="BA">商业分析 (BA)</option>
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -162,7 +172,8 @@ export default function ProfilePage() {
                     >
                       <option value="应届">应届</option>
                       <option value="1-3年">1-3年</option>
-                      <option value="3年+">3年+</option>
+                      <option value="3-5年">3-5年</option>
+                      <option value="5年以上">5年以上</option>
                     </select>
                   </div>
                 </div>
@@ -227,7 +238,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>联系方式 (匹配成功后可见)</Label>
+                  <Label>联系方式 (匹配成功后可见，推荐添加微信)</Label>
                   <Input
                     id="email"
                     name="email"
@@ -250,6 +261,18 @@ export default function ProfilePage() {
                     placeholder="LinkedIn https://www.linkedin.com/in/your-profile"
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="bio">一句话介绍（可选，能提升曝光和匹配度哦～）</Label>
+                  <Input
+                    id="bio"
+                    name="bio"
+                    value={formData.bio || ''}
+                    onChange={handleChange}
+                    placeholder="如：三年打工人，在美东时区，希望找到小姐妹一起练case～"
+                  />
+                </div>
+
                 <Button type="submit" className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600" disabled={isLoading}>
                   {isLoading ? '保存中...' : '保存资料'}
                 </Button>

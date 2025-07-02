@@ -180,6 +180,9 @@ export default function MatchesPage() {
                           />
                         </div>
                         <div className="font-bold text-2xl font-['Poppins'] mb-2 text-gray-800">{currentMatch.username}</div>
+                        {currentMatch.bio && (
+                          <div className="text-base text-gray-500 mb-2 text-center max-w-xs mx-auto">{currentMatch.bio}</div>
+                        )}
                       </div>
                       <div className="grid grid-cols-2 gap-8 my-6">
                         <div>
@@ -244,7 +247,7 @@ export default function MatchesPage() {
                       <span>🎉 恭喜匹配成功！记得及时填写面试反馈，这将帮助系统为你和他人匹配到更合适的练习伙伴哦～</span>
                       <button
                         onClick={() => setShowBanner(false)}
-                        className="ml-4 px-3 py-1 rounded bg-yellow-300 hover:bg-yellow-400 text-yellow-900 font-medium transition-colors"
+                        className="ml-4 px-12 py-1 min-w-[160px] whitespace-nowrap rounded bg-yellow-300 hover:bg-yellow-400 text-yellow-900 font-medium transition-colors"
                       >
                         我知道了
                       </button>
@@ -300,6 +303,9 @@ export default function MatchesPage() {
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-3 pt-2">
+                            {match.bio && (
+                              <p className="text-base text-gray-500 text-center max-w-xs mx-auto">{match.bio}</p>
+                            )}
                             <div className="space-y-1">
                               <p className="text-sm font-medium">期望练习内容</p>
                               <div className="flex gap-2 flex-wrap">
