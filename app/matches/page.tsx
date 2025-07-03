@@ -226,11 +226,16 @@ export default function MatchesPage() {
                       </div>
                     </Card>
                   ) : (
-                    <Card className="w-full max-w-2xl mx-auto">
-                      <CardContent className="text-center py-12">
-                        <p className="text-xl mb-4">今日推荐已用完，请明天再来哦～</p>
-                        <Button onClick={resetMatches}>重新加载</Button>
-                      </CardContent>
+                    <Card className="w-full max-w-2xl mx-auto rounded-[2.5rem] shadow-2xl border-0 bg-gradient-to-br from-blue-100 via-white to-blue-200 p-12 flex flex-col items-center">
+                      <div className="text-6xl mb-4">🦉</div>
+                      <p className="text-2xl font-extrabold text-blue-700 mb-1 tracking-wide">今日推荐已用完！</p>
+                      <p className="text-lg text-blue-900/80 mb-8">明天再来发现新伙伴吧～<br/>或者刷新看看有没有新机会！</p>
+                      <Button
+                        onClick={resetMatches}
+                        className="rounded-full px-10 py-3 text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-lg hover:scale-105 hover:from-blue-500 hover:to-blue-700 transition-all"
+                      >
+                        重新加载
+                      </Button>
                     </Card>
                   )}
                 </>
