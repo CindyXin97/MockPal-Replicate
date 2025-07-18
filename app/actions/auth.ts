@@ -19,8 +19,10 @@ export async function register(formData: FormData) {
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
+  const targetCompany = formData.get('targetCompany') as string;
+  const targetIndustry = formData.get('targetIndustry') as string;
 
-  if (!username || !password || !confirmPassword) {
+  if (!username || !password || !confirmPassword || !targetCompany || !targetIndustry) {
     return { success: false, message: '请填写所有必填字段' };
   }
 
@@ -32,5 +34,5 @@ export async function register(formData: FormData) {
     return { success: false, message: '密码长度至少为6位' };
   }
 
-  return registerUser(username, password);
+  return registerUser(username, password, targetCompany, targetIndustry);
 } 

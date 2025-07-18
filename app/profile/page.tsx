@@ -11,14 +11,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { saveProfile, getProfile } from '@/app/actions/profile';
 import { ProfileFormData } from '@/lib/profile';
+import { TARGET_COMPANIES, TARGET_INDUSTRIES } from '@/lib/constants';
 
 export default function ProfilePage() {
   const router = useRouter();
   const [user] = useAtom(userAtom);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [showOtherCompanyInput, setShowOtherCompanyInput] = useState(false);
+  const [otherCompanyName, setOtherCompanyName] = useState('');
   
   // Form state
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -62,6 +66,12 @@ export default function ProfilePage() {
           linkedin: result.profile.linkedin || '',
           bio: result.profile.bio || '',
         });
+        
+        // Check if target company is "other" and show input
+        if (result.profile.targetCompany === 'other') {
+          setShowOtherCompanyInput(true);
+          setOtherCompanyName(result.profile.otherCompanyName || '');
+        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -88,6 +98,23 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSelectChange = (field: string, value: string) => {
+    setFormData({
+      ...formData,
+      [field]: value,
+    });
+    
+    // Handle "other" company selection
+    if (field === 'targetCompany') {
+      if (value === 'other') {
+        setShowOtherCompanyInput(true);
+      } else {
+        setShowOtherCompanyInput(false);
+        setOtherCompanyName('');
+      }
+    }
+  };
+
   const handleCheckboxChange = (field: string, checked: boolean) => {
     setFormData({
       ...formData,
@@ -111,8 +138,20 @@ export default function ProfilePage() {
       return;
     }
 
+    // 验证其他公司名称
+    if (formData.targetCompany === 'other' && !otherCompanyName.trim()) {
+      toast.error('请填写目标公司名称');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const result = await saveProfile(user.id, formData);
+      const submitData = {
+        ...formData,
+        otherCompanyName: formData.targetCompany === 'other' ? otherCompanyName : undefined
+      };
+      
+      const result = await saveProfile(user.id, submitData);
 
       if (result.success) {
         toast.success('资料保存成功，系统会为你推荐新的匹配对象');
@@ -180,24 +219,51 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="targetCompany">目标公司 (可选)</Label>
-                    <Input
-                      id="targetCompany"
-                      name="targetCompany"
-                      value={formData.targetCompany}
-                      onChange={handleChange}
-                      placeholder="如：字节跳动、阿里巴巴"
-                    />
+                    <Label htmlFor="targetCompany">目标公司 (必选)</Label>
+                    <Select 
+                      value={formData.targetCompany} 
+                      onValueChange={(value) => handleSelectChange('targetCompany', value)}
+                      required
+                    >
+                      <SelectTrigger className="w-full rounded-md border border-input bg-background px-3 py-2">
+                        <SelectValue placeholder="请选择目标公司" className="text-gray-400" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TARGET_COMPANIES.map((company) => (
+                          <SelectItem key={company.value} value={company.value}>
+                            {company.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {showOtherCompanyInput && (
+                      <Input
+                        placeholder="请输入目标公司名称"
+                        value={otherCompanyName}
+                        onChange={(e) => setOtherCompanyName(e.target.value)}
+                        className="mt-2"
+                        required
+                      />
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="targetIndustry">目标行业 (可选)</Label>
-                    <Input
-                      id="targetIndustry"
-                      name="targetIndustry"
-                      value={formData.targetIndustry}
-                      onChange={handleChange}
-                      placeholder="如：互联网、金融"
-                    />
+                    <Label htmlFor="targetIndustry">目标行业 (必选)</Label>
+                    <Select 
+                      value={formData.targetIndustry} 
+                      onValueChange={(value) => handleSelectChange('targetIndustry', value)}
+                      required
+                    >
+                      <SelectTrigger className="w-full rounded-md border border-input bg-background px-3 py-2">
+                        <SelectValue placeholder="请选择目标行业" className="text-gray-400" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TARGET_INDUSTRIES.map((industry) => (
+                          <SelectItem key={industry.value} value={industry.value}>
+                            {industry.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

@@ -10,7 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription }
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar } from '@/components/ui/avatar';
+import { ContactTemplates } from '@/components/contact-templates';
 import { fetchPotentialMatches, likeUser, dislikeUser, fetchSuccessfulMatches } from '@/app/actions/matching';
+import { getProfile } from '@/app/actions/profile';
 import type { Match } from '@/lib/store';
 import React from 'react';
 
@@ -27,12 +29,32 @@ export default function MatchesPage() {
   const [submitted, setSubmitted] = useState<{ [key: number]: boolean }>({});
   const [showBanner, setShowBanner] = useState(true);
   const [showGuide, setShowGuide] = useState(false);
+  const [showContactTemplates, setShowContactTemplates] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<{ jobType?: string; experienceLevel?: string } | null>(null);
 
   useEffect(() => {
     if (user) {
       loadMatches();
+      loadCurrentUserProfile();
     }
   }, [user]);
+
+  const loadCurrentUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const result = await getProfile(user.id);
+      if (result.success && 'profile' in result && result.profile) {
+        setCurrentUserProfile({
+          jobType: result.profile.jobType,
+          experienceLevel: result.profile.experienceLevel,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading current user profile:', error);
+    }
+  };
 
   const loadMatches = async () => {
     if (!user) return;
@@ -152,6 +174,16 @@ export default function MatchesPage() {
       toast.error(res.message || '提交失败');
       setSubmitted(prev => ({ ...prev, [matchId]: false }));
     }
+  };
+
+  const handleShowContactTemplates = (match: Match) => {
+    setSelectedMatch(match);
+    setShowContactTemplates(true);
+  };
+
+  const handleCloseContactTemplates = () => {
+    setShowContactTemplates(false);
+    setSelectedMatch(null);
   };
 
   return (
@@ -344,10 +376,24 @@ export default function MatchesPage() {
                                     微信：{match.contactInfo.wechat}
                                   </p>
                                 )}
+                                {match.contactInfo.linkedin && (
+                                  <p className="text-sm text-muted-foreground">
+                                    LinkedIn：{match.contactInfo.linkedin}
+                                  </p>
+                                )}
                               </div>
                             )}
+                            <div className="flex gap-2 mt-4">
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleShowContactTemplates(match)}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                💬 联系模板
+                              </Button>
+                            </div>
                             <div className="mt-4 flex items-center gap-4">
-                              <span className="text-sm font-medium">是否进行面试？</span>
+                              <span className="text-sm font-medium text-blue-600">是否完成面试？</span>
                               <label className="flex items-center gap-1">
                                 <input
                                   type="radio"
@@ -410,6 +456,19 @@ export default function MatchesPage() {
           </Tabs>
         </div>
       </div>
+
+      {/* 联系模板弹窗 */}
+      {showContactTemplates && selectedMatch && user && currentUserProfile && (
+        <ContactTemplates
+          match={selectedMatch}
+          currentUser={{
+            username: user.username,
+            jobType: currentUserProfile.jobType,
+            experienceLevel: currentUserProfile.experienceLevel
+          }}
+          onClose={handleCloseContactTemplates}
+        />
+      )}
     </AuthLayout>
   );
 }

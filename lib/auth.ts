@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { compare, hash } from 'bcryptjs';
 
 // Function to register a new user
-export async function registerUser(username: string, password: string) {
+export async function registerUser(username: string, password: string, targetCompany: string, targetIndustry: string) {
   try {
     // Check if user already exists
     const existingUser = await db.query.users.findFirst({
@@ -23,6 +23,22 @@ export async function registerUser(username: string, password: string) {
       username,
       passwordHash,
     }).returning();
+
+    // Create initial profile with target company and industry
+    const { createProfile } = await import('@/lib/profile');
+    await createProfile(newUser[0].id, {
+      jobType: 'DA',
+      experienceLevel: '应届',
+      targetCompany,
+      targetIndustry,
+      technicalInterview: false,
+      behavioralInterview: false,
+      caseAnalysis: false,
+      email: '',
+      wechat: '',
+      linkedin: '',
+      bio: '',
+    });
 
     return { 
       success: true, 

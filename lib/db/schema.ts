@@ -31,6 +31,7 @@ export const userProfiles = pgTable('user_profiles', {
   // Optional tags
   targetCompany: varchar('target_company', { length: 255 }),
   targetIndustry: varchar('target_industry', { length: 255 }),
+  otherCompanyName: varchar('other_company_name', { length: 255 }), // 存储用户自定义的公司名称
   
   // Required practice content
   technicalInterview: boolean('technical_interview').default(false),

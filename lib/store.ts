@@ -22,6 +22,7 @@ export type Match = {
   contactInfo?: {
     email?: string | null;
     wechat?: string | null;
+    linkedin?: string | null;
   };
   bio?: string | null;
 };

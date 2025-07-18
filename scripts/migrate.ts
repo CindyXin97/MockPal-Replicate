@@ -37,16 +37,41 @@ async function main() {
         experience_level VARCHAR(50) NOT NULL,
         target_company VARCHAR(255),
         target_industry VARCHAR(255),
+        other_company_name VARCHAR(255),
         technical_interview BOOLEAN DEFAULT false,
         behavioral_interview BOOLEAN DEFAULT false,
         case_analysis BOOLEAN DEFAULT false,
         email VARCHAR(255),
         wechat VARCHAR(255),
+        linkedin VARCHAR(255),
+        bio VARCHAR(255),
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     `;
     console.log('Created user_profiles table');
+
+    // Add missing columns if they don't exist
+    try {
+      await sql`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS other_company_name VARCHAR(255)`;
+      console.log('Added other_company_name column');
+    } catch (error) {
+      console.log('other_company_name column already exists or error:', error);
+    }
+
+    try {
+      await sql`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS linkedin VARCHAR(255)`;
+      console.log('Added linkedin column');
+    } catch (error) {
+      console.log('linkedin column already exists or error:', error);
+    }
+
+    try {
+      await sql`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS bio VARCHAR(255)`;
+      console.log('Added bio column');
+    } catch (error) {
+      console.log('bio column already exists or error:', error);
+    }
 
     // Create matches table
     await sql`
@@ -61,6 +86,32 @@ async function main() {
       )
     `;
     console.log('Created matches table');
+
+    // Create feedbacks table
+    await sql`
+      CREATE TABLE IF NOT EXISTS feedbacks (
+        id SERIAL PRIMARY KEY,
+        match_id INTEGER NOT NULL REFERENCES matches(id),
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        interview_status VARCHAR(10) NOT NULL,
+        content TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('Created feedbacks table');
+
+    // Create user_daily_views table
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_daily_views (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        viewed_user_id INTEGER NOT NULL REFERENCES users(id),
+        date VARCHAR(10) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('Created user_daily_views table');
 
     console.log('Migration completed successfully');
   } catch (error) {

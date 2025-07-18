@@ -8,6 +8,7 @@ export type ProfileFormData = {
   experienceLevel: '应届' | '1-3年' | '3-5年' | '5年以上';
   targetCompany?: string;
   targetIndustry?: string;
+  otherCompanyName?: string; // 用户自定义的公司名称
   technicalInterview: boolean;
   behavioralInterview: boolean;
   caseAnalysis: boolean;
@@ -38,6 +39,7 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
           experienceLevel: profileData.experienceLevel,
           targetCompany: profileData.targetCompany || null,
           targetIndustry: profileData.targetIndustry || null,
+          otherCompanyName: profileData.otherCompanyName || null,
           technicalInterview: profileData.technicalInterview,
           behavioralInterview: profileData.behavioralInterview,
           caseAnalysis: profileData.caseAnalysis,
@@ -57,6 +59,7 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
         experienceLevel: profileData.experienceLevel,
         targetCompany: profileData.targetCompany || null,
         targetIndustry: profileData.targetIndustry || null,
+        otherCompanyName: profileData.otherCompanyName || null,
         technicalInterview: profileData.technicalInterview,
         behavioralInterview: profileData.behavioralInterview,
         caseAnalysis: profileData.caseAnalysis,
@@ -71,6 +74,31 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
   } catch (error) {
     console.error('Profile save error:', error);
     return { success: false, message: '保存失败，请稍后再试' };
+  }
+}
+
+// Create user profile
+export async function createProfile(userId: number, profileData: ProfileFormData) {
+  try {
+    await db.insert(userProfiles).values({
+      userId,
+      jobType: profileData.jobType,
+      experienceLevel: profileData.experienceLevel,
+      targetCompany: profileData.targetCompany || null,
+      targetIndustry: profileData.targetIndustry || null,
+      otherCompanyName: profileData.otherCompanyName || null,
+      technicalInterview: profileData.technicalInterview,
+      behavioralInterview: profileData.behavioralInterview,
+      caseAnalysis: profileData.caseAnalysis,
+      email: profileData.email || null,
+      wechat: profileData.wechat || null,
+      linkedin: profileData.linkedin || null,
+      bio: profileData.bio || null,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Profile creation error:', error);
+    return { success: false, message: '创建资料失败，请稍后再试' };
   }
 }
 
