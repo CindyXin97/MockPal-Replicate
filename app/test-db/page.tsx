@@ -1,58 +1,57 @@
 'use client';
 
 import { useState } from 'react';
-import { neon } from '@neondatabase/serverless';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function TestDbPage() {
-  const [message, setMessage] = useState<string>('');
-  const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
+  const [message, setMessage] = useState('');
 
-  async function testConnection() {
-    setLoading(true);
-    setMessage('');
-    setError('');
-
+  const testDbConnection = async () => {
     try {
-      const result = await fetch('/api/test-db');
-      const data = await result.json();
-      
-      if (data.success) {
-        setMessage(data.message);
-      } else {
-        setError(data.error);
-      }
-    } catch (err) {
-      console.error('Error testing DB connection:', err);
-      setError('测试连接失败: ' + (err instanceof Error ? err.message : String(err)));
-    } finally {
-      setLoading(false);
+      const response = await fetch('/api/test-db');
+      const data = await response.json();
+      setMessage(JSON.stringify(data, null, 2));
+    } catch (error) {
+      setMessage(`Error: ${error}`);
     }
-  }
+  };
+
+  const clearLocalStorage = () => {
+    try {
+      // Clear all localStorage
+      localStorage.clear();
+      // Clear specific items
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+      setMessage('LocalStorage cleared successfully! Please refresh the page.');
+    } catch (error) {
+      setMessage(`Error clearing localStorage: ${error}`);
+    }
+  };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">数据库连接测试</h1>
-      
-      <button 
-        onClick={testConnection}
-        disabled={loading}
-        className="bg-primary text-primary-foreground px-4 py-2 rounded disabled:opacity-50"
-      >
-        {loading ? '测试中...' : '测试数据库连接'}
-      </button>
-      
-      {message && (
-        <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-          {message}
-        </div>
-      )}
-      
-      {error && (
-        <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
+    <div className="container mx-auto p-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Database Test & Debug Tools</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-4">
+            <Button onClick={testDbConnection}>
+              Test Database Connection
+            </Button>
+            <Button onClick={clearLocalStorage} variant="destructive">
+              Clear LocalStorage (Fix Default Login)
+            </Button>
+          </div>
+          {message && (
+            <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
+              {message}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 } 

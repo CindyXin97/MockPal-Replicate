@@ -7,10 +7,14 @@ import { Button } from '@/components/ui/button';
 import { isAuthenticatedAtom, userAtom } from '@/lib/store';
 
 export function Header() {
-  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
-  const [user] = useAtom(userAtom);
+  const [isAuthenticated, setIsAuthenticated] = useAtom(isAuthenticatedAtom);
+  const [user, setUser] = useAtom(userAtom);
 
   const handleLogout = () => {
+    // Reset Jotai state
+    setIsAuthenticated(false);
+    setUser(null);
+    
     // Clear localStorage
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('user');
