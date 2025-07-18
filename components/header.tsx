@@ -20,10 +20,10 @@ export function Header() {
   };
 
   return (
-    <header className="w-full px-4 py-2 bg-white/80 backdrop-blur border-b shadow-sm fixed top-0 left-0 z-30">
+    <header className="w-full px-4 py-3 bg-white border-b shadow-sm fixed top-0 left-0 z-30">
       <div className="container mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 h-12">
-          <div className="h-12 w-12 overflow-hidden flex items-center justify-center rounded">
+        <Link href="/" className="flex items-center gap-3 h-12 group">
+          <div className="h-12 w-12 overflow-hidden flex items-center justify-center rounded-lg bg-primary shadow-sm group-hover:shadow-md transition-shadow">
             <Image
               src="/logo-icon.png"
               alt="MockPal Logo"
@@ -33,27 +33,36 @@ export function Header() {
               priority
             />
           </div>
-          <span className="text-2xl font-extrabold tracking-tight text-black font-['Poppins']" style={{ fontWeight: 700 }}>
-            Mock<span className="text-blue-500">Pal</span>
+          <span className="text-xl font-bold">
+            MockPal
           </span>
         </Link>
-        
-        <nav>
+
+        <div className="flex items-center gap-4">
           {isAuthenticated && user ? (
-            <div className="flex items-center gap-4">
-              <Link href="/profile" className="text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition">
-                个人资料
-              </Link>
-              <Link href="/matches" className="text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition">
-                匹配管理
-              </Link>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                退出登录
+            <>
+              <span className="text-sm text-muted-foreground hidden sm:block">
+                欢迎，<span className="font-medium">{user.username}</span>
+              </span>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="text-sm"
+              >
+                退出
               </Button>
-              <span className="text-sm font-medium text-gray-500">欢迎, {user.username}</span>
+            </>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Button asChild variant="ghost" className="text-sm">
+                <Link href="/login">登录</Link>
+              </Button>
+              <Button asChild className="text-sm">
+                <Link href="/register">注册</Link>
+              </Button>
             </div>
-          ) : null}
-        </nav>
+          )}
+        </div>
       </div>
     </header>
   );

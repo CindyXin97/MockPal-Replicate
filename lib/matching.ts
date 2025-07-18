@@ -121,8 +121,8 @@ export async function getPotentialMatches(userId: number) {
       }
     }
     const finalList = [...invitedOverlapList, ...overlapList, ...jobExpList, ...otherList].slice(0, 5);
-    return {
-      success: true,
+    return { 
+      success: true, 
       matches: finalList.map(user => ({
         id: user.id,
         username: user.username,

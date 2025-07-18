@@ -118,5 +118,5 @@ export const matchesRelations = relations(matches, ({ one }) => ({
 // Types
 export type User = InferModel<typeof users>;
 export type UserProfile = InferModel<typeof userProfiles>;
-export type Match = InferModel<typeof matches>;
+export type Match = InferModel<typeof matches>; 
 export type Feedback = InferModel<typeof feedbacks>; 
