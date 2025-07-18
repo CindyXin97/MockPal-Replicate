@@ -81,7 +81,7 @@ export async function getUserProfile(userId: number): Promise<GetProfileResult> 
       where: eq(userProfiles.userId, userId),
     });
     if (profile) {
-    return { success: true, profile };
+      return { success: true, profile };
     } else {
       return { success: false, message: '未找到资料' };
     }
@@ -90,51 +90,3 @@ export async function getUserProfile(userId: number): Promise<GetProfileResult> 
     return { success: false, message: '获取资料失败，请稍后再试' };
   }
 } 
-
-// 北美主流行业
-export const INDUSTRY_OPTIONS = [
-  '互联网/科技',
-  '金融/银行',
-  '咨询',
-  '零售/电商',
-  '医疗健康',
-  '教育',
-  '能源',
-  '制造业',
-  '政府/非营利',
-  '媒体/广告',
-  '物流/运输',
-  '房地产',
-  '其他',
-];
-
-// 北美主流公司（部分示例，可后续补充）
-export const COMPANY_OPTIONS = [
-  'Google',
-  'Meta (Facebook)',
-  'Amazon',
-  'Apple',
-  'Microsoft',
-  'Netflix',
-  'Tesla',
-  'Nvidia',
-  'Salesforce',
-  'Uber',
-  'Airbnb',
-  'LinkedIn',
-  'Stripe',
-  'Shopify',
-  'Oracle',
-  'IBM',
-  'JPMorgan Chase',
-  'Goldman Sachs',
-  'Morgan Stanley',
-  'McKinsey',
-  'BCG',
-  'Bain',
-  'Walmart',
-  'Target',
-  'CVS Health',
-  'UnitedHealth',
-  '其他',
-]; 

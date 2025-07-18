@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar } from '@/components/ui/avatar';
 import { fetchPotentialMatches, likeUser, dislikeUser, fetchSuccessfulMatches } from '@/app/actions/matching';
-import { getProfile } from '@/app/actions/profile';
 import type { Match } from '@/lib/store';
 import React from 'react';
 
@@ -28,118 +27,10 @@ export default function MatchesPage() {
   const [submitted, setSubmitted] = useState<{ [key: number]: boolean }>({});
   const [showBanner, setShowBanner] = useState(true);
   const [showGuide, setShowGuide] = useState(false);
-  const [showContactTemplates, setShowContactTemplates] = useState<{ [key: number]: boolean }>({});
-  const [userProfile, setUserProfile] = useState<any>(null);
-
-  // 获取当前用户的profile信息
-  const fetchUserProfile = async () => {
-    if (!user) return;
-    
-    try {
-      const result = await getProfile(user.id);
-      if (result.success && 'profile' in result && result.profile) {
-        setUserProfile(result.profile);
-      }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  };
-
-  // 生成联系模板的函数
-  const generateContactTemplates = (match: Match) => {
-    // 经验年限英文翻译
-    const getExperienceInEnglish = (experience: string) => {
-      switch (experience) {
-        case '应届': return 'Entry Level';
-        case '1-3年': return '1-3 years of experience';
-        case '3-5年': return '3-5 years of experience';
-        case '5年以上': return '5+ years of experience';
-        default: return 'Entry Level';
-      }
-    };
-
-    const templates = {
-      wechat: `你好！我是${user?.username || '用户'}，在MockPal上看到你的资料，我们匹配成功了！
-
-我的背景：${userProfile?.jobType || 'DA'} · ${userProfile?.experienceLevel || '应届'}
-${userProfile?.bio ? `个人介绍：${userProfile.bio}` : ''}
-
-看到你也对${match.practicePreferences?.technicalInterview ? '技术面' : ''}${match.practicePreferences?.behavioralInterview ? '行为面' : ''}${match.practicePreferences?.caseAnalysis ? '案例分析' : ''}感兴趣，想约个时间一起练习模拟面试吗？
-
-期待你的回复！ 😊`,
-
-      linkedin: `Hi ${match.username}! 👋
-
-I'm ${user?.username || 'a user'} from MockPal, and we've been successfully matched! 
-
-My background: ${userProfile?.jobType || 'DA'} · ${getExperienceInEnglish(userProfile?.experienceLevel || '应届')}
-${userProfile?.bio ? `About me: ${userProfile.bio}` : ''}
-
-I noticed you're also interested in ${match.practicePreferences?.technicalInterview ? 'technical interviews' : ''}${match.practicePreferences?.behavioralInterview ? 'behavioral interviews' : ''}${match.practicePreferences?.caseAnalysis ? 'case analysis' : ''}. Would you be interested in scheduling a mock interview practice session?
-
-My contact info:
-${userProfile?.email ? `Email: ${userProfile.email}` : ''}
-${userProfile?.linkedin ? `LinkedIn: ${userProfile.linkedin}` : ''}
-
-Looking forward to hearing from you! 🚀`,
-
-      email: `Subject: MockPal 模拟面试练习邀请
-
-Hi ${match.username},
-
-我是${user?.username || '用户'}，在MockPal平台上我们匹配成功了！
-
-我的背景：
-- 岗位类型：${userProfile?.jobType || 'DA'}
-- 经验水平：${userProfile?.experienceLevel || '应届'}
-${userProfile?.bio ? `- 个人介绍：${userProfile.bio}` : ''}
-
-看到你也对以下内容感兴趣：
-${match.practicePreferences?.technicalInterview ? '• 技术面试' : ''}
-${match.practicePreferences?.behavioralInterview ? '• 行为面试' : ''}
-${match.practicePreferences?.caseAnalysis ? '• 案例分析' : ''}
-
-我想邀请你一起进行模拟面试练习，我们可以：
-1. 约定一个合适的时间（建议30-60分钟）
-2. 轮流扮演面试官和候选人
-3. 互相提供反馈和建议
-
-我的联系方式：
-${userProfile?.email ? `邮箱：${userProfile.email}` : ''}
-${userProfile?.wechat ? `微信：${userProfile.wechat}` : ''}
-
-如果你感兴趣，请回复这封邮件，我们可以进一步安排细节。
-
-期待与你一起练习！
-
-Best regards,
-${user?.username || '用户'}`
-    };
-
-    return templates;
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success('已复制到剪贴板');
-    } catch (err) {
-      toast.error('复制失败，请手动复制');
-    }
-  };
-
-  const toggleContactTemplates = (matchId: number) => {
-    setShowContactTemplates(prev => ({
-      ...prev,
-      [matchId]: !prev[matchId]
-    }));
-  };
-
 
   useEffect(() => {
     if (user) {
       loadMatches();
-      fetchUserProfile();
     }
   }, [user]);
 
@@ -453,101 +344,30 @@ ${user?.username || '用户'}`
                                     微信：{match.contactInfo.wechat}
                                   </p>
                                 )}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => toggleContactTemplates(match.id)}
-                                  className="mt-2 w-full"
-                                >
-                                  {showContactTemplates[match.id] ? '收起联系模板' : '生成联系模板'}
-                                </Button>
                               </div>
                             )}
-                            
-                            {showContactTemplates[match.id] && (
-                              <div className="space-y-3 mt-3 p-3 bg-gray-50 rounded-lg">
-                                <p className="text-sm font-medium text-gray-700">联系模板</p>
-                                
-                                {/* 微信模板 */}
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium text-gray-600">微信模板</span>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => copyToClipboard(generateContactTemplates(match).wechat)}
-                                      className="h-6 px-2 text-xs"
-                                    >
-                                      复制
-                                    </Button>
-                                  </div>
-                                  <div className="text-xs text-gray-600 bg-white p-2 rounded border max-h-20 overflow-y-auto">
-                                    {generateContactTemplates(match).wechat}
-                                  </div>
-                                </div>
-
-                                {/* LinkedIn模板 */}
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium text-gray-600">LinkedIn模板</span>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => copyToClipboard(generateContactTemplates(match).linkedin)}
-                                      className="h-6 px-2 text-xs"
-                                    >
-                                      复制
-                                    </Button>
-                                  </div>
-                                  <div className="text-xs text-gray-600 bg-white p-2 rounded border max-h-20 overflow-y-auto">
-                                    {generateContactTemplates(match).linkedin}
-                                  </div>
-                                </div>
-
-                                {/* 邮箱模板 */}
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium text-gray-600">邮箱模板</span>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => copyToClipboard(generateContactTemplates(match).email)}
-                                      className="h-6 px-2 text-xs"
-                                    >
-                                      复制
-                                    </Button>
-                                  </div>
-                                  <div className="text-xs text-gray-600 bg-white p-2 rounded border max-h-20 overflow-y-auto">
-                                    {generateContactTemplates(match).email}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                            
-                            <div className="mt-4">
-                              <p className="text-sm font-medium mb-2">是否完成面试？</p>
-                              <div className="flex items-center gap-4">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                  <input
-                                    type="radio"
-                                    name={`interview_${match.id}`}
-                                    value="yes"
-                                    checked={interviewStatus[match.id] === 'yes'}
-                                    onChange={() => handleInterviewChange(match.id, 'yes')}
-                                  />
-                                  <span>是</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                  <input
-                                    type="radio"
-                                    name={`interview_${match.id}`}
-                                    value="no"
-                                    checked={interviewStatus[match.id] === 'no'}
-                                    onChange={() => handleInterviewChange(match.id, 'no')}
-                                  />
-                                  <span>否</span>
-                                </label>
-                              </div>
+                            <div className="mt-4 flex items-center gap-4">
+                              <span className="text-sm font-medium">是否进行面试？</span>
+                              <label className="flex items-center gap-1">
+                                <input
+                                  type="radio"
+                                  name={`interview_${match.id}`}
+                                  value="yes"
+                                  checked={interviewStatus[match.id] === 'yes'}
+                                  onChange={() => handleInterviewChange(match.id, 'yes')}
+                                />
+                                是
+                              </label>
+                              <label className="flex items-center gap-1">
+                                <input
+                                  type="radio"
+                                  name={`interview_${match.id}`}
+                                  value="no"
+                                  checked={interviewStatus[match.id] === 'no'}
+                                  onChange={() => handleInterviewChange(match.id, 'no')}
+                                />
+                                否
+                              </label>
                             </div>
                             {interviewStatus[match.id] === 'yes' && (
                               <div className="mt-2">

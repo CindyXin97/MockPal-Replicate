@@ -46,15 +46,17 @@ export default function LoginPage() {
 
   return (
     <PublicLayout redirectIfAuthenticated={false}>
-      <div className="container mx-auto flex min-h-[80vh] items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">欢迎回到 MockPal</CardTitle>
-            <p className="text-muted-foreground">登录你的账户，继续你的面试练习之旅</p>
+      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-white to-gray-50 -z-10" aria-hidden="true"></div>
+      <div className="flex min-h-[70vh] items-center justify-center w-full">
+        <Card className="w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10 -mt-16">
+          <CardHeader>
+            <CardTitle className="text-3xl font-extrabold text-center tracking-tight text-gray-900 mb-2">
+              <span className="text-blue-500">登录</span> MockPal
+            </CardTitle>
+            <p className="text-base text-gray-500 text-center font-medium">欢迎登录，开启你的模拟面试之旅</p>
           </CardHeader>
-          
-          <CardContent className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="username">用户名</Label>
                 <Input
@@ -64,7 +66,6 @@ export default function LoginPage() {
                   required
                 />
               </div>
-              
               <div className="space-y-2">
                 <Label htmlFor="password">密码</Label>
                 <Input
@@ -75,21 +76,15 @@ export default function LoginPage() {
                   required
                 />
               </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600" disabled={isLoading}>
                 {isLoading ? '登录中...' : '登录'}
               </Button>
             </form>
           </CardContent>
-          
           <CardFooter className="flex justify-center">
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-sm text-center">
               还没有账号？{' '}
-              <Link href="/register" className="text-primary hover:underline">
+              <Link href="/register" className="text-blue-600 font-semibold hover:underline">
                 立即注册
               </Link>
             </p>
