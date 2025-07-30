@@ -7,11 +7,9 @@ import { compare, hash } from 'bcryptjs';
 export async function registerUser(username: string, password: string, targetCompany: string, targetIndustry: string) {
   try {
     // Check if user already exists
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.username, username),
-    });
+    const existingUser = await db.select().from(users).where(eq(users.username, username)).limit(1);
 
-    if (existingUser) {
+    if (existingUser.length > 0) {
       return { success: false, message: '用户名已存在' };
     }
 
@@ -54,16 +52,14 @@ export async function registerUser(username: string, password: string, targetCom
 export async function authenticateUser(username: string, password: string) {
   try {
     // Find the user
-    const user = await db.query.users.findFirst({
-      where: eq(users.username, username),
-    });
+    const user = await db.select().from(users).where(eq(users.username, username)).limit(1);
 
-    if (!user) {
+    if (user.length === 0) {
       return { success: false, message: '用户名或密码错误' };
     }
 
     // Verify password
-    const passwordValid = await compare(password, user.passwordHash);
+    const passwordValid = await compare(password, user[0].passwordHash);
     
     if (!passwordValid) {
       return { success: false, message: '用户名或密码错误' };
@@ -71,7 +67,7 @@ export async function authenticateUser(username: string, password: string) {
 
     return { 
       success: true, 
-      user: { id: user.id, username: user.username } 
+      user: { id: user[0].id, username: user[0].username } 
     };
   } catch (error) {
     console.error('Authentication error:', error);

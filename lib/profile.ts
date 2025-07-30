@@ -26,11 +26,9 @@ type GetProfileResult =
 export async function saveUserProfile(userId: number, profileData: ProfileFormData) {
   try {
     // Check if profile already exists
-    const existingProfile = await db.query.userProfiles.findFirst({
-      where: eq(userProfiles.userId, userId),
-    });
+    const existingProfile = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
 
-    if (existingProfile) {
+    if (existingProfile.length > 0) {
       // 只更新资料
       await db
         .update(userProfiles)
@@ -105,11 +103,9 @@ export async function createProfile(userId: number, profileData: ProfileFormData
 // Get user profile
 export async function getUserProfile(userId: number): Promise<GetProfileResult> {
   try {
-    const profile = await db.query.userProfiles.findFirst({
-      where: eq(userProfiles.userId, userId),
-    });
-    if (profile) {
-      return { success: true, profile };
+    const profile = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+    if (profile.length > 0) {
+      return { success: true, profile: profile[0] };
     } else {
       return { success: false, message: '未找到资料' };
     }
