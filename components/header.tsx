@@ -2,25 +2,21 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAtom } from 'jotai';
-import { Button } from '@/components/ui/button';
-import { isAuthenticatedAtom, userAtom } from '@/lib/store';
+import { useSession, signOut } from 'next-auth/react';
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarTrigger,
+} from '@/components/ui/menubar';
 
 export function Header() {
-  const [isAuthenticated, setIsAuthenticated] = useAtom(isAuthenticatedAtom);
-  const [user, setUser] = useAtom(userAtom);
+  const { data: session, status } = useSession();
 
-  const handleLogout = () => {
-    // Reset Jotai state
-    setIsAuthenticated(false);
-    setUser(null);
-    
-    // Clear localStorage
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
-    
-    // Force reload to reset the app state
-    window.location.href = '/';
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' });
   };
 
   return (
@@ -43,7 +39,7 @@ export function Header() {
         </Link>
         
         <nav>
-          {isAuthenticated && user ? (
+          {status === 'authenticated' && session ? (
             <div className="flex items-center gap-4">
               <Link href="/profile" className="text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition">
                 个人资料
@@ -51,10 +47,18 @@ export function Header() {
               <Link href="/matches" className="text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition">
                 匹配管理
               </Link>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                退出登录
-              </Button>
-              <span className="text-sm font-medium text-gray-500">欢迎, {user.username}</span>
+              <Menubar>
+                <MenubarMenu>
+                  <MenubarTrigger>
+                    {session.user?.name || session.user?.email || '用户'}
+                  </MenubarTrigger>
+                  <MenubarContent>
+                    <MenubarItem onClick={handleLogout}>
+                      退出登录
+                    </MenubarItem>
+                  </MenubarContent>
+                </MenubarMenu>
+              </Menubar>
             </div>
           ) : null}
         </nav>

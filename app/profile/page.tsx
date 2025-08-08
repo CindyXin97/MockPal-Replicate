@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAtom } from 'jotai';
+import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
-import { userAtom } from '@/lib/store';
 import { AuthLayout } from '@/components/auth-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,16 @@ import { TARGET_COMPANIES, TARGET_INDUSTRIES } from '@/lib/constants';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user] = useAtom(userAtom);
+  const { data: session, status } = useSession();
+  
+  // 使用useMemo缓存user对象，避免每次渲染创建新对象
+  const user = useMemo(() => {
+    if (!session?.user) return null;
+    return {
+      id: parseInt(session.user.id || '0'),
+      username: session.user.name || session.user.email || 'User'
+    };
+  }, [session?.user?.id, session?.user?.name, session?.user?.email]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [showOtherCompanyInput, setShowOtherCompanyInput] = useState(false);
@@ -41,10 +49,15 @@ export default function ProfilePage() {
 
   // Fetch existing profile if available
   useEffect(() => {
-    if (user) {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') {
+      router.push('/auth');
+      return;
+    }
+    if (user && user.id > 0) {
       fetchProfile();
     }
-  }, [user]);
+  }, [user?.id, status]); // 只依赖user.id和status
 
   const fetchProfile = async () => {
     if (!user) return;

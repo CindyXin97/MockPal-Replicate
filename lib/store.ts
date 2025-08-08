@@ -9,7 +9,7 @@ export type User = {
 
 export type Match = {
   id: number;
-  username: string;
+  username: string | null;
   jobType?: string | null;
   experienceLevel?: string | null;
   targetCompany?: string | null;

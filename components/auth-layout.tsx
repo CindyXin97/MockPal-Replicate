@@ -2,22 +2,31 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAtom } from 'jotai';
-import { isAuthenticatedAtom, userAtom } from '@/lib/store';
+import { useSession } from 'next-auth/react';
 import { Header } from '@/components/header';
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
-  const [user] = useAtom(userAtom);
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated || !user) {
-      router.push('/login');
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') {
+      router.push('/auth');
     }
-  }, [isAuthenticated, user, router]);
+  }, [status, router]);
 
-  if (!isAuthenticated || !user) {
+  // 显示加载状态
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">加载中...</div>
+      </div>
+    );
+  }
+
+  // 未认证时返回null（会被useEffect重定向）
+  if (status === 'unauthenticated') {
     return null;
   }
 

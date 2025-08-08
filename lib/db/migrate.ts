@@ -1,5 +1,4 @@
 import { db } from './index';
-import { sql } from '@vercel/postgres';
 import fs from 'fs';
 import path from 'path';
 import { config } from 'dotenv';

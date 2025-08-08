@@ -59,6 +59,9 @@ export async function authenticateUser(username: string, password: string) {
     }
 
     // Verify password
+    if (!user[0].passwordHash) {
+      return { success: false, message: '用户名或密码错误' };
+    }
     const passwordValid = await compare(password, user[0].passwordHash);
     
     if (!passwordValid) {

@@ -2,8 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAtom } from 'jotai';
-import { isAuthenticatedAtom, userAtom } from '@/lib/store';
+import { useSession } from 'next-auth/react';
 import { Header } from '@/components/header';
 
 export function PublicLayout({ 
@@ -13,17 +12,16 @@ export function PublicLayout({
   children: React.ReactNode;
   redirectIfAuthenticated?: boolean;
 }) {
-  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
-  const [user] = useAtom(userAtom);
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (redirectIfAuthenticated && isAuthenticated && user) {
+    if (redirectIfAuthenticated && status === 'authenticated' && session) {
       router.push('/matches');
     }
-  }, [isAuthenticated, user, router, redirectIfAuthenticated]);
+  }, [status, session, router, redirectIfAuthenticated]);
 
-  if (redirectIfAuthenticated && isAuthenticated && user) {
+  if (redirectIfAuthenticated && status === 'authenticated' && session) {
     return null;
   }
 

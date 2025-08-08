@@ -20,13 +20,30 @@ async function main() {
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        username VARCHAR(255) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
+        username VARCHAR(255) UNIQUE,
+        email VARCHAR(255) UNIQUE,
+        email_verified TIMESTAMP,
+        password_hash VARCHAR(255),
+        image TEXT,
+        name VARCHAR(255),
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     `;
     console.log('Created users table');
+
+    // 修改现有users表以支持OAuth
+    try {
+      await sql`ALTER TABLE users ALTER COLUMN username DROP NOT NULL`;
+      await sql`ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified TIMESTAMP`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS image TEXT`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255)`;
+      console.log('Updated users table for OAuth support');
+    } catch (error) {
+      console.log('Users table already updated or error:', error);
+    }
 
     // Create user_profiles table
     await sql`
@@ -112,6 +129,49 @@ async function main() {
       )
     `;
     console.log('Created user_daily_views table');
+
+    // Create OAuth accounts table
+    // Drop existing accounts table if it exists and recreate with correct structure
+    await sql`DROP TABLE IF EXISTS accounts CASCADE`;
+    await sql`
+      CREATE TABLE accounts (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type VARCHAR(255) NOT NULL,
+        provider VARCHAR(255) NOT NULL,
+        provider_account_id VARCHAR(255) NOT NULL,
+        refresh_token TEXT,
+        access_token TEXT,
+        expires_at INTEGER,
+        token_type VARCHAR(255),
+        scope TEXT,
+        id_token TEXT,
+        session_state VARCHAR(255)
+      )
+    `;
+    console.log('Created accounts table');
+
+    // Create sessions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id SERIAL PRIMARY KEY,
+        session_token VARCHAR(255) NOT NULL UNIQUE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        expires TIMESTAMP NOT NULL
+      )
+    `;
+    console.log('Created sessions table');
+
+    // Create verification tokens table
+    await sql`
+      CREATE TABLE IF NOT EXISTS verification_tokens (
+        identifier VARCHAR(255) NOT NULL,
+        token VARCHAR(255) NOT NULL UNIQUE,
+        expires TIMESTAMP NOT NULL,
+        PRIMARY KEY (identifier, token)
+      )
+    `;
+    console.log('Created verification_tokens table');
 
     console.log('Migration completed successfully');
   } catch (error) {

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useAtom } from 'jotai';
 import { toast } from 'sonner';
-import { userAtom, potentialMatchesAtom, currentMatchIndexAtom } from '@/lib/store';
+import { potentialMatchesAtom, currentMatchIndexAtom } from '@/lib/store';
 import { AuthLayout } from '@/components/auth-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,16 @@ import React from 'react';
 
 export default function MatchesPage() {
   const router = useRouter();
-  const [user] = useAtom(userAtom);
+  const { data: session, status } = useSession();
+  
+  // 使用useMemo缓存user对象，避免每次渲染创建新对象
+  const user = useMemo(() => {
+    if (!session?.user) return null;
+    return {
+      id: parseInt(session.user.id || '0'),
+      username: session.user.name || session.user.email || 'User'
+    };
+  }, [session?.user?.id, session?.user?.name, session?.user?.email]);
   const [potentialMatches, setPotentialMatches] = useAtom(potentialMatchesAtom);
   const [currentMatchIndex, setCurrentMatchIndex] = useAtom(currentMatchIndexAtom);
   const [successfulMatches, setSuccessfulMatches] = useState<Match[]>([]);
@@ -34,11 +44,16 @@ export default function MatchesPage() {
   const [currentUserProfile, setCurrentUserProfile] = useState<{ jobType?: string; experienceLevel?: string } | null>(null);
 
   useEffect(() => {
-    if (user) {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') {
+      router.push('/auth');
+      return;
+    }
+    if (user && user.id > 0) {
       loadMatches();
       loadCurrentUserProfile();
     }
-  }, [user]);
+  }, [user?.id, status]); // 只依赖user.id和status
 
   const loadCurrentUserProfile = async () => {
     if (!user) return;
@@ -328,11 +343,11 @@ export default function MatchesPage() {
                             <div className="flex items-center gap-4">
                               <Avatar>
                                 <div className="flex items-center justify-center w-full h-full bg-primary text-primary-foreground font-bold">
-                                  {match.username.charAt(0).toUpperCase()}
+                                  {(match.username || '?').charAt(0).toUpperCase()}
                                 </div>
                               </Avatar>
                               <div>
-                                <CardTitle className="text-lg">{match.username}</CardTitle>
+                                <CardTitle className="text-lg">{match.username || '匿名用户'}</CardTitle>
                                 <p className="text-sm text-muted-foreground">
                                   {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
                                 </p>
@@ -462,7 +477,7 @@ export default function MatchesPage() {
         <ContactTemplates
           match={selectedMatch}
           currentUser={{
-            username: user.username,
+            username: user?.username || session?.user?.name || session?.user?.email || 'User',
             jobType: currentUserProfile.jobType,
             experienceLevel: currentUserProfile.experienceLevel
           }}

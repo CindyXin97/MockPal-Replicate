@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql } from 'drizzle-orm';
 import { InferModel, relations } from 'drizzle-orm';
 import { 
   pgTable, 
@@ -8,13 +8,18 @@ import {
   timestamp, 
   boolean,
   primaryKey,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 // Users schema
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  username: varchar('username', { length: 255 }).notNull().unique(),
-  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  username: varchar('username', { length: 255 }).unique(),
+  email: varchar('email', { length: 255 }).unique(),
+  emailVerified: timestamp('email_verified'),
+  passwordHash: varchar('password_hash', { length: 255 }),
+  image: text('image'),
+  name: varchar('name', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -117,7 +122,43 @@ export const matchesRelations = relations(matches, ({ one }) => ({
 }));
 
 // Types
+// NextAuth相关表
+export const accounts = pgTable('accounts', {
+  id: serial('id').primaryKey(),
+  userId: serial('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  type: varchar('type', { length: 255 }).notNull(),
+  provider: varchar('provider', { length: 255 }).notNull(),
+  providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),
+  refresh_token: text('refresh_token'),
+  access_token: text('access_token'),
+  expires_at: integer('expires_at'),
+  token_type: varchar('token_type', { length: 255 }),
+  scope: text('scope'),
+  id_token: text('id_token'),
+  session_state: varchar('session_state', { length: 255 }),
+});
+
+export const sessions = pgTable('sessions', {
+  id: serial('id').primaryKey(),
+  sessionToken: varchar('session_token', { length: 255 }).notNull().unique(),
+  userId: serial('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  expires: timestamp('expires').notNull(),
+});
+
+export const verificationTokens = pgTable('verification_tokens', {
+  identifier: varchar('identifier', { length: 255 }).notNull(),
+  token: varchar('token', { length: 255 }).notNull().unique(),
+  expires: timestamp('expires').notNull(),
+}, (table) => {
+  return {
+    compositePk: primaryKey({ columns: [table.identifier, table.token] }),
+  };
+});
+
 export type User = InferModel<typeof users>;
 export type UserProfile = InferModel<typeof userProfiles>;
 export type Match = InferModel<typeof matches>;
-export type Feedback = InferModel<typeof feedbacks>; 
+export type Feedback = InferModel<typeof feedbacks>;
+export type Account = InferModel<typeof accounts>;
+export type Session = InferModel<typeof sessions>;
+export type VerificationToken = InferModel<typeof verificationTokens>; 
