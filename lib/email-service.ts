@@ -57,11 +57,11 @@ class EmailService {
     console.log('🔵 [EmailService] 准备发送验证邮件');
     console.log('📧 收件人:', email);
     console.log('🔗 验证链接:', url);
-    console.log('📮 发件人: MockPal <onboarding@resend.dev>');
+    console.log('📮 发件人: MockPal <noreply@mockpals.com>');
     
     try {
       const emailPayload = {
-        from: 'MockPal <onboarding@resend.dev>', // 统一发件人格式
+        from: 'MockPal <noreply@mockpals.com>', // 使用自定义域名
         to: email,
         subject: 'MockPal - 登录验证',
         html: this.getEmailTemplate(url),
