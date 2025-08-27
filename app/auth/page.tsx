@@ -60,11 +60,11 @@ function AuthPageContent() {
         redirect: false,
       });
 
-      if (result?.error) {
-        toast.error('邮箱或密码错误');
-      } else {
+      if (result?.ok) {
         toast.success('登录成功');
         router.push('/matches');
+      } else {
+        toast.error('邮箱或密码错误');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -286,76 +286,35 @@ function AuthPageContent() {
               ) : (
                 // 注册模式
                 <div className="space-y-4">
-                  <Tabs defaultValue="email" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="email">邮箱验证注册</TabsTrigger>
-                      <TabsTrigger value="password">邮箱密码注册</TabsTrigger>
-                    </TabsList>
-
-                    {/* 邮箱验证注册 (自动注册) */}
-                    <TabsContent value="email" className="space-y-4">
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="register-email">邮箱地址</Label>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                              id="register-email"
-                              type="email"
-                              placeholder="请输入邮箱地址"
-                              className="pl-10"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              required
-                            />
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          onClick={handleEmailAuth}
-                          className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600"
-                          disabled={isLoading}
-                        >
-                          {isLoading ? '发送中...' : '发送验证邮件'}
-                        </Button>
-                        <p className="text-sm text-gray-500 text-center">
-                          新用户将自动注册，老用户直接登录
-                        </p>
+                  {/* 邮箱注册表单 */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="register-email">邮箱地址</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="register-email"
+                          type="email"
+                          placeholder="请输入邮箱地址"
+                          className="pl-10"
+                          value={registerEmail}
+                          onChange={(e) => setRegisterEmail(e.target.value)}
+                          required
+                        />
                       </div>
-                    </TabsContent>
-
-                    {/* 邮箱+密码注册 */}
-                    <TabsContent value="password" className="space-y-4">
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="password-register-email">邮箱地址</Label>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                              id="password-register-email"
-                              type="email"
-                              placeholder="请输入邮箱地址"
-                              className="pl-10"
-                              value={registerEmail}
-                              onChange={(e) => setRegisterEmail(e.target.value)}
-                              required
-                            />
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          onClick={handleEmailRegister}
-                          className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600"
-                          disabled={isLoading}
-                        >
-                          {isLoading ? '发送中...' : '发送设置密码邮件'}
-                        </Button>
-                        <p className="text-sm text-gray-500 text-center">
-                          我们将向您的邮箱发送设置密码的链接
-                        </p>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={handleEmailRegister}
+                      className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? '发送中...' : '发送设置密码邮件'}
+                    </Button>
+                    <p className="text-sm text-gray-500 text-center">
+                      我们将向您的邮箱发送设置密码的链接
+                    </p>
+                  </div>
 
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">

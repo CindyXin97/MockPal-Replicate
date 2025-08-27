@@ -39,7 +39,7 @@ export function NameSetupDialog({ forceCheck = false }: NameSetupDialogProps) {
           const result = await checkNameRequired(session.user.id);
           if (result.required) {
             setIsOpen(true);
-            if (result.currentName) {
+            if ('currentName' in result && result.currentName) {
               setName(result.currentName);
             }
           }
