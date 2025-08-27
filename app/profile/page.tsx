@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { saveProfile, getProfile } from '@/app/actions/profile';
+import { updateName } from '@/app/actions/auth';
 import { ProfileFormData } from '@/lib/profile';
 import { TARGET_COMPANIES, TARGET_INDUSTRIES } from '@/lib/constants';
 
@@ -32,8 +33,10 @@ export default function ProfilePage() {
   const [showOtherCompanyInput, setShowOtherCompanyInput] = useState(false);
   const [otherCompanyName, setOtherCompanyName] = useState('');
   
+  
   // Form state
-  const [formData, setFormData] = useState<ProfileFormData>({
+  const [formData, setFormData] = useState<ProfileFormData & {name: string}>({
+    name: '',
     jobType: 'DA',
     experienceLevel: '应届',
     targetCompany: '',
@@ -67,6 +70,7 @@ export default function ProfilePage() {
       if (result.success && 'profile' in result && result.profile) {
         // Update form data with existing profile
         setFormData({
+          name: session?.user?.name || '',
           jobType: result.profile.jobType as any,
           experienceLevel: result.profile.experienceLevel as any,
           targetCompany: result.profile.targetCompany || '',
@@ -85,10 +89,21 @@ export default function ProfilePage() {
           setShowOtherCompanyInput(true);
           setOtherCompanyName(result.profile.otherCompanyName || '');
         }
+      } else {
+        // No existing profile, just initialize with user name
+        setFormData(prev => ({
+          ...prev,
+          name: session?.user?.name || '',
+        }));
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast.error('获取资料失败，请稍后再试');
+      // Still initialize name even if profile fetch fails
+      setFormData(prev => ({
+        ...prev,
+        name: session?.user?.name || '',
+      }));
     } finally {
       setIsFetching(false);
     }
@@ -141,6 +156,14 @@ export default function ProfilePage() {
 
     if (!user) {
       toast.error('用户未登录');
+      setIsLoading(false);
+      return;
+    }
+
+    // 用户名必填验证
+    if (!formData.name.trim()) {
+      toast.error('请输入您的显示名称');
+      setIsLoading(false);
       return;
     }
 
@@ -159,8 +182,21 @@ export default function ProfilePage() {
     }
 
     try {
+      // 1. 先更新用户名（如果发生了变化）
+      const currentUserName = session?.user?.name || '';
+      if (formData.name.trim() !== currentUserName) {
+        const nameResult = await updateName(user.id.toString(), formData.name.trim());
+        if (!nameResult.success) {
+          toast.error('更新用户名失败：' + nameResult.message);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // 2. 保存profile数据（排除用户名）
+      const { name, ...profileData } = formData;
       const submitData = {
-        ...formData,
+        ...profileData,
         otherCompanyName: formData.targetCompany === 'other' ? otherCompanyName : undefined
       };
       
@@ -168,7 +204,12 @@ export default function ProfilePage() {
 
       if (result.success) {
         toast.success('资料保存成功，系统会为你推荐新的匹配对象');
-        router.push('/matches');
+        // 刷新页面以更新session（如果用户名变了）
+        if (formData.name.trim() !== currentUserName) {
+          window.location.href = '/matches';
+        } else {
+          router.push('/matches');
+        }
       } else {
         toast.error(result.message || '保存失败');
       }
@@ -195,6 +236,22 @@ export default function ProfilePage() {
               <div className="text-center py-4">加载中...</div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* 用户名字段 */}
+                <div className="space-y-2">
+                  <Label htmlFor="name">显示名称 (必填)</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="请输入您的显示名称"
+                    required
+                  />
+                  <p className="text-sm text-gray-500">
+                    这是其他用户看到的您的名称
+                  </p>
+                </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="jobType">岗位类型 (必选)</Label>

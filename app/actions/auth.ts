@@ -1,26 +1,19 @@
 'use server';
 
-import { authenticateUser, registerUser } from '@/lib/auth';
+import { sendPasswordSetupEmail, setPassword, checkUserNameRequired, updateUserName } from '@/lib/auth';
 
-// Login action
-export async function login(formData: FormData) {
-  const username = formData.get('username') as string;
-  const password = formData.get('password') as string;
-
-  if (!username || !password) {
-    return { success: false, message: '请输入用户名和密码' };
+// 邮箱+密码注册 - 发送设置密码链接
+export async function registerWithEmail(email: string) {
+  if (!email) {
+    return { success: false, message: '请输入邮箱地址' };
   }
 
-  return authenticateUser(username, password);
+  return sendPasswordSetupEmail(email);
 }
 
-// Register action
-export async function register(formData: FormData) {
-  const username = formData.get('username') as string;
-  const password = formData.get('password') as string;
-  const confirmPassword = formData.get('confirmPassword') as string;
-
-  if (!username || !password || !confirmPassword) {
+// 设置密码
+export async function setUserPassword(email: string, token: string, password: string, confirmPassword: string) {
+  if (!email || !token || !password || !confirmPassword) {
     return { success: false, message: '请填写所有必填字段' };
   }
 
@@ -32,5 +25,23 @@ export async function register(formData: FormData) {
     return { success: false, message: '密码长度至少为6位' };
   }
 
-  return registerUser(username, password, '', '');
-} 
+  return setPassword(email, token, password);
+}
+
+// 检查用户名是否必填
+export async function checkNameRequired(userId: string) {
+  const id = parseInt(userId);
+  if (isNaN(id)) {
+    return { required: false };
+  }
+  return checkUserNameRequired(id);
+}
+
+// 更新用户名
+export async function updateName(userId: string, name: string) {
+  const id = parseInt(userId);
+  if (isNaN(id)) {
+    return { success: false, message: '无效的用户ID' };
+  }
+  return updateUserName(id, name);
+}

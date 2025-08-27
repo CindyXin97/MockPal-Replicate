@@ -14,7 +14,6 @@ import {
 // Users schema
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  username: varchar('username', { length: 255 }).unique(),
   email: varchar('email', { length: 255 }).unique(),
   emailVerified: timestamp('email_verified'),
   passwordHash: varchar('password_hash', { length: 255 }),

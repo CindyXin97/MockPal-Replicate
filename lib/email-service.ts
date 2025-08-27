@@ -17,7 +17,13 @@ class EmailService {
   }
   
   // 统一的邮件模板
-  private getEmailTemplate(url: string): string {
+  private getEmailTemplate(url: string, type: 'login' | 'password' = 'login'): string {
+    const title = type === 'password' ? '设置密码' : '欢迎登录 MockPal';
+    const buttonText = type === 'password' ? '设置密码' : '登录 MockPal';
+    const description = type === 'password' 
+      ? '点击下方按钮设置您的密码：' 
+      : '点击下方按钮完成登录：';
+    
     return `
       <!DOCTYPE html>
       <html>
@@ -34,11 +40,11 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="color: #1f2937;">欢迎登录 MockPal</h1>
+              <h1 style="color: #1f2937;">${title}</h1>
             </div>
-            <p style="color: #4b5563;">点击下方按钮完成登录：</p>
+            <p style="color: #4b5563;">${description}</p>
             <div style="text-align: center;">
-              <a href="${url}" class="button">登录 MockPal</a>
+              <a href="${url}" class="button">${buttonText}</a>
             </div>
             <p style="color: #6b7280; font-size: 14px;">如果按钮无法点击，请复制以下链接到浏览器：</p>
             <p style="color: #3b82f6; word-break: break-all; font-size: 14px;">${url}</p>
@@ -84,6 +90,35 @@ class EmailService {
         console.error('🔍 错误消息:', error.message);
         console.error('📋 错误堆栈:', error.stack);
       }
+      throw error;
+    }
+  }
+  
+  // 发送设置密码邮件
+  public async sendPasswordSetupEmail(email: string, url: string) {
+    console.log('🔵 [EmailService] 准备发送设置密码邮件');
+    console.log('📧 收件人:', email);
+    console.log('🔗 设置密码链接:', url);
+    
+    try {
+      const emailPayload = {
+        from: 'MockPal <noreply@mockpals.com>',
+        to: email,
+        subject: 'MockPal - 设置密码',
+        html: this.getEmailTemplate(url, 'password'),
+      };
+      
+      console.log('📤 发送邮件负载:', emailPayload);
+      
+      const result = await this.resend.emails.send(emailPayload);
+      
+      console.log('✅ [EmailService] 设置密码邮件发送成功!');
+      console.log('📬 邮件ID:', result.data?.id);
+      
+      return result;
+    } catch (error) {
+      console.error('❌ [EmailService] 设置密码邮件发送失败!');
+      console.error('🚫 错误详情:', error);
       throw error;
     }
   }

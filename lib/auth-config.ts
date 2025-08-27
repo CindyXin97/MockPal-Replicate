@@ -46,15 +46,15 @@ export const authConfig: NextAuthOptions = {
       id: 'credentials',
       name: 'credentials',
       credentials: {
-        username: { label: "Username", type: "text" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        const user = await db.select().from(users).where(eq(users.username, credentials.username)).limit(1);
+        const user = await db.select().from(users).where(eq(users.email, credentials.email)).limit(1);
 
         if (user.length === 0 || !user[0].passwordHash) {
           return null;
@@ -146,14 +146,9 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id?: string;
-      username?: string;
       email?: string | null;
       name?: string | null;
       image?: string | null;
     }
-  }
-  
-  interface User {
-    username?: string;
   }
 }
