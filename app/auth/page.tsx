@@ -164,7 +164,7 @@ function AuthPageContent() {
                   <Tabs defaultValue="password" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="password">密码登录</TabsTrigger>
-                      <TabsTrigger value="email">邮箱验证</TabsTrigger>
+                      <TabsTrigger value="email">邮箱登录</TabsTrigger>
                     </TabsList>
 
                     {/* 邮箱密码登录 */}
