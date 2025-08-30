@@ -26,21 +26,15 @@ type GetProfileResult =
 // Create or update user profile
 export async function saveUserProfile(userId: number, profileData: ProfileFormData) {
   try {
-    console.log('saveUserProfile received:', { userId, profileDataName: profileData.name, fullProfileData: profileData });
-    
     // Update user name if provided
     if (profileData.name) {
-      console.log('Updating user name to:', profileData.name);
-      const updateResult = await db
+      await db
         .update(users)
         .set({
           name: profileData.name,
           updatedAt: new Date(),
         })
         .where(eq(users.id, userId));
-      console.log('User name update result:', updateResult);
-    } else {
-      console.log('No name provided in profileData');
     }
 
     // Check if profile already exists

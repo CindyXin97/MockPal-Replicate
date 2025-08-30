@@ -152,7 +152,6 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log('Form submitted with data:', formData);
 
     if (!user) {
       toast.error('用户未登录');
