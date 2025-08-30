@@ -1,9 +1,10 @@
 import { db } from '@/lib/db';
-import { userProfiles } from '@/lib/db/schema';
+import { userProfiles, users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 // Profile type for form submission
 export type ProfileFormData = {
+  name?: string; // 用户显示名称
   jobType: 'DA' | 'DS' | 'DE' | 'BA';
   experienceLevel: '应届' | '1-3年' | '3-5年' | '5年以上';
   targetCompany?: string;
@@ -25,11 +26,28 @@ type GetProfileResult =
 // Create or update user profile
 export async function saveUserProfile(userId: number, profileData: ProfileFormData) {
   try {
+    console.log('saveUserProfile received:', { userId, profileDataName: profileData.name, fullProfileData: profileData });
+    
+    // Update user name if provided
+    if (profileData.name) {
+      console.log('Updating user name to:', profileData.name);
+      const updateResult = await db
+        .update(users)
+        .set({
+          name: profileData.name,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId));
+      console.log('User name update result:', updateResult);
+    } else {
+      console.log('No name provided in profileData');
+    }
+
     // Check if profile already exists
     const existingProfile = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
 
     if (existingProfile.length > 0) {
-      // 只更新资料
+      // 更新资料
       await db
         .update(userProfiles)
         .set({

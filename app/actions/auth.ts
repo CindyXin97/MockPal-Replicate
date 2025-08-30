@@ -1,6 +1,6 @@
 'use server';
 
-import { sendPasswordSetupEmail, setPassword, checkUserNameRequired, updateUserName } from '@/lib/auth';
+import { sendPasswordSetupEmail, setPassword } from '@/lib/auth';
 
 // 邮箱+密码注册 - 发送设置密码链接
 export async function registerWithEmail(email: string) {
@@ -28,20 +28,3 @@ export async function setUserPassword(email: string, token: string, password: st
   return setPassword(email, token, password);
 }
 
-// 检查用户名是否必填
-export async function checkNameRequired(userId: string) {
-  const id = parseInt(userId);
-  if (isNaN(id)) {
-    return { required: false };
-  }
-  return checkUserNameRequired(id);
-}
-
-// 更新用户名
-export async function updateName(userId: string, name: string) {
-  const id = parseInt(userId);
-  if (isNaN(id)) {
-    return { success: false, message: '无效的用户ID' };
-  }
-  return updateUserName(id, name);
-}

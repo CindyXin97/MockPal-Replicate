@@ -80,9 +80,11 @@ export const authConfig: NextAuthOptions = {
     error: '/auth',
   },
   callbacks: {
-    async session({ session, user }) {
-      if (session.user && user) {
-        session.user.id = user.id.toString();
+    async session({ session, token }) {
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
       }
       return session;
     },
@@ -133,7 +135,7 @@ export const authConfig: NextAuthOptions = {
     },
   },
   session: {
-    strategy: 'database',
+    strategy: 'jwt', // 使用JWT strategy以支持CredentialsProvider
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   jwt: {

@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { saveProfile, getProfile } from '@/app/actions/profile';
-import { updateName } from '@/app/actions/auth';
 import { ProfileFormData } from '@/lib/profile';
 import { TARGET_COMPANIES, TARGET_INDUSTRIES } from '@/lib/constants';
 
@@ -153,6 +152,7 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log('Form submitted with data:', formData);
 
     if (!user) {
       toast.error('用户未登录');
@@ -182,19 +182,8 @@ export default function ProfilePage() {
     }
 
     try {
-      // 1. 先更新用户名（如果发生了变化）
-      const currentUserName = session?.user?.name || '';
-      if (formData.name.trim() !== currentUserName) {
-        const nameResult = await updateName(user.id.toString(), formData.name.trim());
-        if (!nameResult.success) {
-          toast.error('更新用户名失败：' + nameResult.message);
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      // 2. 保存profile数据（排除用户名）
-      const { name, ...profileData } = formData;
+      // 保存profile数据（包括用户名）
+      const profileData = formData;
       const submitData = {
         ...profileData,
         otherCompanyName: formData.targetCompany === 'other' ? otherCompanyName : undefined
@@ -204,12 +193,7 @@ export default function ProfilePage() {
 
       if (result.success) {
         toast.success('资料保存成功，系统会为你推荐新的匹配对象');
-        // 刷新页面以更新session（如果用户名变了）
-        if (formData.name.trim() !== currentUserName) {
-          window.location.href = '/matches';
-        } else {
-          router.push('/matches');
-        }
+        router.push('/matches');
       } else {
         toast.error(result.message || '保存失败');
       }
