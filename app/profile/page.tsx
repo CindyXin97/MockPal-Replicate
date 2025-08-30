@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { AuthLayout } from '@/components/base-layout';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,7 @@ import { TARGET_COMPANIES, TARGET_INDUSTRIES } from '@/lib/constants';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   
   // 使用useMemo缓存user对象，避免每次渲染创建新对象
   const user = useMemo(() => {
@@ -69,7 +69,7 @@ export default function ProfilePage() {
       if (result.success && 'profile' in result && result.profile) {
         // Update form data with existing profile
         setFormData({
-          name: session?.user?.name || '',
+          name: result.profile.name || session?.user?.name || '',
           jobType: result.profile.jobType as any,
           experienceLevel: result.profile.experienceLevel as any,
           targetCompany: result.profile.targetCompany || '',
@@ -191,6 +191,11 @@ export default function ProfilePage() {
       const result = await saveProfile(user.id, submitData);
 
       if (result.success) {
+        // 如果更新了名称，需要更新session
+        if (formData.name && formData.name !== session?.user?.name) {
+          await update({ name: formData.name });
+        }
+        
         toast.success('资料保存成功，系统会为你推荐新的匹配对象');
         router.push('/matches');
       } else {

@@ -88,12 +88,18 @@ export const authConfig: NextAuthOptions = {
       }
       return session;
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account, profile, trigger, session }) {
       if (user) {
         token.sub = user.id?.toString();
         token.email = user.email;
         token.name = user.name;
       }
+      
+      // 处理session更新
+      if (trigger === 'update' && session?.name) {
+        token.name = session.name;
+      }
+      
       return token;
     },
     async signIn({ user, account, profile }) {

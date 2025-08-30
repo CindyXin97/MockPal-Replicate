@@ -115,9 +115,18 @@ export async function createProfile(userId: number, profileData: ProfileFormData
 // Get user profile
 export async function getUserProfile(userId: number): Promise<GetProfileResult> {
   try {
+    // 先获取用户的name
+    const userInfo = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const userName = userInfo.length > 0 ? userInfo[0].name : null;
+    
     const profile = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
     if (profile.length > 0) {
-      return { success: true, profile: profile[0] };
+      // 将name字段合并到profile中
+      const profileWithName = {
+        ...profile[0],
+        name: userName
+      };
+      return { success: true, profile: profileWithName };
     } else {
       return { success: false, message: '未找到资料' };
     }
