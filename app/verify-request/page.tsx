@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { PublicLayout } from '@/components/public-layout';
+import { PublicLayout } from '@/components/base-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
 

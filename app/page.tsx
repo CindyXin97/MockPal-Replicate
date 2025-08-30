@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { PublicLayout } from '@/components/public-layout';
+import { PublicLayout } from '@/components/base-layout';
 import { useEffect, useState } from 'react';
 
 export default function Home() {

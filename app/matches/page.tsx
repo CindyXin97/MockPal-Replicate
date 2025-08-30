@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useAtom } from 'jotai';
 import { toast } from 'sonner';
 import { potentialMatchesAtom, currentMatchIndexAtom } from '@/lib/store';
-import { AuthLayout } from '@/components/auth-layout';
+import { AuthLayout } from '@/components/base-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

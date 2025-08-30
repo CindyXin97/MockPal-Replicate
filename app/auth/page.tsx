@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { toast } from 'sonner';
 import { registerWithEmail } from '@/app/actions/auth';
-import { PublicLayout } from '@/components/public-layout';
+import { PublicLayout } from '@/components/base-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
