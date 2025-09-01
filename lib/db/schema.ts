@@ -9,6 +9,7 @@ import {
   boolean,
   primaryKey,
   integer,
+  unique,
 } from 'drizzle-orm/pg-core';
 
 // Users schema
@@ -26,7 +27,7 @@ export const users = pgTable('users', {
 // User profiles schema with tags
 export const userProfiles = pgTable('user_profiles', {
   id: serial('id').primaryKey(),
-  userId: serial('user_id').references(() => users.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
   
   // Required tags
   jobType: varchar('job_type', { length: 50 }).notNull(), // DA/DS/DE
@@ -56,23 +57,23 @@ export const userProfiles = pgTable('user_profiles', {
 // Matches schema
 export const matches = pgTable('matches', {
   id: serial('id').primaryKey(),
-  user1Id: serial('user1_id').references(() => users.id).notNull(),
-  user2Id: serial('user2_id').references(() => users.id).notNull(),
+  user1Id: integer('user1_id').references(() => users.id).notNull(),
+  user2Id: integer('user2_id').references(() => users.id).notNull(),
   status: varchar('status', { length: 50 }).notNull().default('pending'), // pending, accepted, rejected
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => {
   return {
     // Ensure unique matches between users
-    uniqMatch: primaryKey({ columns: [table.user1Id, table.user2Id] }),
+    uniqMatch: unique().on(table.user1Id, table.user2Id),
   };
 });
 
 // Feedbacks schema
 export const feedbacks = pgTable('feedbacks', {
   id: serial('id').primaryKey(),
-  matchId: serial('match_id').references(() => matches.id).notNull(),
-  userId: serial('user_id').references(() => users.id).notNull(),
+  matchId: integer('match_id').references(() => matches.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
   interviewStatus: varchar('interview_status', { length: 10 }).notNull(), // 'yes' or 'no'
   content: text('content'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -82,8 +83,8 @@ export const feedbacks = pgTable('feedbacks', {
 // 用户每日浏览记录
 export const userDailyViews = pgTable('user_daily_views', {
   id: serial('id').primaryKey(),
-  userId: serial('user_id').references(() => users.id).notNull(),
-  viewedUserId: serial('viewed_user_id').references(() => users.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  viewedUserId: integer('viewed_user_id').references(() => users.id).notNull(),
   date: varchar('date', { length: 10 }).notNull(), // 格式: YYYY-MM-DD
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
@@ -124,7 +125,7 @@ export const matchesRelations = relations(matches, ({ one }) => ({
 // NextAuth相关表
 export const accounts = pgTable('accounts', {
   id: serial('id').primaryKey(),
-  userId: serial('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
   type: varchar('type', { length: 255 }).notNull(),
   provider: varchar('provider', { length: 255 }).notNull(),
   providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),
@@ -140,7 +141,7 @@ export const accounts = pgTable('accounts', {
 export const sessions = pgTable('sessions', {
   id: serial('id').primaryKey(),
   sessionToken: varchar('session_token', { length: 255 }).notNull().unique(),
-  userId: serial('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
   expires: timestamp('expires').notNull(),
 });
 
