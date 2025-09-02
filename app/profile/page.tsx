@@ -101,6 +101,13 @@ function ProfilePageContent() {
   }, [profile, session?.user?.name]);
 
   const handleInputChange = (field: string, value: any) => {
+    // 防御性检查：如果是下拉框字段且新值为空字符串，但当前已有值，则忽略该更改
+    if (['experienceLevel', 'targetCompany', 'targetIndustry'].includes(field) && 
+        value === '' && 
+        formData[field as keyof typeof formData]) {
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -181,52 +188,68 @@ function ProfilePageContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="jobType">岗位类型 <span className="text-red-500 ml-1">*</span></Label>
-                  <Select value={formData.jobType} onValueChange={(value) => handleInputChange('jobType', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="请选择岗位类型" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DA">数据分析 (DA)</SelectItem>
-                      <SelectItem value="DS">数据科学 (DS)</SelectItem>
-                      <SelectItem value="DE">数据工程 (DE)</SelectItem>
-                      <SelectItem value="BA">商业分析 (BA)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {profile ? (
+                    <Select key="jobType" value={formData.jobType} onValueChange={(value) => handleInputChange('jobType', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="请选择岗位类型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DA">数据分析 (DA)</SelectItem>
+                        <SelectItem value="DS">数据科学 (DS)</SelectItem>
+                        <SelectItem value="DE">数据工程 (DE)</SelectItem>
+                        <SelectItem value="BA">商业分析 (BA)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="h-10 bg-gray-100 animate-pulse rounded-md"></div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="experienceLevel">经验水平 <span className="text-red-500 ml-1">*</span></Label>
-                  <Select value={formData.experienceLevel} onValueChange={(value) => handleInputChange('experienceLevel', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="请选择经验水平" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="应届">应届</SelectItem>
-                      <SelectItem value="1-3年">1-3年</SelectItem>
-                      <SelectItem value="3-5年">3-5年</SelectItem>
-                      <SelectItem value="5年以上">5年以上</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {profile && formData.experienceLevel && formData.experienceLevel !== '应届' ? (
+                    <Select key={`experienceLevel-${profile.experienceLevel}`} value={formData.experienceLevel} onValueChange={(value) => handleInputChange('experienceLevel', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="请选择经验水平" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="应届">应届</SelectItem>
+                        <SelectItem value="1-3年">1-3年</SelectItem>
+                        <SelectItem value="3-5年">3-5年</SelectItem>
+                        <SelectItem value="5年以上">5年以上</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
+                      {profile && formData.experienceLevel === '应届' ? '应届' : '加载中...'}
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="targetCompany">目标公司 <span className="text-red-500 ml-1">*</span></Label>
-                  <Select value={formData.targetCompany} onValueChange={(value) => {
-                    handleInputChange('targetCompany', value);
-                    setShowOtherCompanyInput(value === 'other');
-                  }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="请选择目标公司" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TARGET_COMPANIES.map((company) => (
-                        <SelectItem key={company.value} value={company.value}>
-                          {company.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {profile && formData.targetCompany ? (
+                    <Select key={`targetCompany-${profile.targetCompany}`} value={formData.targetCompany} onValueChange={(value) => {
+                      handleInputChange('targetCompany', value);
+                      setShowOtherCompanyInput(value === 'other');
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="请选择目标公司" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TARGET_COMPANIES.map((company) => (
+                          <SelectItem key={company.value} value={company.value}>
+                            {company.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
+                      加载中...
+                    </div>
+                  )}
                   {showOtherCompanyInput && (
                     <Input
                       placeholder="请输入目标公司名称"
@@ -238,18 +261,24 @@ function ProfilePageContent() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="targetIndustry">目标行业 <span className="text-red-500 ml-1">*</span></Label>
-                  <Select value={formData.targetIndustry} onValueChange={(value) => handleInputChange('targetIndustry', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="请选择目标行业" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TARGET_INDUSTRIES.map((industry) => (
-                        <SelectItem key={industry.value} value={industry.value}>
-                          {industry.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {profile && formData.targetIndustry ? (
+                    <Select key={`targetIndustry-${profile.targetIndustry}`} value={formData.targetIndustry} onValueChange={(value) => handleInputChange('targetIndustry', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="请选择目标行业" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TARGET_INDUSTRIES.map((industry) => (
+                          <SelectItem key={industry.value} value={industry.value}>
+                            {industry.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
+                      加载中...
+                    </div>
+                  )}
                 </div>
               </div>
 
