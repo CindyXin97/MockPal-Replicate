@@ -2,6 +2,18 @@ import { db } from '@/lib/db';
 import { userProfiles, users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
+// 验证用户是否存在
+export async function verifyUser(userId: number): Promise<boolean> {
+  try {
+    if (!userId || userId <= 0) return false;
+    const result = await db.select({ id: users.id }).from(users).where(eq(users.id, userId)).limit(1);
+    return result.length > 0;
+  } catch (error) {
+    console.error('Error verifying user:', error);
+    return false;
+  }
+}
+
 // Profile type for form submission
 export type ProfileFormData = {
   name?: string; // 用户显示名称
@@ -26,6 +38,12 @@ type GetProfileResult =
 // Create or update user profile
 export async function saveUserProfile(userId: number, profileData: Partial<ProfileFormData>) {
   try {
+    // 首先验证用户是否存在
+    const userExists = await verifyUser(userId);
+    if (!userExists) {
+      return { success: false, message: '用户不存在，请重新登录' };
+    }
+
     // Update user name if provided
     if (profileData.name) {
       await db

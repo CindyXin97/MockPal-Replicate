@@ -159,112 +159,106 @@ export async function getPotentialMatches(userId: number) {
   }
 }
 
-// Create match (like a user) - 添加事务保护
+// Create match (like a user) - 移除事务，改为顺序执行
 export async function createMatch(userId: number, targetUserId: number) {
   try {
-    // 使用事务确保数据一致性
-    return await db.transaction(async (tx) => {
-      // 记录今日浏览
-      const today = format(new Date(), 'yyyy-MM-dd');
-      await tx.insert(userDailyViews).values({
-        userId,
-        viewedUserId: targetUserId,
-        date: today,
-        createdAt: new Date(),
-      });
+    // 记录今日浏览
+    const today = format(new Date(), 'yyyy-MM-dd');
+    await db.insert(userDailyViews).values({
+      userId,
+      viewedUserId: targetUserId,
+      date: today,
+      createdAt: new Date(),
+    });
 
-      // 使用通用函数查询现有匹配
-      const existingMatch = await tx.query.matches.findFirst({
-        where: matchBetweenUsers(userId, targetUserId),
-      });
+    // 使用通用函数查询现有匹配
+    const existingMatch = await db.query.matches.findFirst({
+      where: matchBetweenUsers(userId, targetUserId),
+    });
 
-      if (existingMatch) {
-        // 对方已发出邀请，双向匹配成功
-        if (existingMatch.user1Id === targetUserId && existingMatch.status === 'pending') {
-          await tx
-            .update(matches)
-            .set({ status: 'accepted', updatedAt: new Date() })
-            .where(eq(matches.id, existingMatch.id));
+    if (existingMatch) {
+      // 对方已发出邀请，双向匹配成功
+      if (existingMatch.user1Id === targetUserId && existingMatch.status === 'pending') {
+        await db
+          .update(matches)
+          .set({ status: 'accepted', updatedAt: new Date() })
+          .where(eq(matches.id, existingMatch.id));
 
-          return successResponse({ match: true }, '匹配成功！');
-        }
-
-        // 自己已发出邀请，等待对方回应
-        if (existingMatch.user1Id === userId && existingMatch.status === 'pending') {
-          await tx
-            .update(matches)
-            .set({ status: 'accepted', updatedAt: new Date() })
-            .where(eq(matches.id, existingMatch.id));
-
-          return successResponse({ match: true }, '匹配成功！');
-        }
-
-        // 已经匹配成功
-        if (existingMatch.status === 'accepted') {
-          return successResponse({ match: true }, '已经匹配成功！');
-        }
-
-        // 之前被拒绝，重新发起
-        if (existingMatch.status === 'rejected') {
-          await tx
-            .update(matches)
-            .set({ status: 'pending', updatedAt: new Date() })
-            .where(eq(matches.id, existingMatch.id));
-
-          return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
-        }
+        return successResponse({ match: true }, '匹配成功！');
       }
 
-      // 创建新匹配
-      await tx.insert(matches).values({
-        user1Id: userId,
-        user2Id: targetUserId,
-        status: 'pending',
-      });
+      // 自己已发出邀请，等待对方回应
+      if (existingMatch.user1Id === userId && existingMatch.status === 'pending') {
+        await db
+          .update(matches)
+          .set({ status: 'accepted', updatedAt: new Date() })
+          .where(eq(matches.id, existingMatch.id));
 
-      return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
+        return successResponse({ match: true }, '匹配成功！');
+      }
+
+      // 已经匹配成功
+      if (existingMatch.status === 'accepted') {
+        return successResponse({ match: true }, '已经匹配成功！');
+      }
+
+      // 之前被拒绝，重新发起
+      if (existingMatch.status === 'rejected') {
+        await db
+          .update(matches)
+          .set({ status: 'pending', updatedAt: new Date() })
+          .where(eq(matches.id, existingMatch.id));
+
+        return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
+      }
+    }
+
+    // 创建新匹配
+    await db.insert(matches).values({
+      user1Id: userId,
+      user2Id: targetUserId,
+      status: 'pending',
     });
+
+    return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
   } catch (error) {
     return errorResponse('操作失败，请稍后再试', error);
   }
 }
 
-// Reject match (dislike a user) - 添加事务保护
+// Reject match (dislike a user) - 移除事务，改为顺序执行
 export async function rejectMatch(userId: number, targetUserId: number) {
   try {
-    // 使用事务确保数据一致性
-    return await db.transaction(async (tx) => {
-      // 记录今日浏览
-      const today = format(new Date(), 'yyyy-MM-dd');
-      await tx.insert(userDailyViews).values({
-        userId,
-        viewedUserId: targetUserId,
-        date: today,
-        createdAt: new Date(),
-      });
-
-      // 使用通用函数查询现有匹配
-      const existingMatch = await tx.query.matches.findFirst({
-        where: matchBetweenUsers(userId, targetUserId),
-      });
-
-      if (existingMatch) {
-        // 更新状态为拒绝
-        await tx
-          .update(matches)
-          .set({ status: 'rejected', updatedAt: new Date() })
-          .where(eq(matches.id, existingMatch.id));
-      } else {
-        // 创建新的拒绝记录
-        await tx.insert(matches).values({
-          user1Id: userId,
-          user2Id: targetUserId,
-          status: 'rejected',
-        });
-      }
-
-      return successResponse();
+    // 记录今日浏览
+    const today = format(new Date(), 'yyyy-MM-dd');
+    await db.insert(userDailyViews).values({
+      userId,
+      viewedUserId: targetUserId,
+      date: today,
+      createdAt: new Date(),
     });
+
+    // 使用通用函数查询现有匹配
+    const existingMatch = await db.query.matches.findFirst({
+      where: matchBetweenUsers(userId, targetUserId),
+    });
+
+    if (existingMatch) {
+      // 更新状态为拒绝
+      await db
+        .update(matches)
+        .set({ status: 'rejected', updatedAt: new Date() })
+        .where(eq(matches.id, existingMatch.id));
+    } else {
+      // 创建新的拒绝记录
+      await db.insert(matches).values({
+        user1Id: userId,
+        user2Id: targetUserId,
+        status: 'rejected',
+      });
+    }
+
+    return successResponse();
   } catch (error) {
     return errorResponse('操作失败，请稍后再试', error);
   }

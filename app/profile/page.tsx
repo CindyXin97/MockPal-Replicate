@@ -25,9 +25,12 @@ function ProfilePageContent() {
   
   // 使用useMemo缓存user对象，避免每次渲染创建新对象
   const user = useMemo(() => {
-    if (!session?.user) return null;
+    if (!session?.user?.id) return null;
+    const userId = parseInt(session.user.id);
+    // 确保ID是有效的正整数
+    if (isNaN(userId) || userId <= 0) return null;
     return {
-      id: parseInt(session.user.id || '0'),
+      id: userId,
       username: session.user.name || session.user.email || 'User'
     };
   }, [session?.user?.id, session?.user?.name, session?.user?.email]);

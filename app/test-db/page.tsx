@@ -30,6 +30,20 @@ export default function TestDbPage() {
     }
   };
 
+  const clearDatabase = async () => {
+    try {
+      setMessage('正在清空数据库...');
+      const response = await fetch('/api/clear-db', {
+        method: 'POST'
+      });
+      const data = await response.json();
+      setMessage(JSON.stringify(data, null, 2));
+    } catch (error) {
+      setMessage(`Error clearing database: ${error}`);
+    }
+  };
+
+
   return (
     <div className="container mx-auto p-8">
       <Card>
@@ -37,11 +51,14 @@ export default function TestDbPage() {
           <CardTitle>Database Test & Debug Tools</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <Button onClick={testDbConnection}>
               Test Database Connection
             </Button>
-            <Button onClick={clearLocalStorage} variant="destructive">
+            <Button onClick={clearDatabase} variant="destructive">
+              🗑️ Clear Database Data
+            </Button>
+            <Button onClick={clearLocalStorage} variant="outline">
               Clear LocalStorage (Fix Default Login)
             </Button>
           </div>
