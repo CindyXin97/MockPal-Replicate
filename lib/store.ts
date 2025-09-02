@@ -7,6 +7,26 @@ export type User = {
   username: string;
 };
 
+export type UserProfile = {
+  id?: number;
+  userId: number;
+  name?: string;
+  jobType?: 'DA' | 'DS' | 'DE' | 'BA';
+  experienceLevel?: '应届' | '1-3年' | '3-5年' | '5年以上';
+  targetCompany?: string;
+  targetIndustry?: string;
+  otherCompanyName?: string;
+  technicalInterview?: boolean;
+  behavioralInterview?: boolean;
+  caseAnalysis?: boolean;
+  email?: string;
+  wechat?: string;
+  linkedin?: string;
+  bio?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
 export type Match = {
   id: number;
   username: string | null;
@@ -31,7 +51,8 @@ export type Match = {
 export const isAuthenticatedAtom = atomWithStorage('isAuthenticated', false);
 export const userAtom = atomWithStorage<User | null>('user', null);
 
-// Profile state
+// Profile state - 添加持久化的profile缓存
+export const userProfileAtom = atomWithStorage<UserProfile | null>('userProfile', null);
 export const hasProfileAtom = atom(false);
 
 // Matching state
@@ -41,4 +62,4 @@ export const successfulMatchesAtom = atom<Match[]>([]);
 
 // UI state
 export const isLoadingAtom = atom(false);
-export const toastMessageAtom = atom<{ type: 'success' | 'error'; message: string } | null>(null); 
+export const toastMessageAtom = atom<{ type: 'success' | 'error'; message: string } | null>(null);

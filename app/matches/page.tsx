@@ -13,8 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar } from '@/components/ui/avatar';
 import { ContactTemplates } from '@/components/contact-templates';
 import { fetchPotentialMatches, likeUser, dislikeUser, fetchSuccessfulMatches } from '@/app/actions/matching';
-import { getProfile } from '@/app/actions/profile';
-import { checkUserProfileCompleteness, getProfileCompletenessMessage } from '@/lib/profile-utils';
+import { useProfile } from '@/lib/useProfile';
 import type { Match } from '@/lib/store';
 import React from 'react';
 
@@ -30,6 +29,10 @@ export default function MatchesPage() {
       username: session.user.name || session.user.email || 'User'
     };
   }, [session?.user?.id, session?.user?.name, session?.user?.email]);
+
+  // 使用简单的profile hook
+  const { profile, isComplete } = useProfile(user?.id);
+
   const [potentialMatches, setPotentialMatches] = useAtom(potentialMatchesAtom);
   const [currentMatchIndex, setCurrentMatchIndex] = useAtom(currentMatchIndexAtom);
   const [successfulMatches, setSuccessfulMatches] = useState<Match[]>([]);
@@ -42,9 +45,6 @@ export default function MatchesPage() {
   const [showGuide, setShowGuide] = useState(false);
   const [showContactTemplates, setShowContactTemplates] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  const [currentUserProfile, setCurrentUserProfile] = useState<{ jobType?: string; experienceLevel?: string } | null>(null);
-  const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(null);
-  const [profileCompletionMessage, setProfileCompletionMessage] = useState<string>('');
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -53,52 +53,19 @@ export default function MatchesPage() {
       return;
     }
     if (user && user.id > 0) {
-      checkProfileCompleteness();
-      loadCurrentUserProfile();
-    }
-  }, [user?.id, status]); // 只依赖user.id和status
-
-  const checkProfileCompleteness = async () => {
-    if (!user) return;
-    
-    setIsLoading(true);
-    try {
-      const completenessCheck = await checkUserProfileCompleteness(user.id);
-      setIsProfileComplete(completenessCheck.isComplete);
-      setProfileCompletionMessage(getProfileCompletenessMessage(completenessCheck.missingFields));
-      
-      // 只有资料完整时才加载匹配数据
-      if (completenessCheck.isComplete) {
-        await loadMatches();
+      // 只有profile完整时才加载匹配数据
+      if (isComplete) {
+        loadMatches();
+      } else {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error checking profile completeness:', error);
-      setIsProfileComplete(false);
-      setProfileCompletionMessage('检查资料完整性时出错');
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  const loadCurrentUserProfile = async () => {
-    if (!user) return;
-    
-    try {
-      const result = await getProfile(user.id);
-      if (result.success && 'profile' in result && result.profile) {
-        setCurrentUserProfile({
-          jobType: result.profile.jobType,
-          experienceLevel: result.profile.experienceLevel,
-        });
-      }
-    } catch (error) {
-      console.error('Error loading current user profile:', error);
-    }
-  };
+  }, [user?.id, status, isComplete]);
 
   const loadMatches = async () => {
     if (!user) return;
     
+    setIsLoading(true);
     try {
       // Load potential matches
       const potentialResult = await fetchPotentialMatches(user.id);
@@ -117,6 +84,8 @@ export default function MatchesPage() {
     } catch (error) {
       console.error('Error loading matches:', error);
       toast.error('获取匹配失败，请稍后再试');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -236,7 +205,7 @@ export default function MatchesPage() {
             <TabsContent value="browse" className="space-y-4">
               {isLoading ? (
                 <div className="text-center py-12">加载中...</div>
-              ) : isProfileComplete === false ? (
+              ) : !isComplete ? (
                 <Card className="w-full max-w-2xl mx-auto rounded-3xl shadow-xl border-0 bg-gradient-to-br from-blue-50 via-white to-blue-100 p-12 flex flex-col items-center">
                   <div className="text-6xl mb-6">👤</div>
                   <h2 className="text-2xl font-extrabold text-blue-700 mb-4 text-center">
@@ -246,11 +215,6 @@ export default function MatchesPage() {
                     为了为您推荐最合适的练习伙伴，<br/>
                     请先花2分钟完善您的资料
                   </p>
-                  {profileCompletionMessage && (
-                    <p className="text-sm text-blue-600 mb-6 bg-blue-50 px-4 py-2 rounded-lg">
-                      {profileCompletionMessage}
-                    </p>
-                  )}
                   <Button
                     onClick={() => router.push('/profile?from=matches')}
                     className="rounded-full px-10 py-3 text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-lg hover:scale-105 hover:from-blue-500 hover:to-blue-700 transition-all"
@@ -517,13 +481,13 @@ export default function MatchesPage() {
       </div>
 
       {/* 联系模板弹窗 */}
-      {showContactTemplates && selectedMatch && user && currentUserProfile && (
+      {showContactTemplates && selectedMatch && user && profile && (
         <ContactTemplates
           match={selectedMatch}
           currentUser={{
             username: user?.username || session?.user?.name || session?.user?.email || 'User',
-            jobType: currentUserProfile.jobType,
-            experienceLevel: currentUserProfile.experienceLevel
+            jobType: profile.jobType,
+            experienceLevel: profile.experienceLevel
           }}
           onClose={handleCloseContactTemplates}
         />
