@@ -209,7 +209,46 @@ export default function MatchesPage() {
 
             <TabsContent value="browse" className="space-y-4">
               {state.isLoading ? (
-                <div className="text-center py-12">加载中...</div>
+                <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 bg-white p-6 animate-pulse">
+                  <div className="flex flex-col items-center">
+                    <div className="w-28 h-28 rounded-full bg-gray-200 mb-4"></div>
+                    <div className="h-6 bg-gray-200 rounded-lg w-32 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded-lg w-48 mb-6"></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-8 my-6">
+                    <div className="space-y-4">
+                      <div>
+                        <div className="h-4 bg-gray-200 rounded w-16 mb-1"></div>
+                        <div className="h-5 bg-gray-200 rounded w-20"></div>
+                      </div>
+                      <div>
+                        <div className="h-4 bg-gray-200 rounded w-16 mb-1"></div>
+                        <div className="h-5 bg-gray-200 rounded w-24"></div>
+                      </div>
+                      <div>
+                        <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                        <div className="flex gap-2">
+                          <div className="h-6 bg-gray-200 rounded-full w-16"></div>
+                          <div className="h-6 bg-gray-200 rounded-full w-20"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="h-4 bg-gray-200 rounded w-16 mb-1"></div>
+                        <div className="h-5 bg-gray-200 rounded w-20"></div>
+                      </div>
+                      <div>
+                        <div className="h-4 bg-gray-200 rounded w-16 mb-1"></div>
+                        <div className="h-5 bg-gray-200 rounded w-24"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-center gap-6 mt-8">
+                    <div className="h-10 bg-gray-200 rounded-full w-20"></div>
+                    <div className="h-10 bg-gray-200 rounded-full w-20"></div>
+                  </div>
+                </Card>
               ) : !isComplete ? (
                 <Card className="w-full max-w-2xl mx-auto rounded-3xl shadow-xl border-0 bg-gradient-to-br from-blue-50 via-white to-blue-100 p-12 flex flex-col items-center">
                   <div className="text-6xl mb-6">👤</div>
@@ -304,7 +343,44 @@ export default function MatchesPage() {
 
             <TabsContent value="matches" className="space-y-4">
               {state.isLoading ? (
-                <div className="text-center py-12">加载中...</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <Card key={i} className="overflow-hidden animate-pulse">
+                      <div className="p-6">
+                        <div className="flex items-center gap-4 mb-4">
+                          <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+                          <div>
+                            <div className="h-5 bg-gray-200 rounded w-24 mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded w-32"></div>
+                          </div>
+                        </div>
+                        <div className="h-4 bg-gray-200 rounded w-full mb-4"></div>
+                        <div className="space-y-3">
+                          <div>
+                            <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                            <div className="flex gap-2">
+                              <div className="h-6 bg-gray-200 rounded-full w-16"></div>
+                              <div className="h-6 bg-gray-200 rounded-full w-20"></div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="h-4 bg-gray-200 rounded w-16 mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded w-40"></div>
+                            <div className="h-4 bg-gray-200 rounded w-36 mt-1"></div>
+                          </div>
+                          <div className="flex gap-2 mt-4">
+                            <div className="h-8 bg-gray-200 rounded w-20"></div>
+                          </div>
+                          <div className="flex items-center gap-4 mt-4">
+                            <div className="h-4 bg-gray-200 rounded w-20"></div>
+                            <div className="h-4 bg-gray-200 rounded w-8"></div>
+                            <div className="h-4 bg-gray-200 rounded w-8"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
               ) : (
                 <>
                   {state.activeTab === 'matches' && state.showBanner && (
