@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useAtom } from 'jotai';
@@ -15,6 +15,7 @@ import { ContactTemplates } from '@/components/contact-templates';
 import { fetchPotentialMatches, likeUser, dislikeUser, fetchSuccessfulMatches } from '@/app/actions/matching';
 import { useProfile } from '@/lib/useProfile';
 import type { Match } from '@/lib/store';
+import { matchesReducer, initialMatchesState, type MatchesAction } from '@/lib/matches-reducer';
 import React from 'react';
 
 export default function MatchesPage() {
@@ -33,18 +34,12 @@ export default function MatchesPage() {
   // 使用简单的profile hook
   const { profile, isComplete } = useProfile(user?.id);
 
-  const [potentialMatches, setPotentialMatches] = useAtom(potentialMatchesAtom);
-  const [currentMatchIndex, setCurrentMatchIndex] = useAtom(currentMatchIndexAtom);
-  const [successfulMatches, setSuccessfulMatches] = useState<Match[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('browse');
-  const [interviewStatus, setInterviewStatus] = useState<{ [key: number]: 'yes' | 'no' | undefined }>({});
-  const [feedbacks, setFeedbacks] = useState<{ [key: number]: string }>({});
-  const [submitted, setSubmitted] = useState<{ [key: number]: boolean }>({});
-  const [showBanner, setShowBanner] = useState(true);
-  const [showGuide, setShowGuide] = useState(false);
-  const [showContactTemplates, setShowContactTemplates] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  // 使用reducer简化状态管理
+  const [state, dispatch] = useReducer(matchesReducer, initialMatchesState);
+  
+  // 保持Jotai原子状态同步（用于全局状态共享）
+  const [, setPotentialMatches] = useAtom(potentialMatchesAtom);
+  const [, setCurrentMatchIndex] = useAtom(currentMatchIndexAtom);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -57,7 +52,7 @@ export default function MatchesPage() {
       if (isComplete) {
         loadMatches();
       } else {
-        setIsLoading(false);
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     }
   }, [user?.id, status, isComplete]);
@@ -65,36 +60,41 @@ export default function MatchesPage() {
   const loadMatches = async () => {
     if (!user) return;
     
-    setIsLoading(true);
+    dispatch({ type: 'SET_LOADING', payload: true });
     try {
       // Load potential matches
       const potentialResult = await fetchPotentialMatches(user.id);
-      if (potentialResult.success && 'matches' in potentialResult && potentialResult.matches) {
-        setPotentialMatches(potentialResult.matches);
-        setCurrentMatchIndex(0);
-      } else if (potentialResult.message) {
-        toast.error(potentialResult.message);
-      }
-
       // Load successful matches
       const successfulResult = await fetchSuccessfulMatches(user.id);
-      if (successfulResult.success && 'matches' in successfulResult && successfulResult.matches) {
-        setSuccessfulMatches(successfulResult.matches.filter(match => match !== null) as Match[]);
+      
+      const potentialMatches = (potentialResult.success && 'matches' in potentialResult) ? potentialResult.matches || [] : [];
+      const successfulMatches = (successfulResult.success && 'matches' in successfulResult) 
+        ? (successfulResult.matches?.filter(match => match !== null) as Match[]) || []
+        : [];
+        
+      // 使用dispatch更新所有状态
+      dispatch({ type: 'LOAD_MATCHES', payload: { potentialMatches, successfulMatches } });
+      
+      // 同步到Jotai全局状态
+      setPotentialMatches(potentialMatches);
+      setCurrentMatchIndex(0);
+      
+      if (potentialResult.message) {
+        toast.error(potentialResult.message);
       }
     } catch (error) {
       console.error('Error loading matches:', error);
       toast.error('获取匹配失败，请稍后再试');
-    } finally {
-      setIsLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
   const handleLike = async () => {
-    if (!user || potentialMatches.length === 0 || currentMatchIndex >= potentialMatches.length) {
+    if (!user || state.potentialMatches.length === 0 || state.currentMatchIndex >= state.potentialMatches.length) {
       return;
     }
 
-    const targetUser = potentialMatches[currentMatchIndex];
+    const targetUser = state.potentialMatches[state.currentMatchIndex];
     try {
       const result = await likeUser(user.id, targetUser.id);
       
@@ -103,15 +103,18 @@ export default function MatchesPage() {
           // If it's a match, reload the successful matches
           toast.success(result.message || '匹配成功！');
           const successfulResult = await fetchSuccessfulMatches(user.id);
+          // 更新成功匹配列表
           if (successfulResult.success && 'matches' in successfulResult && successfulResult.matches) {
-            setSuccessfulMatches(successfulResult.matches.filter(match => match !== null) as Match[]);
+            const filteredMatches = successfulResult.matches.filter(match => match !== null) as Match[];
+            dispatch({ type: 'LOAD_MATCHES', payload: { potentialMatches: state.potentialMatches, successfulMatches: filteredMatches } });
           }
         } else {
           toast.success(result.message || '已收到你的喜欢！');
         }
         
         // Move to next potential match
-        setCurrentMatchIndex(currentMatchIndex + 1);
+        dispatch({ type: 'NEXT_MATCH' });
+        setCurrentMatchIndex(state.currentMatchIndex + 1);
       } else {
         toast.error(result.message || '操作失败');
       }
@@ -122,17 +125,18 @@ export default function MatchesPage() {
   };
 
   const handleDislike = async () => {
-    if (!user || potentialMatches.length === 0 || currentMatchIndex >= potentialMatches.length) {
+    if (!user || state.potentialMatches.length === 0 || state.currentMatchIndex >= state.potentialMatches.length) {
       return;
     }
 
-    const targetUser = potentialMatches[currentMatchIndex];
+    const targetUser = state.potentialMatches[state.currentMatchIndex];
     try {
       const result = await dislikeUser(user.id, targetUser.id);
       
       if (result.success) {
         // Move to next potential match
-        setCurrentMatchIndex(currentMatchIndex + 1);
+        dispatch({ type: 'NEXT_MATCH' });
+        setCurrentMatchIndex(state.currentMatchIndex + 1);
       } else {
         toast.error(result.message || '操作失败');
       }
@@ -147,23 +151,23 @@ export default function MatchesPage() {
     await loadMatches();
   };
 
-  const currentMatch = potentialMatches.length > 0 && currentMatchIndex < potentialMatches.length
-    ? potentialMatches[currentMatchIndex]
+  const currentMatch = state.potentialMatches.length > 0 && state.currentMatchIndex < state.potentialMatches.length
+    ? state.potentialMatches[state.currentMatchIndex]
     : null;
 
   const handleInterviewChange = (id: number, value: 'yes' | 'no') => {
-    setInterviewStatus(prev => ({ ...prev, [id]: value }));
+    dispatch({ type: 'SET_INTERVIEW_STATUS', payload: { matchId: id, status: value } });
   };
 
   const handleFeedbackChange = (id: number, value: string) => {
-    setFeedbacks(prev => ({ ...prev, [id]: value }));
+    dispatch({ type: 'SET_FEEDBACK', payload: { matchId: id, feedback: value } });
   };
 
   const handleFeedbackSubmit = async (matchId: number) => {
     if (!user) return;
-    const interviewStatusValue = interviewStatus[matchId];
-    const feedbackContent = feedbacks[matchId] || '';
-    setSubmitted(prev => ({ ...prev, [matchId]: true }));
+    const interviewStatusValue = state.interviewStatus[matchId];
+    const feedbackContent = state.feedbacks[matchId] || '';
+    dispatch({ type: 'SUBMIT_FEEDBACK', payload: matchId });
     const res = await fetch('/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -178,32 +182,30 @@ export default function MatchesPage() {
       toast.success('反馈已提交');
     } else {
       toast.error(res.message || '提交失败');
-      setSubmitted(prev => ({ ...prev, [matchId]: false }));
+      dispatch({ type: 'SUBMIT_FEEDBACK', payload: matchId });
     }
   };
 
   const handleShowContactTemplates = (match: Match) => {
-    setSelectedMatch(match);
-    setShowContactTemplates(true);
+    dispatch({ type: 'SHOW_CONTACT_TEMPLATES', payload: match });
   };
 
   const handleCloseContactTemplates = () => {
-    setShowContactTemplates(false);
-    setSelectedMatch(null);
+    dispatch({ type: 'SHOW_CONTACT_TEMPLATES', payload: null });
   };
 
   return (
     <AuthLayout>
       <div className="flex flex-col min-h-screen pt-20">
         <div className="w-full max-w-3xl mx-auto">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={state.activeTab} onValueChange={(value) => dispatch({ type: 'SET_TAB', payload: value })} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="browse">浏览候选人</TabsTrigger>
               <TabsTrigger value="matches">成功匹配</TabsTrigger>
             </TabsList>
 
             <TabsContent value="browse" className="space-y-4">
-              {isLoading ? (
+              {state.isLoading ? (
                 <div className="text-center py-12">加载中...</div>
               ) : !isComplete ? (
                 <Card className="w-full max-w-2xl mx-auto rounded-3xl shadow-xl border-0 bg-gradient-to-br from-blue-50 via-white to-blue-100 p-12 flex flex-col items-center">
@@ -298,33 +300,33 @@ export default function MatchesPage() {
             </TabsContent>
 
             <TabsContent value="matches" className="space-y-4">
-              {isLoading ? (
+              {state.isLoading ? (
                 <div className="text-center py-12">加载中...</div>
               ) : (
                 <>
-                  {activeTab === 'matches' && showBanner && (
+                  {state.activeTab === 'matches' && state.showBanner && (
                     <div className="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-700 p-4 mb-4 flex items-center justify-between">
                       <span>🎉 恭喜匹配成功！记得及时填写面试反馈，这将帮助系统为你和他人匹配到更合适的练习伙伴哦～</span>
                       <button
-                        onClick={() => setShowBanner(false)}
+                        onClick={() => dispatch({ type: 'TOGGLE_BANNER' })}
                         className="ml-4 px-12 py-1 min-w-[160px] whitespace-nowrap rounded bg-yellow-300 hover:bg-yellow-400 text-yellow-900 font-medium transition-colors"
                       >
                         我知道了
                       </button>
                     </div>
                   )}
-                  {activeTab === 'matches' && (
+                  {state.activeTab === 'matches' && (
                     <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-4 mb-4 rounded flex items-center justify-between">
                       <span>🎯 已成功匹配！建议主动联系对方，约定模拟面试时间，体验更佳哦～</span>
                       <button
                         className="ml-4 px-3 py-1 rounded bg-blue-300 hover:bg-blue-400 text-blue-900 font-medium transition-colors"
-                        onClick={() => setShowGuide(true)}
+                        onClick={() => dispatch({ type: 'TOGGLE_GUIDE' })}
                       >
                         查看面试指南
                       </button>
                     </div>
                   )}
-                  {showGuide && (
+                  {state.showGuide && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
                       <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
                         <h2 className="text-lg font-bold mb-2">面试流程指引</h2>
@@ -336,16 +338,16 @@ export default function MatchesPage() {
                         </ol>
                         <button
                           className="mt-2 px-4 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white font-medium"
-                          onClick={() => setShowGuide(false)}
+                          onClick={() => dispatch({ type: 'TOGGLE_GUIDE' })}
                         >
                           关闭
                         </button>
                       </div>
                     </div>
                   )}
-                  {successfulMatches.length > 0 ? (
+                  {state.successfulMatches.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {successfulMatches.map((match) => (
+                      {state.successfulMatches.map((match) => (
                         <Card key={match.id} className="overflow-hidden">
                           <CardHeader className="pb-2">
                             <div className="flex items-center gap-4">
@@ -422,7 +424,7 @@ export default function MatchesPage() {
                                   type="radio"
                                   name={`interview_${match.id}`}
                                   value="yes"
-                                  checked={interviewStatus[match.id] === 'yes'}
+                                  checked={state.interviewStatus[match.id] === 'yes'}
                                   onChange={() => handleInterviewChange(match.id, 'yes')}
                                 />
                                 是
@@ -432,29 +434,29 @@ export default function MatchesPage() {
                                   type="radio"
                                   name={`interview_${match.id}`}
                                   value="no"
-                                  checked={interviewStatus[match.id] === 'no'}
+                                  checked={state.interviewStatus[match.id] === 'no'}
                                   onChange={() => handleInterviewChange(match.id, 'no')}
                                 />
                                 否
                               </label>
                             </div>
-                            {interviewStatus[match.id] === 'yes' && (
+                            {state.interviewStatus[match.id] === 'yes' && (
                               <div className="mt-2">
                                 <label className="block text-sm font-medium mb-1">请填写你的面试反馈：</label>
                                 <textarea
                                   className="w-full border rounded p-2 mb-2"
                                   rows={3}
-                                  value={feedbacks[match.id] || ''}
+                                  value={state.feedbacks[match.id] || ''}
                                   onChange={e => handleFeedbackChange(match.id, e.target.value)}
                                   placeholder="请描述你的面试体验、收获或建议"
-                                  disabled={submitted[match.id]}
+                                  disabled={state.submitted[match.id]}
                                 />
                                 <Button
                                   size="sm"
                                   onClick={() => handleFeedbackSubmit(match.id)}
-                                  disabled={submitted[match.id] || !feedbacks[match.id]}
+                                  disabled={state.submitted[match.id] || !state.feedbacks[match.id]}
                                 >
-                                  {submitted[match.id] ? '已提交' : '提交反馈'}
+                                  {state.submitted[match.id] ? '已提交' : '提交反馈'}
                                 </Button>
                               </div>
                             )}
@@ -469,7 +471,7 @@ export default function MatchesPage() {
                         <p className="text-muted-foreground mb-4">
                           继续浏览候选人，找到你的练习伙伴
                         </p>
-                        <Button onClick={() => setActiveTab('browse')}>浏览候选人</Button>
+                        <Button onClick={() => dispatch({ type: 'SET_TAB', payload: 'browse' })}>浏览候选人</Button>
                       </CardContent>
                     </Card>
                   )}
@@ -481,9 +483,9 @@ export default function MatchesPage() {
       </div>
 
       {/* 联系模板弹窗 */}
-      {showContactTemplates && selectedMatch && user && profile && (
+      {state.showContactTemplates && state.selectedMatch && user && profile && (
         <ContactTemplates
-          match={selectedMatch}
+          match={state.selectedMatch}
           currentUser={{
             username: user?.username || session?.user?.name || session?.user?.email || 'User',
             jobType: profile.jobType,

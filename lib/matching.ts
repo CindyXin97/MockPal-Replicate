@@ -1,7 +1,8 @@
 import { db } from '@/lib/db';
 import { users, userProfiles, matches, feedbacks, userDailyViews } from '@/lib/db/schema';
-import { eq, and, or, not, desc, exists } from 'drizzle-orm';
+import { eq, and, or, not, desc, exists, inArray } from 'drizzle-orm';
 import { format } from 'date-fns';
+import { matchBetweenUsers, matchesForUser, errorResponse, successResponse } from '@/lib/matching-utils';
 
 // Get potential matches for a user
 export async function getPotentialMatches(userId: number) {
@@ -89,27 +90,41 @@ export async function getPotentialMatches(userId: number) {
       return isNotExcluded && hasBasicInfo && hasPracticeContent && hasContactInfo;
     });
 
+    // 批量查询所有候选用户的pending邀请（解决N+1查询问题）
+    const candidateUserIds = filteredMatches.map(u => u.id);
+    let pendingInvitations: typeof matches.$inferSelect[] = [];
+    
+    // 只有存在候选用户时才查询
+    if (candidateUserIds.length > 0) {
+      pendingInvitations = await db.query.matches.findMany({
+        where: and(
+          eq(matches.user2Id, userId),
+          eq(matches.status, 'pending'),
+          inArray(matches.user1Id, candidateUserIds)
+        ),
+      });
+    }
+    
+    // 构建Set用于O(1)查找
+    const invitationSet = new Set(pendingInvitations.map(inv => inv.user1Id));
+    
     // 优先级排序：对方已发出邀请且内容重叠 > 内容重叠 > 岗位和经验都相同 > 其他
     const invitedOverlapList: typeof filteredMatches = [];
     const overlapList: typeof filteredMatches = [];
     const jobExpList: typeof filteredMatches = [];
     const otherList: typeof filteredMatches = [];
+    
     for (const user of filteredMatches) {
-      const p = user.profile;
       const overlap =
-        (user.profile?.technicalInterview && p.technicalInterview) ||
-        (user.profile?.behavioralInterview && p.behavioralInterview) ||
-        (user.profile?.caseAnalysis && p.caseAnalysis);
-      const jobMatch = user.profile?.jobType === p.jobType;
-      const expMatch = user.profile?.experienceLevel === p.experienceLevel;
-      // 判断对方是否已发出邀请且内容重叠
-      const hasInvited = await db.query.matches.findFirst({
-        where: and(
-          eq(matches.user1Id, user.id),
-          eq(matches.user2Id, userId),
-          eq(matches.status, 'pending')
-        ),
-      });
+        (user.profile?.technicalInterview && userProfile.technicalInterview) ||
+        (user.profile?.behavioralInterview && userProfile.behavioralInterview) ||
+        (user.profile?.caseAnalysis && userProfile.caseAnalysis);
+      const jobMatch = user.profile?.jobType === userProfile.jobType;
+      const expMatch = user.profile?.experienceLevel === userProfile.experienceLevel;
+      
+      // 使用Set进行O(1)查找替代数据库查询
+      const hasInvited = invitationSet.has(user.id);
+      
       if (hasInvited && overlap) {
         invitedOverlapList.push(user);
       } else if (overlap) {
@@ -144,189 +159,175 @@ export async function getPotentialMatches(userId: number) {
   }
 }
 
-// Create match (like a user)
+// Create match (like a user) - 添加事务保护
 export async function createMatch(userId: number, targetUserId: number) {
   try {
-    // 记录今日浏览
-    const today = format(new Date(), 'yyyy-MM-dd');
-    await db.insert(userDailyViews).values({
-      userId,
-      viewedUserId: targetUserId,
-      date: today,
-      createdAt: new Date(),
-    });
-
-    // Check if match already exists
-    const existingMatch = await db.query.matches.findFirst({
-      where: or(
-        and(
-          eq(matches.user1Id, userId),
-          eq(matches.user2Id, targetUserId)
-        ),
-        and(
-          eq(matches.user1Id, targetUserId),
-          eq(matches.user2Id, userId)
-        )
-      ),
-    });
-
-    if (existingMatch) {
-      // If user2 has already liked user1, update match status to accepted
-      if (existingMatch.user1Id === targetUserId && existingMatch.status === 'pending') {
-        await db
-          .update(matches)
-          .set({ status: 'accepted', updatedAt: new Date() })
-          .where(eq(matches.id, existingMatch.id));
-
-        return { success: true, match: true, message: '匹配成功！' };
-      }
-
-      // If user1 has already liked user2, but user2 is liking user1 now, this shouldn't happen
-      // But let's handle it by updating the match to accepted
-      if (existingMatch.user1Id === userId && existingMatch.status === 'pending') {
-        await db
-          .update(matches)
-          .set({ status: 'accepted', updatedAt: new Date() })
-          .where(eq(matches.id, existingMatch.id));
-
-        return { success: true, match: true, message: '匹配成功！' };
-      }
-
-      // If the match is already accepted, just return success
-      if (existingMatch.status === 'accepted') {
-        return { success: true, match: true, message: '已经匹配成功！' };
-      }
-
-      // If the match was rejected, update it to pending
-      if (existingMatch.status === 'rejected') {
-        await db
-          .update(matches)
-          .set({ status: 'pending', updatedAt: new Date() })
-          .where(eq(matches.id, existingMatch.id));
-
-        return { success: true, match: false, message: '已收到你的喜欢！等待对方回应。' };
-      }
-    }
-
-    // Create new match
-    await db.insert(matches).values({
-      user1Id: userId,
-      user2Id: targetUserId,
-      status: 'pending',
-    });
-
-    return { success: true, match: false, message: '已收到你的喜欢！等待对方回应。' };
-  } catch (error) {
-    console.error('Create match error:', error);
-    return { success: false, message: '操作失败，请稍后再试' };
-  }
-}
-
-// Reject match (dislike a user)
-export async function rejectMatch(userId: number, targetUserId: number) {
-  try {
-    // 记录今日浏览
-    const today = format(new Date(), 'yyyy-MM-dd');
-    await db.insert(userDailyViews).values({
-      userId,
-      viewedUserId: targetUserId,
-      date: today,
-      createdAt: new Date(),
-    });
-
-    // Check if match already exists
-    const existingMatch = await db.query.matches.findFirst({
-      where: or(
-        and(
-          eq(matches.user1Id, userId),
-          eq(matches.user2Id, targetUserId)
-        ),
-        and(
-          eq(matches.user1Id, targetUserId),
-          eq(matches.user2Id, userId)
-        )
-      ),
-    });
-
-    if (existingMatch) {
-      // Update match status to rejected
-      await db
-        .update(matches)
-        .set({ status: 'rejected', updatedAt: new Date() })
-        .where(eq(matches.id, existingMatch.id));
-    } else {
-      // Create new match with rejected status
-      await db.insert(matches).values({
-        user1Id: userId,
-        user2Id: targetUserId,
-        status: 'rejected',
+    // 使用事务确保数据一致性
+    return await db.transaction(async (tx) => {
+      // 记录今日浏览
+      const today = format(new Date(), 'yyyy-MM-dd');
+      await tx.insert(userDailyViews).values({
+        userId,
+        viewedUserId: targetUserId,
+        date: today,
+        createdAt: new Date(),
       });
-    }
 
-    return { success: true };
-  } catch (error) {
-    console.error('Reject match error:', error);
-    return { success: false, message: '操作失败，请稍后再试' };
-  }
-}
+      // 使用通用函数查询现有匹配
+      const existingMatch = await tx.query.matches.findFirst({
+        where: matchBetweenUsers(userId, targetUserId),
+      });
 
-// Get successful matches for a user
-export async function getSuccessfulMatches(userId: number) {
-  try {
-    const successfulMatches = await db.query.matches.findMany({
-      where: and(
-        or(
-          eq(matches.user1Id, userId),
-          eq(matches.user2Id, userId)
-        ),
-        eq(matches.status, 'accepted')
-      ),
-    });
+      if (existingMatch) {
+        // 对方已发出邀请，双向匹配成功
+        if (existingMatch.user1Id === targetUserId && existingMatch.status === 'pending') {
+          await tx
+            .update(matches)
+            .set({ status: 'accepted', updatedAt: new Date() })
+            .where(eq(matches.id, existingMatch.id));
 
-    // Get the matched users' details
-    const matchedUsers = await Promise.all(
-      successfulMatches.map(async (match) => {
-        const matchedUserId = match.user1Id === userId ? match.user2Id : match.user1Id;
-        
-        const matchedUser = await db.query.users.findFirst({
-          where: eq(users.id, matchedUserId),
-          with: {
-            profile: true,
-          },
-        });
-
-        if (!matchedUser || !matchedUser.profile) {
-          return null;
+          return successResponse({ match: true }, '匹配成功！');
         }
 
-        return {
-          id: matchedUser.id,
-          username: matchedUser.name,
-          jobType: matchedUser.profile.jobType,
-          experienceLevel: matchedUser.profile.experienceLevel,
-          targetCompany: matchedUser.profile.targetCompany,
-          targetIndustry: matchedUser.profile.targetIndustry,
-          practicePreferences: {
-            technicalInterview: matchedUser.profile.technicalInterview,
-            behavioralInterview: matchedUser.profile.behavioralInterview,
-            caseAnalysis: matchedUser.profile.caseAnalysis,
-          },
-          contactInfo: {
-            email: matchedUser.profile.email,
-            wechat: matchedUser.profile.wechat,
-          },
-          bio: matchedUser.profile.bio,
-        };
-      })
+        // 自己已发出邀请，等待对方回应
+        if (existingMatch.user1Id === userId && existingMatch.status === 'pending') {
+          await tx
+            .update(matches)
+            .set({ status: 'accepted', updatedAt: new Date() })
+            .where(eq(matches.id, existingMatch.id));
+
+          return successResponse({ match: true }, '匹配成功！');
+        }
+
+        // 已经匹配成功
+        if (existingMatch.status === 'accepted') {
+          return successResponse({ match: true }, '已经匹配成功！');
+        }
+
+        // 之前被拒绝，重新发起
+        if (existingMatch.status === 'rejected') {
+          await tx
+            .update(matches)
+            .set({ status: 'pending', updatedAt: new Date() })
+            .where(eq(matches.id, existingMatch.id));
+
+          return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
+        }
+      }
+
+      // 创建新匹配
+      await tx.insert(matches).values({
+        user1Id: userId,
+        user2Id: targetUserId,
+        status: 'pending',
+      });
+
+      return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
+    });
+  } catch (error) {
+    return errorResponse('操作失败，请稍后再试', error);
+  }
+}
+
+// Reject match (dislike a user) - 添加事务保护
+export async function rejectMatch(userId: number, targetUserId: number) {
+  try {
+    // 使用事务确保数据一致性
+    return await db.transaction(async (tx) => {
+      // 记录今日浏览
+      const today = format(new Date(), 'yyyy-MM-dd');
+      await tx.insert(userDailyViews).values({
+        userId,
+        viewedUserId: targetUserId,
+        date: today,
+        createdAt: new Date(),
+      });
+
+      // 使用通用函数查询现有匹配
+      const existingMatch = await tx.query.matches.findFirst({
+        where: matchBetweenUsers(userId, targetUserId),
+      });
+
+      if (existingMatch) {
+        // 更新状态为拒绝
+        await tx
+          .update(matches)
+          .set({ status: 'rejected', updatedAt: new Date() })
+          .where(eq(matches.id, existingMatch.id));
+      } else {
+        // 创建新的拒绝记录
+        await tx.insert(matches).values({
+          user1Id: userId,
+          user2Id: targetUserId,
+          status: 'rejected',
+        });
+      }
+
+      return successResponse();
+    });
+  } catch (error) {
+    return errorResponse('操作失败，请稍后再试', error);
+  }
+}
+
+// Get successful matches for a user - 优化为批量查询
+export async function getSuccessfulMatches(userId: number) {
+  try {
+    // 查询所有成功的匹配
+    const successfulMatches = await db.query.matches.findMany({
+      where: matchesForUser(userId, 'accepted'),
+    });
+
+    // 提取所有匹配用户的ID
+    const matchedUserIds = successfulMatches.map(match => 
+      match.user1Id === userId ? match.user2Id : match.user1Id
     );
 
-    // Filter out null values
-    const filteredMatches = matchedUsers.filter(Boolean);
+    // 批量查询所有用户信息（单次查询替代N次查询）
+    if (matchedUserIds.length === 0) {
+      return successResponse({ matches: [] });
+    }
 
-    return { success: true, matches: filteredMatches };
+    const matchedUsers = await db.query.users.findMany({
+      where: inArray(users.id, matchedUserIds),
+      with: {
+        profile: true,
+      },
+    });
+
+    // 构建Map用于快速查找
+    const usersMap = new Map(matchedUsers.map(u => [u.id, u]));
+
+    // 组装返回数据
+    const formattedMatches = matchedUserIds
+      .map(id => {
+        const user = usersMap.get(id);
+        if (!user || !user.profile) return null;
+
+        return {
+          id: user.id,
+          username: user.name,
+          jobType: user.profile.jobType,
+          experienceLevel: user.profile.experienceLevel,
+          targetCompany: user.profile.targetCompany,
+          targetIndustry: user.profile.targetIndustry,
+          practicePreferences: {
+            technicalInterview: user.profile.technicalInterview,
+            behavioralInterview: user.profile.behavioralInterview,
+            caseAnalysis: user.profile.caseAnalysis,
+          },
+          contactInfo: {
+            email: user.profile.email,
+            wechat: user.profile.wechat,
+          },
+          bio: user.profile.bio,
+        };
+      })
+      .filter(Boolean);
+
+    return successResponse({ matches: formattedMatches });
   } catch (error) {
-    console.error('Get successful matches error:', error);
-    return { success: false, message: '获取匹配失败，请稍后再试' };
+    return errorResponse('获取匹配失败，请稍后再试', error);
   }
 }
 
