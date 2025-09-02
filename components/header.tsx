@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
   Menubar,
@@ -14,6 +15,7 @@ import {
 
 export function Header() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
@@ -41,10 +43,24 @@ export function Header() {
         <nav>
           {status === 'authenticated' && session ? (
             <div className="flex items-center gap-4">
-              <Link href="/profile" className="text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition">
+              <Link 
+                href="/profile" 
+                className={`text-sm font-medium transition ${
+                  pathname === '/profile' 
+                    ? 'text-blue-600 font-semibold' 
+                    : 'text-gray-700 hover:text-blue-600 hover:underline'
+                }`}
+              >
                 个人资料
               </Link>
-              <Link href="/matches" className="text-sm font-medium text-gray-700 hover:text-blue-600 hover:underline transition">
+              <Link 
+                href="/matches" 
+                className={`text-sm font-medium transition ${
+                  pathname === '/matches' 
+                    ? 'text-blue-600 font-semibold' 
+                    : 'text-gray-700 hover:text-blue-600 hover:underline'
+                }`}
+              >
                 匹配管理
               </Link>
               <Menubar>

@@ -20,14 +20,11 @@ function ProfilePageContent() {
   const searchParams = useSearchParams();
   const { data: session, status, update } = useSession();
   
-  // 检测是否从匹配页面跳转而来
   const fromMatches = searchParams.get('from') === 'matches';
   
-  // 使用useMemo缓存user对象，避免每次渲染创建新对象
   const user = useMemo(() => {
     if (!session?.user?.id) return null;
     const userId = parseInt(session.user.id);
-    // 确保ID是有效的正整数
     if (isNaN(userId) || userId <= 0) return null;
     return {
       id: userId,
@@ -35,14 +32,12 @@ function ProfilePageContent() {
     };
   }, [session?.user?.id, session?.user?.name, session?.user?.email]);
 
-  // 使用简单的profile hook
-  const { profile, updateProfile } = useProfile(user?.id);
+  const { profile, isLoading: profileLoading, updateProfile } = useProfile(user?.id);
   
   const [isLoading, setIsLoading] = useState(false);
   const [showOtherCompanyInput, setShowOtherCompanyInput] = useState(false);
   const [otherCompanyName, setOtherCompanyName] = useState('');
   
-  // Form state - 从profile初始化
   const [formData, setFormData] = useState<ProfileFormData & {name: string}>({
     name: '',
     jobType: 'DA',
@@ -58,7 +53,6 @@ function ProfilePageContent() {
     bio: '',
   });
 
-  // 重定向未认证用户
   useEffect(() => {
     if (status === 'loading') return;
     if (status === 'unauthenticated') {
@@ -67,7 +61,6 @@ function ProfilePageContent() {
     }
   }, [status, router]);
 
-  // 同步profile到表单
   useEffect(() => {
     if (profile) {
       const newFormData = {
@@ -86,13 +79,11 @@ function ProfilePageContent() {
       };
       setFormData(newFormData);
       
-      // 检查是否选择了"其他"公司
       if (profile.targetCompany === 'other') {
         setShowOtherCompanyInput(true);
         setOtherCompanyName(profile.otherCompanyName || '');
       }
     } else if (session?.user?.name) {
-      // 没有profile时，只初始化用户名
       setFormData(prev => ({
         ...prev,
         name: session.user.name || '',
@@ -101,7 +92,6 @@ function ProfilePageContent() {
   }, [profile, session?.user?.name]);
 
   const handleInputChange = (field: string, value: any) => {
-    // 防御性检查：如果是下拉框字段且新值为空字符串，但当前已有值，则忽略该更改
     if (['experienceLevel', 'targetCompany', 'targetIndustry'].includes(field) && 
         value === '' && 
         formData[field as keyof typeof formData]) {
@@ -121,24 +111,63 @@ function ProfilePageContent() {
       return;
     }
 
+    // 验证必填字段
+    if (!formData.name.trim()) {
+      toast.error('请输入显示名称');
+      return;
+    }
+
+    if (!formData.jobType) {
+      toast.error('请选择岗位类型');
+      return;
+    }
+
+    if (!formData.experienceLevel) {
+      toast.error('请选择经验水平');
+      return;
+    }
+
+    if (!formData.targetCompany) {
+      toast.error('请选择目标公司');
+      return;
+    }
+
+    if (formData.targetCompany === 'other' && !otherCompanyName.trim()) {
+      toast.error('请输入目标公司名称');
+      return;
+    }
+
+    if (!formData.targetIndustry) {
+      toast.error('请选择目标行业');
+      return;
+    }
+
+    // 验证至少选择一种练习内容
+    if (!formData.technicalInterview && !formData.behavioralInterview && !formData.caseAnalysis) {
+      toast.error('请至少选择一种期望练习内容');
+      return;
+    }
+
+    // 验证至少填写一种联系方式
+    if (!formData.email?.trim() && !formData.wechat?.trim() && !formData.linkedin?.trim()) {
+      toast.error('请至少填写一种联系方式');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // 准备提交数据 - 过滤空字符串，避免覆盖已有数据
       const submitData: ProfileFormData = {
         ...formData,
-        // 如果下拉框字段为空字符串，不要发送（避免覆盖现有数据）
         targetCompany: formData.targetCompany || undefined,
         targetIndustry: formData.targetIndustry || undefined,
         experienceLevel: formData.experienceLevel || undefined,
-        // 如果选择了"其他"公司，使用otherCompanyName
         otherCompanyName: formData.targetCompany === 'other' ? otherCompanyName : undefined
       };
       
       const result = await updateProfile(submitData);
 
       if (result.success) {
-        // 如果更新了名称，需要更新session
         if (formData.name && formData.name !== session?.user?.name) {
           await update({ name: formData.name });
         }
@@ -162,7 +191,6 @@ function ProfilePageContent() {
 
   return (
     <AuthLayout>
-      {/* 全屏背景渐变 */}
       <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-white to-gray-50 -z-10" aria-hidden="true"></div>
       <div className="flex min-h-screen items-center justify-center w-full">
         <Card className="w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10">
@@ -172,7 +200,6 @@ function ProfilePageContent() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* 用户名字段 */}
               <div className="space-y-2">
                 <Label htmlFor="name">显示名称 <span className="text-red-500 ml-1">*</span></Label>
                 <Input
@@ -180,7 +207,6 @@ function ProfilePageContent() {
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="请输入您的显示名称"
-                  required
                 />
                 <p className="text-sm text-gray-500">这是其他用户看到的您的名称</p>
               </div>
@@ -206,8 +232,8 @@ function ProfilePageContent() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="experienceLevel">经验水平 <span className="text-red-500 ml-1">*</span></Label>
-                  {profile && formData.experienceLevel && formData.experienceLevel !== '应届' ? (
-                    <Select key={`experienceLevel-${profile.experienceLevel}`} value={formData.experienceLevel} onValueChange={(value) => handleInputChange('experienceLevel', value)}>
+                  {!profileLoading ? (
+                    <Select key={`experienceLevel-${profile?.experienceLevel || 'default'}`} value={formData.experienceLevel} onValueChange={(value) => handleInputChange('experienceLevel', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="请选择经验水平" />
                       </SelectTrigger>
@@ -220,7 +246,7 @@ function ProfilePageContent() {
                     </Select>
                   ) : (
                     <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
-                      {profile && formData.experienceLevel === '应届' ? '应届' : '加载中...'}
+                      加载中...
                     </div>
                   )}
                 </div>
@@ -229,8 +255,8 @@ function ProfilePageContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="targetCompany">目标公司 <span className="text-red-500 ml-1">*</span></Label>
-                  {profile && formData.targetCompany ? (
-                    <Select key={`targetCompany-${profile.targetCompany}`} value={formData.targetCompany} onValueChange={(value) => {
+                  {!profileLoading ? (
+                    <Select key={`targetCompany-${profile?.targetCompany || 'default'}`} value={formData.targetCompany} onValueChange={(value) => {
                       handleInputChange('targetCompany', value);
                       setShowOtherCompanyInput(value === 'other');
                     }}>
@@ -261,8 +287,8 @@ function ProfilePageContent() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="targetIndustry">目标行业 <span className="text-red-500 ml-1">*</span></Label>
-                  {profile && formData.targetIndustry ? (
-                    <Select key={`targetIndustry-${profile.targetIndustry}`} value={formData.targetIndustry} onValueChange={(value) => handleInputChange('targetIndustry', value)}>
+                  {!profileLoading ? (
+                    <Select key={`targetIndustry-${profile?.targetIndustry || 'default'}`} value={formData.targetIndustry} onValueChange={(value) => handleInputChange('targetIndustry', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="请选择目标行业" />
                       </SelectTrigger>
