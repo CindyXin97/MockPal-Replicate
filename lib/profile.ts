@@ -24,7 +24,7 @@ type GetProfileResult =
   | { success: false; message: string };
 
 // Create or update user profile
-export async function saveUserProfile(userId: number, profileData: ProfileFormData) {
+export async function saveUserProfile(userId: number, profileData: Partial<ProfileFormData>) {
   try {
     // Update user name if provided
     if (profileData.name) {
@@ -41,28 +41,34 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
     const existingProfile = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
 
     if (existingProfile.length > 0) {
-      // 更新资料
+      // 更新资料 - 只更新提供的字段
+      const updateData: any = { updatedAt: new Date() };
+      
+      // 只添加非undefined的字段到更新数据中
+      if (profileData.jobType !== undefined) updateData.jobType = profileData.jobType;
+      if (profileData.experienceLevel !== undefined) updateData.experienceLevel = profileData.experienceLevel;
+      if (profileData.targetCompany !== undefined) updateData.targetCompany = profileData.targetCompany || null;
+      if (profileData.targetIndustry !== undefined) updateData.targetIndustry = profileData.targetIndustry || null;
+      if (profileData.otherCompanyName !== undefined) updateData.otherCompanyName = profileData.otherCompanyName || null;
+      if (profileData.technicalInterview !== undefined) updateData.technicalInterview = profileData.technicalInterview;
+      if (profileData.behavioralInterview !== undefined) updateData.behavioralInterview = profileData.behavioralInterview;
+      if (profileData.caseAnalysis !== undefined) updateData.caseAnalysis = profileData.caseAnalysis;
+      if (profileData.email !== undefined) updateData.email = profileData.email || null;
+      if (profileData.wechat !== undefined) updateData.wechat = profileData.wechat || null;
+      if (profileData.linkedin !== undefined) updateData.linkedin = profileData.linkedin || null;
+      if (profileData.bio !== undefined) updateData.bio = profileData.bio || null;
+
       await db
         .update(userProfiles)
-        .set({
-          jobType: profileData.jobType,
-          experienceLevel: profileData.experienceLevel,
-          targetCompany: profileData.targetCompany || null,
-          targetIndustry: profileData.targetIndustry || null,
-          otherCompanyName: profileData.otherCompanyName || null,
-          technicalInterview: profileData.technicalInterview,
-          behavioralInterview: profileData.behavioralInterview,
-          caseAnalysis: profileData.caseAnalysis,
-          email: profileData.email || null,
-          wechat: profileData.wechat || null,
-          linkedin: profileData.linkedin || null,
-          bio: profileData.bio || null,
-          updatedAt: new Date(),
-        })
+        .set(updateData)
         .where(eq(userProfiles.userId, userId));
       return { success: true };
     } else {
-      // Create new profile
+      // Create new profile - 验证必需字段
+      if (!profileData.jobType || !profileData.experienceLevel) {
+        return { success: false, message: '创建资料时需要提供职位类型和经验水平' };
+      }
+
       await db.insert(userProfiles).values({
         userId,
         jobType: profileData.jobType,
@@ -70,9 +76,9 @@ export async function saveUserProfile(userId: number, profileData: ProfileFormDa
         targetCompany: profileData.targetCompany || null,
         targetIndustry: profileData.targetIndustry || null,
         otherCompanyName: profileData.otherCompanyName || null,
-        technicalInterview: profileData.technicalInterview,
-        behavioralInterview: profileData.behavioralInterview,
-        caseAnalysis: profileData.caseAnalysis,
+        technicalInterview: profileData.technicalInterview || false,
+        behavioralInterview: profileData.behavioralInterview || false,
+        caseAnalysis: profileData.caseAnalysis || false,
         email: profileData.email || null,
         wechat: profileData.wechat || null,
         linkedin: profileData.linkedin || null,

@@ -68,8 +68,8 @@ export default function MatchesPage() {
       const successfulResult = await fetchSuccessfulMatches(user.id);
       
       const potentialMatches = (potentialResult.success && 'matches' in potentialResult) ? potentialResult.matches || [] : [];
-      const successfulMatches = (successfulResult.success && 'matches' in successfulResult) 
-        ? (successfulResult.matches?.filter(match => match !== null) as Match[]) || []
+      const successfulMatches = (successfulResult.success && 'matches' in successfulResult && Array.isArray(successfulResult.matches)) 
+        ? (successfulResult.matches.filter(match => match !== null) as Match[])
         : [];
         
       // 使用dispatch更新所有状态
@@ -104,7 +104,7 @@ export default function MatchesPage() {
           toast.success(result.message || '匹配成功！');
           const successfulResult = await fetchSuccessfulMatches(user.id);
           // 更新成功匹配列表
-          if (successfulResult.success && 'matches' in successfulResult && successfulResult.matches) {
+          if (successfulResult.success && 'matches' in successfulResult && Array.isArray(successfulResult.matches)) {
             const filteredMatches = successfulResult.matches.filter(match => match !== null) as Match[];
             dispatch({ type: 'LOAD_MATCHES', payload: { potentialMatches: state.potentialMatches, successfulMatches: filteredMatches } });
           }

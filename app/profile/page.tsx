@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
@@ -15,7 +15,7 @@ import { ProfileFormData } from '@/lib/profile';
 import { TARGET_COMPANIES, TARGET_INDUSTRIES } from '@/lib/constants';
 import { useProfile } from '@/lib/useProfile';
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status, update } = useSession();
@@ -312,5 +312,13 @@ export default function ProfilePage() {
         </Card>
       </div>
     </AuthLayout>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">加载中...</div>}>
+      <ProfilePageContent />
+    </Suspense>
   );
 }
