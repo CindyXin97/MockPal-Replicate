@@ -70,7 +70,7 @@ function ProfilePageContent() {
   // 同步profile到表单
   useEffect(() => {
     if (profile) {
-      setFormData({
+      const newFormData = {
         name: profile.name || session?.user?.name || '',
         jobType: profile.jobType || 'DA',
         experienceLevel: profile.experienceLevel || '应届',
@@ -83,7 +83,8 @@ function ProfilePageContent() {
         wechat: profile.wechat || '',
         linkedin: profile.linkedin || '',
         bio: profile.bio || '',
-      });
+      };
+      setFormData(newFormData);
       
       // 检查是否选择了"其他"公司
       if (profile.targetCompany === 'other') {
@@ -116,9 +117,13 @@ function ProfilePageContent() {
     setIsLoading(true);
 
     try {
-      // 准备提交数据
+      // 准备提交数据 - 过滤空字符串，避免覆盖已有数据
       const submitData: ProfileFormData = {
         ...formData,
+        // 如果下拉框字段为空字符串，不要发送（避免覆盖现有数据）
+        targetCompany: formData.targetCompany || undefined,
+        targetIndustry: formData.targetIndustry || undefined,
+        experienceLevel: formData.experienceLevel || undefined,
         // 如果选择了"其他"公司，使用otherCompanyName
         otherCompanyName: formData.targetCompany === 'other' ? otherCompanyName : undefined
       };
