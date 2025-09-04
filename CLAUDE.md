@@ -158,7 +158,7 @@ npm run lint
 
 **邮件配置**: 
 - 集中式服务防止多个Resend实例
-- 发件人：`MockPal <noreply@mockpal.com>` 
+- 发件人：`MockPal <noreply@mockpals.com>` 
 - 模板包含24小时过期提示
 - 与NextAuth验证流程集成
 

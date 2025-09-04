@@ -39,7 +39,7 @@ export const authConfig: NextAuthOptions = {
       },
     }),
     EmailProvider({
-      from: 'MockPal <onboarding@resend.dev>',
+      from: 'MockPal <noreply@mockpals.com>',
       sendVerificationRequest,
     }),
     CredentialsProvider({
