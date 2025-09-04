@@ -17,6 +17,7 @@ import { useProfile } from '@/lib/useProfile';
 import type { Match } from '@/lib/store';
 import { matchesReducer, initialMatchesState, type MatchesAction } from '@/lib/matches-reducer';
 import React from 'react';
+import '@/styles/success.css';
 
 export default function MatchesPage() {
   const router = useRouter();
@@ -200,13 +201,27 @@ export default function MatchesPage() {
   return (
     <AuthLayout>
       <div className="flex flex-col min-h-screen pt-20">
-        <div className="w-full max-w-3xl mx-auto">
-          <Tabs value={state.activeTab} onValueChange={(value) => dispatch({ type: 'SET_TAB', payload: value })} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="browse">浏览候选人</TabsTrigger>
-              <TabsTrigger value="matches">成功匹配</TabsTrigger>
-            </TabsList>
+        {/* 响应式Tab导航区域 */}
+        <div className="responsive-container">
+          <div className="tab-nav">
+            <button
+              className={state.activeTab === "browse" ? "active" : ""}
+              onClick={() => dispatch({ type: "SET_TAB", payload: "browse" })}
+            >
+              浏览候选人
+            </button>
+            <button
+              className={state.activeTab === "matches" ? "active" : ""}
+              onClick={() => dispatch({ type: "SET_TAB", payload: "matches" })}
+            >
+              成功匹配
+            </button>
+          </div>
+        </div>
 
+        {/* 响应式内容区域 */}
+        <div className="responsive-container">
+          <Tabs value={state.activeTab} onValueChange={(value) => dispatch({ type: 'SET_TAB', payload: value })} className="w-full">
             <TabsContent value="browse" className="space-y-4">
               {state.isLoading ? (
                 <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 bg-white p-6 animate-pulse">
@@ -340,69 +355,59 @@ export default function MatchesPage() {
                 </>
               )}
             </TabsContent>
-
             <TabsContent value="matches" className="space-y-4">
               {state.isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="cards-container">
                   {[1, 2, 3, 4].map((i) => (
-                    <Card key={i} className="overflow-hidden animate-pulse">
-                      <div className="p-6">
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-                          <div>
-                            <div className="h-5 bg-gray-200 rounded w-24 mb-2"></div>
-                            <div className="h-4 bg-gray-200 rounded w-32"></div>
-                          </div>
-                        </div>
-                        <div className="h-4 bg-gray-200 rounded w-full mb-4"></div>
-                        <div className="space-y-3">
-                          <div>
-                            <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
-                            <div className="flex gap-2">
-                              <div className="h-6 bg-gray-200 rounded-full w-16"></div>
-                              <div className="h-6 bg-gray-200 rounded-full w-20"></div>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="h-4 bg-gray-200 rounded w-16 mb-2"></div>
-                            <div className="h-4 bg-gray-200 rounded w-40"></div>
-                            <div className="h-4 bg-gray-200 rounded w-36 mt-1"></div>
-                          </div>
-                          <div className="flex gap-2 mt-4">
-                            <div className="h-8 bg-gray-200 rounded w-20"></div>
-                          </div>
-                          <div className="flex items-center gap-4 mt-4">
-                            <div className="h-4 bg-gray-200 rounded w-20"></div>
-                            <div className="h-4 bg-gray-200 rounded w-8"></div>
-                            <div className="h-4 bg-gray-200 rounded w-8"></div>
-                          </div>
+                    <div key={i} className="card animate-pulse">
+                      <div className="card-header">
+                        <div className="avatar"></div>
+                        <div>
+                          <div className="name"></div>
+                          <div className="title"></div>
                         </div>
                       </div>
-                    </Card>
+                      <div className="card-body">
+                        <div className="intro"></div>
+                        <div className="tags">
+                          <div className="tag"></div>
+                          <div className="tag"></div>
+                        </div>
+                        <div className="contact"></div>
+                      </div>
+                      <div className="card-footer">
+                        <div className="contact-button"></div>
+                        <div className="status"></div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : (
                 <>
                   {state.activeTab === 'matches' && state.showBanner && (
-                    <div className="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-700 p-4 mb-4 flex items-center justify-between">
-                      <span>🎉 恭喜匹配成功！记得及时填写面试反馈，这将帮助系统为你和他人匹配到更合适的练习伙伴哦～</span>
-                      <button
-                        onClick={() => dispatch({ type: 'TOGGLE_BANNER' })}
-                        className="ml-4 px-12 py-1 min-w-[160px] whitespace-nowrap rounded bg-yellow-300 hover:bg-yellow-400 text-yellow-900 font-medium transition-colors"
-                      >
-                        我知道了
-                      </button>
+                    <div className="notification yellow">
+                      <div className="message">
+                        <span className="icon">🎉</span>
+                        恭喜匹配成功！记得及时填写面试反馈，这将帮助系统为你和他人匹配到更合适的练习伙伴哦～
+                      </div>
+                      <div className="action">
+                        <button onClick={() => dispatch({ type: 'TOGGLE_BANNER' })}>
+                          我知道了
+                        </button>
+                      </div>
                     </div>
                   )}
                   {state.activeTab === 'matches' && (
-                    <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-4 mb-4 rounded flex items-center justify-between">
-                      <span>🎯 已成功匹配！建议主动联系对方，约定模拟面试时间，体验更佳哦～</span>
-                      <button
-                        className="ml-4 px-3 py-1 rounded bg-blue-300 hover:bg-blue-400 text-blue-900 font-medium transition-colors"
-                        onClick={() => dispatch({ type: 'TOGGLE_GUIDE' })}
-                      >
-                        查看面试指南
-                      </button>
+                    <div className="notification blue">
+                      <div className="message">
+                        <span className="icon">🎯</span>
+                        已成功匹配！建议主动联系对方，约定模拟面试时间，体验更佳哦～
+                      </div>
+                      <div className="action">
+                        <button onClick={() => dispatch({ type: 'TOGGLE_GUIDE' })}>
+                          查看面试指南
+                        </button>
+                      </div>
                     </div>
                   )}
                   {state.showGuide && (
@@ -425,80 +430,62 @@ export default function MatchesPage() {
                     </div>
                   )}
                   {state.successfulMatches.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="cards-container">
                       {state.successfulMatches.map((match) => (
-                        <Card key={match.id} className="overflow-hidden">
-                          <CardHeader className="pb-2">
-                            <div className="flex items-center gap-4">
-                              <Avatar>
-                                <div className="flex items-center justify-center w-full h-full bg-primary text-primary-foreground font-bold">
-                                  {(match.username || '?').charAt(0).toUpperCase()}
-                                </div>
-                              </Avatar>
-                              <div>
-                                <CardTitle className="text-lg">{match.username || '匿名用户'}</CardTitle>
-                                <p className="text-sm text-muted-foreground">
-                                  {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
-                                </p>
+                        <div key={match.id} className="card">
+                          <div className="card-header">
+                            <div className="avatar">
+                              {(match.username || '?').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="name">{match.username || '匿名用户'}</div>
+                              <div className="title">
+                                {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
                               </div>
                             </div>
-                          </CardHeader>
-                          <CardContent className="space-y-3 pt-2">
+                          </div>
+                          <div className="card-body">
                             {match.bio && (
-                              <p className="text-base text-gray-500 text-center max-w-xs mx-auto">{match.bio}</p>
+                              <div className="intro">{match.bio}</div>
                             )}
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium">期望练习内容</p>
-                              <div className="flex gap-2 flex-wrap">
-                                {match.practicePreferences?.technicalInterview && (
-                                  <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
-                                    技术面
-                                  </span>
-                                )}
-                                {match.practicePreferences?.behavioralInterview && (
-                                  <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
-                                    行为面
-                                  </span>
-                                )}
-                                {match.practicePreferences?.caseAnalysis && (
-                                  <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
-                                    案例分析
-                                  </span>
-                                )}
-                              </div>
+                            <div className="tags">
+                              {match.practicePreferences?.technicalInterview && (
+                                <span className="tag">技术面</span>
+                              )}
+                              {match.practicePreferences?.behavioralInterview && (
+                                <span className="tag">行为面</span>
+                              )}
+                              {match.practicePreferences?.caseAnalysis && (
+                                <span className="tag">案例分析</span>
+                              )}
                             </div>
                             {match.contactInfo && (
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium">联系方式</p>
+                              <div className="contact">
+                                联系方式：
                                 {match.contactInfo.email && (
-                                  <p className="text-sm text-muted-foreground">
-                                    邮箱：{match.contactInfo.email}
-                                  </p>
+                                  <a href={`mailto:${match.contactInfo.email}`}>
+                                    {match.contactInfo.email}
+                                  </a>
                                 )}
                                 {match.contactInfo.wechat && (
-                                  <p className="text-sm text-muted-foreground">
-                                    微信：{match.contactInfo.wechat}
-                                  </p>
+                                  <div>微信：{match.contactInfo.wechat}</div>
                                 )}
                                 {match.contactInfo.linkedin && (
-                                  <p className="text-sm text-muted-foreground">
-                                    LinkedIn：{match.contactInfo.linkedin}
-                                  </p>
+                                  <div>LinkedIn：{match.contactInfo.linkedin}</div>
                                 )}
                               </div>
                             )}
-                            <div className="flex gap-2 mt-4">
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleShowContactTemplates(match)}
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                💬 联系模板
-                              </Button>
-                            </div>
-                            <div className="mt-4 flex items-center gap-4">
-                              <span className="text-sm font-medium text-blue-600">是否完成面试？</span>
-                              <label className="flex items-center gap-1">
+                          </div>
+                          <div className="card-footer">
+                            <button 
+                              className="contact-button"
+                              onClick={() => handleShowContactTemplates(match)}
+                            >
+                              联系模板
+                            </button>
+                            <div className="status">
+                              是否完成面试？
+                              <label>
                                 <input
                                   type="radio"
                                   name={`interview_${match.id}`}
@@ -508,7 +495,7 @@ export default function MatchesPage() {
                                 />
                                 是
                               </label>
-                              <label className="flex items-center gap-1">
+                              <label>
                                 <input
                                   type="radio"
                                   name={`interview_${match.id}`}
@@ -519,40 +506,39 @@ export default function MatchesPage() {
                                 否
                               </label>
                             </div>
-                            {state.interviewStatus[match.id] === 'yes' && (
-                              <div className="mt-2">
-                                <label className="block text-sm font-medium mb-1">请填写你的面试反馈：</label>
-                                <textarea
-                                  className="w-full border rounded p-2 mb-2"
-                                  rows={3}
-                                  value={state.feedbacks[match.id] || ''}
-                                  onChange={e => handleFeedbackChange(match.id, e.target.value)}
-                                  placeholder="请描述你的面试体验、收获或建议"
-                                  disabled={state.submitted[match.id]}
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleFeedbackSubmit(match.id)}
-                                  disabled={state.submitted[match.id] || !state.feedbacks[match.id]}
-                                >
-                                  {state.submitted[match.id] ? '已提交' : '提交反馈'}
-                                </Button>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
+                          </div>
+                          {state.interviewStatus[match.id] === 'yes' && (
+                            <div className="feedback-form">
+                              <label>请填写你的面试反馈：</label>
+                              <textarea
+                                className="feedback-form textarea"
+                                rows={3}
+                                value={state.feedbacks[match.id] || ''}
+                                onChange={e => handleFeedbackChange(match.id, e.target.value)}
+                                placeholder="请描述你的面试体验、收获或建议"
+                                disabled={state.submitted[match.id]}
+                              />
+                              <button
+                                className="contact-button"
+                                onClick={() => handleFeedbackSubmit(match.id)}
+                                disabled={state.submitted[match.id] || !state.feedbacks[match.id]}
+                              >
+                                {state.submitted[match.id] ? '已提交' : '提交反馈'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </div>
                   ) : (
-                    <Card className="w-full max-w-2xl mx-auto">
-                      <CardContent className="text-center py-12">
-                        <p className="text-xl mb-4">暂无成功匹配</p>
-                        <p className="text-muted-foreground mb-4">
-                          继续浏览候选人，找到你的练习伙伴
-                        </p>
-                        <Button onClick={() => dispatch({ type: 'SET_TAB', payload: 'browse' })}>浏览候选人</Button>
-                      </CardContent>
-                    </Card>
+                    <div className="cards-container">
+                      <div className="card">
+                        <div className="card-body text-center py-12">
+                          <p className="text-xl mb-4">暂无成功匹配</p>
+                          <p className="text-gray-500">继续浏览候选人，找到合适的练习伙伴吧！</p>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </>
               )}
