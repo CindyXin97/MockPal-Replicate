@@ -7,8 +7,8 @@
 ## 配置详情
 
 ✅ **域名已验证**：
-- 已验证域名：`mockpal.com`
-- 发件人地址：`noreply@mockpal.com`
+- 已验证域名：`mockpals.com`
+- 发件人地址：`noreply@mockpals.com`
 - 可以发送邮件到任意邮箱地址
 
 ## 如何测试
@@ -44,7 +44,7 @@
 // 成功发送
 {
   "id": "email_id",
-  "from": "onboarding@resend.dev",
+  "from": "MockPal <noreply@mockpals.com>",
   "to": "qq007523@gmail.com",
   "created_at": "2025-08-08T00:00:00.000Z"
 }
