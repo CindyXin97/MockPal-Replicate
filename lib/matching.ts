@@ -140,7 +140,7 @@ export async function getPotentialMatches(userId: number) {
       success: true,
       matches: finalList.map(user => ({
         id: user.id,
-        username: user.username || user.name,
+        username: user.name,
         jobType: user.profile?.jobType,
         experienceLevel: user.profile?.experienceLevel,
         targetCompany: user.profile?.targetCompany,
@@ -300,7 +300,7 @@ export async function getSuccessfulMatches(userId: number) {
 
         return {
           id: user.id,
-          username: user.username || user.name,
+          username: user.name,
           jobType: user.profile.jobType,
           experienceLevel: user.profile.experienceLevel,
           targetCompany: user.profile.targetCompany,

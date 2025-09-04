@@ -17,7 +17,6 @@ import { useProfile } from '@/lib/useProfile';
 import type { Match } from '@/lib/store';
 import { matchesReducer, initialMatchesState, type MatchesAction } from '@/lib/matches-reducer';
 import React from 'react';
-import '@/styles/success.css';
 
 export default function MatchesPage() {
   const router = useRouter();
@@ -201,27 +200,17 @@ export default function MatchesPage() {
   return (
     <AuthLayout>
       <div className="flex flex-col min-h-screen pt-20">
-        {/* 响应式Tab导航区域 */}
-        <div className="responsive-container">
-          <div className="tab-nav">
-            <button
-              className={state.activeTab === "browse" ? "active" : ""}
-              onClick={() => dispatch({ type: "SET_TAB", payload: "browse" })}
-            >
-              浏览候选人
-            </button>
-            <button
-              className={state.activeTab === "matches" ? "active" : ""}
-              onClick={() => dispatch({ type: "SET_TAB", payload: "matches" })}
-            >
-              成功匹配
-            </button>
-          </div>
-        </div>
-
-        {/* 响应式内容区域 */}
-        <div className="responsive-container">
-          <Tabs value={state.activeTab} onValueChange={(value) => dispatch({ type: 'SET_TAB', payload: value })} className="w-full">
+        {/* 使用shadcn/ui的Tabs组件 */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Tabs 
+            value={state.activeTab} 
+            onValueChange={(value) => dispatch({ type: 'SET_TAB', payload: value })} 
+            className="w-full"
+          >
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
+              <TabsTrigger value="browse">浏览候选人</TabsTrigger>
+              <TabsTrigger value="matches">成功匹配</TabsTrigger>
+            </TabsList>
             <TabsContent value="browse" className="space-y-4">
               {state.isLoading ? (
                 <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 bg-white p-6 animate-pulse">
@@ -357,57 +346,65 @@ export default function MatchesPage() {
             </TabsContent>
             <TabsContent value="matches" className="space-y-4">
               {state.isLoading ? (
-                <div className="cards-container">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 w-full">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="card animate-pulse">
-                      <div className="card-header">
-                        <div className="avatar"></div>
-                        <div>
-                          <div className="name"></div>
-                          <div className="title"></div>
+                    <Card key={i} className="animate-pulse">
+                      <CardHeader>
+                        <div className="flex items-center">
+                          <div className="w-12 h-12 rounded-full bg-gray-200 mr-3"></div>
+                          <div>
+                            <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-32"></div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="card-body">
-                        <div className="intro"></div>
-                        <div className="tags">
-                          <div className="tag"></div>
-                          <div className="tag"></div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-4 bg-gray-200 rounded w-full mb-3"></div>
+                        <div className="flex gap-2 mb-3">
+                          <div className="h-6 bg-gray-200 rounded-full w-16"></div>
+                          <div className="h-6 bg-gray-200 rounded-full w-20"></div>
                         </div>
-                        <div className="contact"></div>
-                      </div>
-                      <div className="card-footer">
-                        <div className="contact-button"></div>
-                        <div className="status"></div>
-                      </div>
-                    </div>
+                        <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                      </CardContent>
+                      <CardFooter>
+                        <div className="h-8 bg-gray-200 rounded w-20"></div>
+                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      </CardFooter>
+                    </Card>
                   ))}
                 </div>
               ) : (
                 <>
                   {state.activeTab === 'matches' && state.showBanner && (
-                    <div className="notification yellow">
-                      <div className="message">
-                        <span className="icon">🎉</span>
-                        恭喜匹配成功！记得及时填写面试反馈，这将帮助系统为你和他人匹配到更合适的练习伙伴哦～
+                    <div className="flex items-center justify-between p-4 mb-5 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+                      <div className="flex items-center">
+                        <span className="text-xl mr-2">🎉</span>
+                        <span className="text-sm">恭喜匹配成功！记得及时填写面试反馈，这将帮助系统为你和他人匹配到更合适的练习伙伴哦～</span>
                       </div>
-                      <div className="action">
-                        <button onClick={() => dispatch({ type: 'TOGGLE_BANNER' })}>
-                          我知道了
-                        </button>
-                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="ml-4 bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200"
+                        onClick={() => dispatch({ type: 'TOGGLE_BANNER' })}
+                      >
+                        我知道了
+                      </Button>
                     </div>
                   )}
                   {state.activeTab === 'matches' && (
-                    <div className="notification blue">
-                      <div className="message">
-                        <span className="icon">🎯</span>
-                        已成功匹配！建议主动联系对方，约定模拟面试时间，体验更佳哦～
+                    <div className="flex items-center justify-between p-4 mb-5 bg-blue-50 border border-blue-200 rounded-lg text-blue-800">
+                      <div className="flex items-center">
+                        <span className="text-xl mr-2">🎯</span>
+                        <span className="text-sm">已成功匹配！建议主动联系对方，约定模拟面试时间，体验更佳哦～</span>
                       </div>
-                      <div className="action">
-                        <button onClick={() => dispatch({ type: 'TOGGLE_GUIDE' })}>
-                          查看面试指南
-                        </button>
-                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="ml-4 bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-200"
+                        onClick={() => dispatch({ type: 'TOGGLE_GUIDE' })}
+                      >
+                        查看面试指南
+                      </Button>
                     </div>
                   )}
                   {state.showGuide && (
@@ -430,114 +427,125 @@ export default function MatchesPage() {
                     </div>
                   )}
                   {state.successfulMatches.length > 0 ? (
-                    <div className="cards-container">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 w-full">
                       {state.successfulMatches.map((match) => (
-                        <div key={match.id} className="card">
-                          <div className="card-header">
-                            <div className="avatar">
-                              {(match.username || '?').charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="name">{match.username || '匿名用户'}</div>
-                              <div className="title">
-                                {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
+                        <Card key={match.id} className="bg-white border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200">
+                          <CardHeader>
+                            <div className="flex items-center">
+                              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-lg mr-3">
+                                {(match.username || '?').charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <CardTitle className="text-lg text-gray-800">{match.username || '匿名用户'}</CardTitle>
+                                <CardDescription className="text-sm text-gray-500">
+                                  {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
+                                </CardDescription>
                               </div>
                             </div>
-                          </div>
-                          <div className="card-body">
+                          </CardHeader>
+                          <CardContent className="space-y-4">
                             {match.bio && (
-                              <div className="intro">{match.bio}</div>
+                              <p className="text-sm text-gray-600">{match.bio}</p>
                             )}
-                            <div className="tags">
+                            <div className="flex flex-wrap gap-2">
                               {match.practicePreferences?.technicalInterview && (
-                                <span className="tag">技术面</span>
+                                <span className="inline-block px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">技术面</span>
                               )}
                               {match.practicePreferences?.behavioralInterview && (
-                                <span className="tag">行为面</span>
+                                <span className="inline-block px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">行为面</span>
                               )}
                               {match.practicePreferences?.caseAnalysis && (
-                                <span className="tag">案例分析</span>
+                                <span className="inline-block px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">案例分析</span>
                               )}
                             </div>
                             {match.contactInfo && (
-                              <div className="contact">
-                                联系方式：
+                              <div className="text-sm text-gray-600">
+                                <p className="font-medium mb-1">联系方式：</p>
                                 {match.contactInfo.email && (
-                                  <a href={`mailto:${match.contactInfo.email}`}>
+                                  <a href={`mailto:${match.contactInfo.email}`} className="text-blue-600 hover:text-blue-800 underline block">
                                     {match.contactInfo.email}
                                   </a>
                                 )}
                                 {match.contactInfo.wechat && (
-                                  <div>微信：{match.contactInfo.wechat}</div>
+                                  <p>微信：{match.contactInfo.wechat}</p>
                                 )}
                                 {match.contactInfo.linkedin && (
-                                  <div>LinkedIn：{match.contactInfo.linkedin}</div>
+                                  <p>LinkedIn：{match.contactInfo.linkedin}</p>
                                 )}
                               </div>
                             )}
-                          </div>
-                          <div className="card-footer">
-                            <button 
-                              className="contact-button"
-                              onClick={() => handleShowContactTemplates(match)}
-                            >
-                              联系模板
-                            </button>
-                            <div className="status">
-                              是否完成面试？
-                              <label>
-                                <input
-                                  type="radio"
-                                  name={`interview_${match.id}`}
-                                  value="yes"
-                                  checked={state.interviewStatus[match.id] === 'yes'}
-                                  onChange={() => handleInterviewChange(match.id, 'yes')}
-                                />
-                                是
-                              </label>
-                              <label>
-                                <input
-                                  type="radio"
-                                  name={`interview_${match.id}`}
-                                  value="no"
-                                  checked={state.interviewStatus[match.id] === 'no'}
-                                  onChange={() => handleInterviewChange(match.id, 'no')}
-                                />
-                                否
-                              </label>
-                            </div>
-                          </div>
-                          {state.interviewStatus[match.id] === 'yes' && (
-                            <div className="feedback-form">
-                              <label>请填写你的面试反馈：</label>
-                              <textarea
-                                className="feedback-form textarea"
-                                rows={3}
-                                value={state.feedbacks[match.id] || ''}
-                                onChange={e => handleFeedbackChange(match.id, e.target.value)}
-                                placeholder="请描述你的面试体验、收获或建议"
-                                disabled={state.submitted[match.id]}
-                              />
-                              <button
-                                className="contact-button"
-                                onClick={() => handleFeedbackSubmit(match.id)}
-                                disabled={state.submitted[match.id] || !state.feedbacks[match.id]}
+                          </CardContent>
+                          <CardFooter className="flex flex-col items-start space-y-4">
+                            <div className="flex items-center justify-between w-full">
+                              <Button 
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleShowContactTemplates(match)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
                               >
-                                {state.submitted[match.id] ? '已提交' : '提交反馈'}
-                              </button>
+                                联系模板
+                              </Button>
+                              <div className="text-sm text-gray-700">
+                                <span className="font-medium mr-2">是否完成面试？</span>
+                                <label className="inline-flex items-center mr-3">
+                                  <input
+                                    type="radio"
+                                    name={`interview_${match.id}`}
+                                    value="yes"
+                                    checked={state.interviewStatus[match.id] === 'yes'}
+                                    onChange={() => handleInterviewChange(match.id, 'yes')}
+                                    className="mr-1"
+                                  />
+                                  是
+                                </label>
+                                <label className="inline-flex items-center">
+                                  <input
+                                    type="radio"
+                                    name={`interview_${match.id}`}
+                                    value="no"
+                                    checked={state.interviewStatus[match.id] === 'no'}
+                                    onChange={() => handleInterviewChange(match.id, 'no')}
+                                    className="mr-1"
+                                  />
+                                  否
+                                </label>
+                              </div>
                             </div>
-                          )}
-                        </div>
+                            {state.interviewStatus[match.id] === 'yes' && (
+                              <div className="w-full p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  请填写你的面试反馈：
+                                </label>
+                                <textarea
+                                  className="w-full border border-gray-300 rounded-md px-3 py-2 mb-3 text-sm resize-vertical min-h-20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
+                                  rows={3}
+                                  value={state.feedbacks[match.id] || ''}
+                                  onChange={e => handleFeedbackChange(match.id, e.target.value)}
+                                  placeholder="请描述你的面试体验、收获或建议"
+                                  disabled={state.submitted[match.id]}
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleFeedbackSubmit(match.id)}
+                                  disabled={state.submitted[match.id] || !state.feedbacks[match.id]}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400"
+                                >
+                                  {state.submitted[match.id] ? '已提交' : '提交反馈'}
+                                </Button>
+                              </div>
+                            )}
+                          </CardFooter>
+                        </Card>
                       ))}
                     </div>
                   ) : (
-                    <div className="cards-container">
-                      <div className="card">
-                        <div className="card-body text-center py-12">
-                          <p className="text-xl mb-4">暂无成功匹配</p>
+                    <div className="w-full">
+                      <Card className="mx-auto">
+                        <CardContent className="text-center py-12">
+                          <p className="text-xl mb-4 text-gray-700">暂无成功匹配</p>
                           <p className="text-gray-500">继续浏览候选人，找到合适的练习伙伴吧！</p>
-                        </div>
-                      </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   )}
                 </>

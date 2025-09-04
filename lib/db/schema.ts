@@ -16,7 +16,6 @@ import {
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   email: varchar('email', { length: 255 }).unique(),
-  username: varchar('username', { length: 255 }),
   emailVerified: timestamp('email_verified'),
   passwordHash: varchar('password_hash', { length: 255 }),
   image: text('image'),
