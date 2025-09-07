@@ -9,7 +9,7 @@
     "lint": "next lint",
     "migrate": "tsx scripts/migrate.ts",
     "setup-prod-db": "tsx scripts/setup-production-db.ts",
-    "seed-questions": "tsx scripts/seed-all-questions.ts"
+    "seed-questions": "tsx scripts/seed-production-questions.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",

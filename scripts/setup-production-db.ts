@@ -195,8 +195,8 @@ async function seedInterviewQuestions() {
   }
 
   // 导入种子脚本
-  const { seedAllQuestions } = await import('./seed-all-questions');
-  await seedAllQuestions();
+  const { seedProductionQuestions } = await import('./seed-production-questions');
+  await seedProductionQuestions();
 }
 
 async function verifyData() {
