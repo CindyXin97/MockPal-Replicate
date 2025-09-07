@@ -132,6 +132,7 @@ export async function setPassword(email: string, token: string, password: string
       technicalInterview: false,
       behavioralInterview: false,
       caseAnalysis: false,
+      statsQuestions: false,
       email: email,
       wechat: '',
       linkedin: '',
