@@ -44,15 +44,29 @@ export async function getUserAchievement(userId: number) {
     const experiencePoints = interviewCount;
     const currentLevel = calculateLevel(experiencePoints);
 
-    // 创建新的成就记录
-    const newAchievement = await db.insert(userAchievements).values({
-      userId,
-      totalInterviews: interviewCount,
-      experiencePoints,
-      currentLevel,
-    }).returning();
+    try {
+      // 尝试创建新的成就记录
+      const newAchievement = await db.insert(userAchievements).values({
+        userId,
+        totalInterviews: interviewCount,
+        experiencePoints,
+        currentLevel,
+      }).returning();
 
-    return newAchievement[0];
+      return newAchievement[0];
+    } catch (insertError) {
+      console.warn('Could not insert achievement (table may not exist):', insertError);
+      // 如果插入失败（可能表不存在），返回计算的默认值
+      return {
+        id: 0,
+        userId,
+        totalInterviews: interviewCount,
+        experiencePoints,
+        currentLevel,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    }
   } catch (error) {
     console.error('Error getting user achievement:', error);
     // 返回默认值
