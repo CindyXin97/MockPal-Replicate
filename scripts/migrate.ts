@@ -188,6 +188,52 @@ async function main() {
     `;
     console.log('Created verification_tokens table');
 
+    // Create interview questions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS interview_questions (
+        id SERIAL PRIMARY KEY,
+        company VARCHAR(100) NOT NULL,
+        position VARCHAR(100) NOT NULL,
+        question_type VARCHAR(50) NOT NULL,
+        difficulty VARCHAR(20) NOT NULL,
+        question TEXT NOT NULL,
+        recommended_answer TEXT,
+        tags TEXT,
+        source VARCHAR(100),
+        year INTEGER NOT NULL,
+        is_verified BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+    
+    // Create indexes for interview questions table
+    await sql`CREATE INDEX IF NOT EXISTS idx_interview_questions_company ON interview_questions(company)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_interview_questions_position ON interview_questions(position)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_interview_questions_type ON interview_questions(question_type)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_interview_questions_year ON interview_questions(year)`;
+    console.log('Created interview_questions table');
+
+    // Create interview requests table
+    await sql`
+      CREATE TABLE IF NOT EXISTS interview_requests (
+        id SERIAL PRIMARY KEY,
+        company VARCHAR(100) NOT NULL,
+        position VARCHAR(100) NOT NULL,
+        message TEXT,
+        status VARCHAR(20) DEFAULT 'pending' NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+    
+    // Create indexes for interview requests table
+    await sql`CREATE INDEX IF NOT EXISTS idx_interview_requests_company ON interview_requests(company)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_interview_requests_position ON interview_requests(position)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_interview_requests_status ON interview_requests(status)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_interview_requests_created_at ON interview_requests(created_at)`;
+    console.log('Created interview_requests table');
+
     console.log('Migration completed successfully');
   } catch (error) {
     console.error('Migration failed:', error);

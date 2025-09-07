@@ -101,6 +101,34 @@ export const userDailyViews = pgTable('user_daily_views', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// 面试真题表
+export const interviewQuestions = pgTable('interview_questions', {
+  id: serial('id').primaryKey(),
+  company: varchar('company', { length: 100 }).notNull(), // 公司名称
+  position: varchar('position', { length: 100 }).notNull(), // 职位
+  questionType: varchar('question_type', { length: 50 }).notNull(), // 题目类型: technical, behavioral, case_study, stats
+  difficulty: varchar('difficulty', { length: 20 }).notNull(), // 难度: easy, medium, hard
+  question: text('question').notNull(), // 问题内容
+  recommendedAnswer: text('recommended_answer'), // 推荐答案
+  tags: text('tags'), // 标签，JSON格式存储
+  source: varchar('source', { length: 100 }), // 来源
+  year: integer('year').notNull(), // 年份
+  isVerified: boolean('is_verified').default(false), // 是否已验证
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 面经需求表
+export const interviewRequests = pgTable('interview_requests', {
+  id: serial('id').primaryKey(),
+  company: varchar('company', { length: 100 }).notNull(), // 公司名称
+  position: varchar('position', { length: 100 }).notNull(), // 职位名称
+  message: text('message'), // 补充说明
+  status: varchar('status', { length: 20 }).default('pending').notNull(), // pending, processing, completed
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(userProfiles, {
@@ -174,4 +202,6 @@ export type Feedback = InferModel<typeof feedbacks>;
 export type UserAchievement = InferModel<typeof userAchievements>;
 export type Account = InferModel<typeof accounts>;
 export type Session = InferModel<typeof sessions>;
-export type VerificationToken = InferModel<typeof verificationTokens>; 
+export type VerificationToken = InferModel<typeof verificationTokens>;
+export type InterviewQuestion = InferModel<typeof interviewQuestions>;
+export type InterviewRequest = InferModel<typeof interviewRequests>; 

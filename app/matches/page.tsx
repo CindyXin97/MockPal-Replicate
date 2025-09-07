@@ -20,6 +20,458 @@ import { matchesReducer, initialMatchesState, type MatchesAction } from '@/lib/m
 import React from 'react';
 import '@/styles/success.css';
 
+// 面试真题类型定义
+interface InterviewQuestion {
+  id: number;
+  company: string;
+  position: string;
+  questionType: string;
+  difficulty: string;
+  question: string;
+  recommendedAnswer?: string;
+  source?: string;
+  year: number;
+}
+
+// 面试真题组件
+const InterviewQuestionsTab = () => {
+  const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    company: 'all',
+    position: 'all',
+    questionType: 'all',
+    difficulty: 'all',
+    year: 'all'
+  });
+  const [filterOptions, setFilterOptions] = useState({
+    companies: [] as string[],
+    positions: [] as string[],
+    years: [] as number[],
+    questionTypes: ['technical', 'behavioral', 'case_study', 'stats'],
+    difficulties: ['easy', 'medium', 'hard']
+  });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0
+  });
+  const [expandedQuestions, setExpandedQuestions] = useState(new Set<number>());
+
+  useEffect(() => {
+    fetchQuestions();
+  }, [filters, pagination.page]);
+
+  const fetchQuestions = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        ...filters,
+        page: pagination.page.toString(),
+        limit: pagination.limit.toString()
+      });
+
+      const response = await fetch(`/api/interview-questions?${params}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setQuestions(data.data.questions);
+        setPagination(data.data.pagination);
+        setFilterOptions(data.data.filters);
+      }
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  const toggleQuestion = (questionId: number) => {
+    setExpandedQuestions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(questionId)) {
+        newSet.delete(questionId);
+      } else {
+        newSet.add(questionId);
+      }
+      return newSet;
+    });
+  };
+
+  const getQuestionTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      technical: '🔧 技术面试',
+      behavioral: '🧑‍🤝‍🧑 行为面试',
+      case_study: '🧩 案例分析',
+      stats: '📊 统计问题'
+    };
+    return typeMap[type] || type;
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    const colorMap: Record<string, string> = {
+      easy: 'text-green-600 bg-green-50',
+      medium: 'text-yellow-600 bg-yellow-50',
+      hard: 'text-red-600 bg-red-50'
+    };
+    return colorMap[difficulty] || 'text-gray-600 bg-gray-50';
+  };
+
+  const getDifficultyLabel = (difficulty: string) => {
+    const labelMap: Record<string, string> = {
+      easy: '简单',
+      medium: '中等',
+      hard: '困难'
+    };
+    return labelMap[difficulty] || difficulty;
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto px-4">
+      {/* 页面标题 */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">面试真题库 📝</h1>
+        <p className="text-gray-600">收集各大公司最新面试题目和推荐答案</p>
+      </div>
+
+      {/* 筛选器 */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>筛选条件</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">公司</label>
+              <select
+                value={filters.company}
+                onChange={(e) => handleFilterChange('company', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="all">全部公司</option>
+                {filterOptions.companies.map(company => (
+                  <option key={company} value={company}>{company}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">职位</label>
+              <select
+                value={filters.position}
+                onChange={(e) => handleFilterChange('position', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="all">全部职位</option>
+                {filterOptions.positions.map(position => (
+                  <option key={position} value={position}>{position}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">题目类型</label>
+              <select
+                value={filters.questionType}
+                onChange={(e) => handleFilterChange('questionType', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="all">全部类型</option>
+                {filterOptions.questionTypes.map(type => (
+                  <option key={type} value={type}>{getQuestionTypeLabel(type)}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">难度</label>
+              <select
+                value={filters.difficulty}
+                onChange={(e) => handleFilterChange('difficulty', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="all">全部难度</option>
+                {filterOptions.difficulties.map(difficulty => (
+                  <option key={difficulty} value={difficulty}>{getDifficultyLabel(difficulty)}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">年份</label>
+              <select
+                value={filters.year}
+                onChange={(e) => handleFilterChange('year', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="all">全部年份</option>
+                {filterOptions.years.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 题目列表 */}
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+                <div className="h-20 bg-gray-200 rounded"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : questions.length > 0 ? (
+        <>
+          <div className="space-y-4">
+            {questions.map((question) => (
+              <Card key={question.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-blue-600">{question.company}</span>
+                      <span className="text-gray-400">·</span>
+                      <span className="text-gray-600">{question.position}</span>
+                      <span className="text-gray-400">·</span>
+                      <span className="text-gray-500">{question.year}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty)}`}>
+                        {getDifficultyLabel(question.difficulty)}
+                      </span>
+                      <span className="text-xs text-gray-500">{getQuestionTypeLabel(question.questionType)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h3 className="font-medium text-gray-800 mb-2">问题：</h3>
+                    <p className="text-gray-700 leading-relaxed">{question.question}</p>
+                  </div>
+
+                  {question.recommendedAnswer && (
+                    <div className="mb-4">
+                      <button
+                        onClick={() => toggleQuestion(question.id)}
+                        className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                      >
+                        {expandedQuestions.has(question.id) ? '🔽' : '▶️'} 查看推荐答案
+                      </button>
+                      
+                      {expandedQuestions.has(question.id) && (
+                        <div className="mt-3 p-4 bg-blue-50 rounded-lg">
+                          <h4 className="font-medium text-gray-800 mb-2">推荐答案：</h4>
+                          <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+                            {question.recommendedAnswer}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {question.source && (
+                    <div className="text-xs text-gray-500">
+                      来源：{question.source}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* 分页 */}
+          {pagination.totalPages > 1 && (
+            <div className="flex justify-center mt-8">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pagination.page === 1}
+                  onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+                >
+                  上一页
+                </Button>
+                <span className="text-sm text-gray-600">
+                  第 {pagination.page} 页，共 {pagination.totalPages} 页
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pagination.page === pagination.totalPages}
+                  onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+                >
+                  下一页
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <div className="text-4xl mb-4">🔍</div>
+            <h3 className="text-lg font-medium text-gray-800 mb-2">暂无相关题目</h3>
+            <p className="text-gray-600">请调整筛选条件或稍后再试</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 面经需求收集 */}
+      <div className="mt-8">
+        <RequestInterviewExperienceCard />
+      </div>
+    </div>
+  );
+};
+
+// 面经需求收集组件
+const RequestInterviewExperienceCard = () => {
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    company: '',
+    position: '',
+    message: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.company.trim() || !formData.position.trim()) {
+      toast.error('请填写公司和职位信息');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/interview-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        toast.success('需求提交成功！我们会尽快收集相关面经');
+        setFormData({ company: '', position: '', message: '' });
+        setShowForm(false);
+      } else {
+        throw new Error('提交失败');
+      }
+    } catch (error) {
+      toast.error('提交失败，请稍后再试');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 max-w-4xl mx-auto">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="text-2xl">💡</div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">想看更多面经？</h3>
+              <p className="text-gray-600 text-sm">告诉我们你希望看到哪些公司和岗位的面试题目</p>
+            </div>
+          </div>
+          <Button
+            onClick={() => setShowForm(!showForm)}
+            variant="outline"
+            size="sm"
+            className="border-blue-300 text-blue-600 hover:bg-blue-50"
+          >
+            {showForm ? '收起' : '提需求'}
+          </Button>
+        </div>
+
+        {showForm && (
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4 border-t border-blue-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  公司名称 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.company}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
+                  placeholder="如：Google, Meta, 字节跳动..."
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  职位名称 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.position}
+                  onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
+                  placeholder="如：数据科学家, 产品分析师..."
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                补充说明 <span className="text-gray-500">(可选)</span>
+              </label>
+              <textarea
+                value={formData.message}
+                onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                placeholder="如：希望看到2025年最新的面试题目，或者特定的面试类型..."
+                rows={3}
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowForm(false)}
+                disabled={submitting}
+              >
+                取消
+              </Button>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {submitting ? '提交中...' : '提交需求'}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center gap-1">
+            <span className="text-green-500">✓</span>
+            <span>已收集 15+ 公司</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-green-500">✓</span>
+            <span>41+ 道真题</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-blue-500">🔥</span>
+            <span>2025年最新</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function MatchesPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -321,6 +773,12 @@ export default function MatchesPage() {
               onClick={() => dispatch({ type: "SET_TAB", payload: "guide" })}
             >
               🧭 面试指南
+            </button>
+            <button
+              className={state.activeTab === "questions" ? "active" : ""}
+              onClick={() => dispatch({ type: "SET_TAB", payload: "questions" })}
+            >
+              📝 面试真题
             </button>
           </div>
         </div>
@@ -754,6 +1212,10 @@ export default function MatchesPage() {
                   </div>
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="questions" className="space-y-4 mt-8">
+              <InterviewQuestionsTab />
             </TabsContent>
           </Tabs>
         </div>
