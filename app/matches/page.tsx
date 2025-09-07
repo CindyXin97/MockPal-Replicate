@@ -314,6 +314,12 @@ export default function MatchesPage() {
             >
               成功匹配
             </button>
+            <button
+              className={state.activeTab === "guide" ? "active" : ""}
+              onClick={() => dispatch({ type: "SET_TAB", payload: "guide" })}
+            >
+              面试指南🧭
+            </button>
           </div>
         </div>
 
@@ -498,19 +504,6 @@ export default function MatchesPage() {
                     </div>
                   )}
                   {state.activeTab === 'matches' && (
-                    <div className="notification blue">
-                      <div className="message">
-                        <span className="icon">🎯</span>
-                        已成功匹配！建议主动联系对方，约定模拟面试时间，体验更佳哦～
-                      </div>
-                      <div className="action">
-                        <button onClick={() => dispatch({ type: 'TOGGLE_GUIDE' })}>
-                          查看面试指南
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {state.activeTab === 'matches' && (
                     <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
                       <div className="flex items-center">
                         <span className="text-xl mr-3">🏆</span>
@@ -520,25 +513,6 @@ export default function MatchesPage() {
                             完成面试获得经验，提升等级！🌱<span className="font-medium">新用户</span>(0次) → ⭐<span className="font-medium">面试新手</span>(1-4次) → 🌟<span className="font-medium">面试新星</span>(5-9次) → 🌙<span className="font-medium">面试达人</span>(10-14次) → 👑<span className="font-medium">面试导师</span>(15次+)
                           </p>
                         </div>
-                      </div>
-                    </div>
-                  )}
-                  {state.showGuide && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-                      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-                        <h2 className="text-lg font-bold mb-2">面试流程指引</h2>
-                        <ol className="list-decimal pl-5 space-y-1 text-sm text-gray-700 mb-4">
-                          <li>主动联系对方，约定模拟面试时间（建议30-60分钟）。</li>
-                          <li>双方可轮流扮演面试官和候选人，提前准备问题。</li>
-                          <li>面试结束后，互相给出反馈和建议。</li>
-                          <li>有问题可随时查看平台FAQ或联系客服。</li>
-                        </ol>
-                        <button
-                          className="mt-2 px-4 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white font-medium"
-                          onClick={() => dispatch({ type: 'TOGGLE_GUIDE' })}
-                        >
-                          关闭
-                        </button>
                       </div>
                     </div>
                   )}
@@ -670,6 +644,114 @@ export default function MatchesPage() {
                   )}
                 </>
               )}
+            </TabsContent>
+
+            <TabsContent value="guide" className="space-y-4 mt-8">
+              <div className="max-w-4xl mx-auto px-4">
+                {/* 页面标题 */}
+                <div className="text-center mb-8">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-2">面试流程指引 🧭</h1>
+                  <p className="text-gray-600">如何使用MockPal成功匹配并进行模拟面试</p>
+                </div>
+
+                {/* 流程步骤 */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* 第一步：寻找匹配 */}
+                  <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-blue-600">
+                        🎯 寻找匹配
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        <li>• 在"浏览候选人"查看推荐用户</li>
+                        <li>• 查看职位类型和经验水平</li>
+                        <li>• 点击"喜欢"表示愿意一起练习</li>
+                        <li>• 双方互相喜欢即可成功匹配</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  {/* 第二步：联系约面 */}
+                  <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-green-600">
+                        📞 联系约面
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        <li>• 点击"联系TA"获取联系方式</li>
+                        <li>• 主动联系约定面试时间（30-60分钟）</li>
+                        <li>• 确定面试平台和会议链接</li>
+                        <li>• 提前沟通面试重点和角色分配</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  {/* 第三步：面试准备 */}
+                  <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-purple-600">
+                        📚 面试准备
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        <li>• 双方轮流扮演面试官和候选人</li>
+                        <li>• 参考网站面试题目（随时更新）</li>
+                        <li>• 根据经验水平调整题目难度</li>
+                        <li>• 准备算法、系统设计或行为问题</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  {/* 第四步：面试与反馈 */}
+                  <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-orange-600">
+                        🎤 面试反馈
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        <li>• 按真实面试流程进行模拟</li>
+                        <li>• 面试结束后互相给出反馈</li>
+                        <li>• 在平台标记"是否完成面试"</li>
+                        <li>• 分享改进建议和学习资源</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* 简化的帮助信息 */}
+                <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg text-center">
+                  <p className="text-sm text-gray-600">
+                    有问题可查看FAQ或联系客服 
+                    <span className="text-gray-500 ml-2">Royal__city</span>
+                  </p>
+                </div>
+
+                {/* 底部行动按钮 */}
+                <div className="mt-6 text-center">
+                  <div className="flex justify-center space-x-4">
+                    <Button 
+                      onClick={() => dispatch({ type: "SET_TAB", payload: "browse" })}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      开始寻找匹配
+                    </Button>
+                    <Button 
+                      onClick={() => dispatch({ type: "SET_TAB", payload: "matches" })}
+                      variant="outline"
+                      className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                    >
+                      查看成功匹配
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
