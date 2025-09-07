@@ -19,6 +19,7 @@ export type UserProfile = {
   technicalInterview?: boolean;
   behavioralInterview?: boolean;
   caseAnalysis?: boolean;
+  statsQuestions?: boolean;
   email?: string;
   wechat?: string;
   linkedin?: string;
