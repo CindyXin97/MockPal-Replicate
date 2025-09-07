@@ -222,9 +222,9 @@ export default function MatchesPage() {
         {/* 响应式内容区域 */}
         <div className="responsive-container">
           <Tabs value={state.activeTab} onValueChange={(value) => dispatch({ type: 'SET_TAB', payload: value })} className="w-full">
-            <TabsContent value="browse" className="space-y-4">
+            <TabsContent value="browse" className="space-y-4 mt-8">
               {state.isLoading ? (
-                <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 bg-white p-6 animate-pulse">
+                <Card className="w-full max-w-lg mx-auto rounded-3xl shadow-xl border-0 bg-white p-5 animate-pulse mt-4">
                   <div className="flex flex-col items-center">
                     <div className="w-28 h-28 rounded-full bg-gray-200 mb-4"></div>
                     <div className="h-6 bg-gray-200 rounded-lg w-32 mb-2"></div>
@@ -265,7 +265,7 @@ export default function MatchesPage() {
                   </div>
                 </Card>
               ) : !isComplete ? (
-                <Card className="w-full max-w-2xl mx-auto rounded-3xl shadow-xl border-0 bg-gradient-to-br from-blue-50 via-white to-blue-100 p-12 flex flex-col items-center">
+                <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 bg-gradient-to-br from-blue-50 via-white to-blue-100 p-10 flex flex-col items-center mt-4">
                   <div className="text-6xl mb-6">👤</div>
                   <h2 className="text-2xl font-extrabold text-blue-700 mb-4 text-center">
                     完善资料，开始匹配！
@@ -284,7 +284,7 @@ export default function MatchesPage() {
               ) : (
                 <>
                   {currentMatch ? (
-                    <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 bg-white p-6">
+                    <Card className="w-full max-w-lg mx-auto rounded-3xl shadow-xl border-0 bg-white p-5 mt-4">
                       <div className="flex flex-col items-center">
                         <div className="w-28 h-28 rounded-full bg-blue-50 shadow flex items-center justify-center mb-4 border-4 border-white">
                           <img
@@ -340,7 +340,7 @@ export default function MatchesPage() {
                       </div>
                     </Card>
                   ) : (
-                    <Card className="w-full max-w-2xl mx-auto rounded-[2.5rem] shadow-2xl border-0 bg-gradient-to-br from-blue-100 via-white to-blue-200 p-12 flex flex-col items-center">
+                    <Card className="w-full max-w-xl mx-auto rounded-[2.5rem] shadow-2xl border-0 bg-gradient-to-br from-blue-100 via-white to-blue-200 p-10 flex flex-col items-center mt-4">
                       <div className="text-6xl mb-4">🦉</div>
                       <p className="text-2xl font-extrabold text-blue-700 mb-1 tracking-wide">今日推荐已用完！</p>
                       <p className="text-lg text-blue-900/80 mb-8">明天再来发现新伙伴吧～<br/>或者刷新看看有没有新机会！</p>
@@ -355,7 +355,7 @@ export default function MatchesPage() {
                 </>
               )}
             </TabsContent>
-            <TabsContent value="matches" className="space-y-4">
+            <TabsContent value="matches" className="space-y-4 mt-8">
               {state.isLoading ? (
                 <div className="cards-container">
                   {[1, 2, 3, 4].map((i) => (
