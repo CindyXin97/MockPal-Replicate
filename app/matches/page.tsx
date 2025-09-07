@@ -516,10 +516,9 @@ export default function MatchesPage() {
                         <span className="text-xl mr-3">🏆</span>
                         <div className="text-sm text-blue-800">
                           <p className="font-semibold mb-2">成就等级系统</p>
-                          <p className="mb-2">完成面试获得经验，提升等级！每次成功面试都会让你更接近下一个成就！</p>
-                          <div className="text-xs leading-relaxed">
-                            🌱<span className="font-medium">新用户</span>(0次) → ⭐<span className="font-medium">面试新手</span>(1-4次) → 🌟<span className="font-medium">面试新星</span>(5-9次) → 🌙<span className="font-medium">面试达人</span>(10-14次) → 👑<span className="font-medium">面试导师</span>(15次+)
-                          </div>
+                          <p className="leading-relaxed">
+                            完成面试获得经验，提升等级！🌱<span className="font-medium">新用户</span>(0次) → ⭐<span className="font-medium">面试新手</span>(1-4次) → 🌟<span className="font-medium">面试新星</span>(5-9次) → 🌙<span className="font-medium">面试达人</span>(10-14次) → 👑<span className="font-medium">面试导师</span>(15次+)
+                          </p>
                         </div>
                       </div>
                     </div>
