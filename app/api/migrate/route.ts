@@ -29,9 +29,17 @@ export async function POST(req: NextRequest) {
     // 创建索引
     await sql`CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id)`;
 
+    // 添加 stats_questions 字段到 user_profiles 表
+    try {
+      await sql`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS stats_questions BOOLEAN DEFAULT false`;
+    } catch (error) {
+      // 如果字段已存在，忽略错误
+      console.log('stats_questions字段可能已存在:', error);
+    }
+
     return NextResponse.json({ 
       success: true, 
-      message: 'user_achievements表创建成功' 
+      message: '数据库迁移完成：user_achievements表和stats_questions字段已创建' 
     });
   } catch (error) {
     console.error('Migration error:', error);
