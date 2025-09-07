@@ -130,6 +130,21 @@ async function main() {
     `;
     console.log('Created user_daily_views table');
 
+    // Create user achievements table
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_achievements (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        total_interviews INTEGER DEFAULT 0 NOT NULL,
+        experience_points INTEGER DEFAULT 0 NOT NULL,
+        current_level VARCHAR(50) DEFAULT '新用户' NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id)`;
+    console.log('Created user_achievements table');
+
     // Create OAuth accounts table
     // Drop existing accounts table if it exists and recreate with correct structure
     await sql`DROP TABLE IF EXISTS accounts CASCADE`;

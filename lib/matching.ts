@@ -326,8 +326,11 @@ export async function getSuccessfulMatches(userId: number) {
 }
 
 // 保存面试反馈
+import { updateUserAchievement } from './achievements';
+
 export async function saveFeedback({ matchId, userId, interviewStatus, content }: { matchId: number, userId: number, interviewStatus: string, content?: string }) {
   try {
+    // 保存反馈
     await db.insert(feedbacks).values({
       matchId,
       userId,
@@ -336,6 +339,12 @@ export async function saveFeedback({ matchId, userId, interviewStatus, content }
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+    // 如果面试状态是成功的，更新用户成就
+    if (interviewStatus === 'yes') {
+      await updateUserAchievement(userId);
+    }
+
     return { success: true };
   } catch (error) {
     console.error('Save feedback error:', error);

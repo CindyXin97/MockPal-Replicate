@@ -47,6 +47,7 @@ export type MatchesAction =
   | { type: 'SET_INTERVIEW_STATUS'; payload: { matchId: number; status: 'yes' | 'no' } }
   | { type: 'SET_FEEDBACK'; payload: { matchId: number; feedback: string } }
   | { type: 'SUBMIT_FEEDBACK'; payload: number }
+  | { type: 'REVERT_FEEDBACK_SUBMISSION'; payload: number }
   | { type: 'TOGGLE_BANNER' }
   | { type: 'TOGGLE_GUIDE' }
   | { type: 'SHOW_CONTACT_TEMPLATES'; payload: Match | null }
@@ -109,6 +110,15 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
         submitted: {
           ...state.submitted,
           [action.payload]: true,
+        },
+      };
+
+    case 'REVERT_FEEDBACK_SUBMISSION':
+      return {
+        ...state,
+        submitted: {
+          ...state.submitted,
+          [action.payload]: false,
         },
       };
 

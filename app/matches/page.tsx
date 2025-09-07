@@ -83,6 +83,12 @@ export default function MatchesPage() {
       setPotentialMatches(potentialMatches);
       setCurrentMatchIndex(0);
       
+      // 加载所有用户的成就数据
+      const allUserIds = [...potentialMatches, ...successfulMatches].map(match => match.id);
+      if (allUserIds.length > 0) {
+        loadUserAchievements(allUserIds);
+      }
+      
       if (potentialResult.message) {
         toast.error(potentialResult.message);
       }
@@ -90,6 +96,24 @@ export default function MatchesPage() {
       console.error('Error loading matches:', error);
       toast.error('获取匹配失败，请稍后再试');
       dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
+  // 加载用户成就数据
+  const loadUserAchievements = async (userIds: number[]) => {
+    try {
+      const response = await fetch(`/api/achievements?userIds=${userIds.join(',')}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const achievementMap: { [userId: number]: any } = {};
+        data.achievements.forEach((achievement: any) => {
+          achievementMap[achievement.userId] = achievement;
+        });
+        setUserAchievements(achievementMap);
+      }
+    } catch (error) {
+      console.error('Error loading user achievements:', error);
     }
   };
 
@@ -171,22 +195,42 @@ export default function MatchesPage() {
     if (!user) return;
     const interviewStatusValue = state.interviewStatus[matchId];
     const feedbackContent = state.feedbacks[matchId] || '';
+    
+    // 先标记为已提交（乐观更新）
     dispatch({ type: 'SUBMIT_FEEDBACK', payload: matchId });
-    const res = await fetch('/api/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        matchId,
-        userId: user.id,
-        interviewStatus: interviewStatusValue || '',
-        content: feedbackContent,
-      }),
-    }).then(r => r.json());
-    if (res.success) {
-      toast.success('反馈已提交');
-    } else {
-      toast.error(res.message || '提交失败');
-      dispatch({ type: 'SUBMIT_FEEDBACK', payload: matchId });
+    
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matchId,
+          userId: user.id,
+          interviewStatus: interviewStatusValue || '',
+          content: feedbackContent,
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        if (interviewStatusValue === 'yes') {
+          toast.success('反馈已提交！🌟 恭喜获得面试经验，等级提升！');
+          // 重新加载当前用户的成就数据
+          loadUserAchievements([user.id]);
+        } else {
+          toast.success('反馈已提交，感谢你的诚实反馈！');
+        }
+      } else {
+        // 如果失败，恢复提交状态
+        dispatch({ type: 'REVERT_FEEDBACK_SUBMISSION', payload: matchId });
+        toast.error(data.message || '保存反馈失败，请稍后再试');
+      }
+    } catch (error) {
+      // 网络错误，恢复提交状态
+      dispatch({ type: 'REVERT_FEEDBACK_SUBMISSION', payload: matchId });
+      toast.error('网络错误，请稍后再试');
+      console.error('Feedback submission error:', error);
     }
   };
 
@@ -196,6 +240,60 @@ export default function MatchesPage() {
 
   const handleCloseContactTemplates = () => {
     dispatch({ type: 'SHOW_CONTACT_TEMPLATES', payload: null });
+  };
+
+  // 用户成就数据状态
+  const [userAchievements, setUserAchievements] = useState<{ [userId: number]: any }>({});
+
+  // 获取用户成就数据
+  const getUserAchievementData = (userId: number) => {
+    const achievement = userAchievements[userId];
+    if (!achievement) {
+      return { 
+        icon: '🌱', 
+        level: '新用户', 
+        description: '欢迎加入面试练习',
+        showMoon: false
+      };
+    }
+
+    const levelMap: { [key: string]: any } = {
+      '新用户': { icon: '🌱', description: '欢迎加入面试练习', showMoon: false },
+      '面试新手': { icon: '⭐', description: '开始积累经验', showMoon: false },
+      '面试新星': { icon: '🌟', description: '积极的面试伙伴', showMoon: false },
+      '面试达人': { icon: '🌙', description: '完成第一阶段挑战', showMoon: true },
+      '面试导师': { icon: '👑', description: '经验丰富的面试专家', showMoon: true },
+    };
+
+    const levelInfo = levelMap[achievement.currentLevel] || levelMap['新用户'];
+    return {
+      ...levelInfo,
+      level: achievement.currentLevel,
+      experiencePoints: achievement.experiencePoints,
+    };
+  };
+
+  // 渲染成就等级的函数
+  const renderAchievement = (userId: number) => {
+    const achievement = getUserAchievementData(userId);
+    
+    return (
+      <div className="flex flex-col items-center justify-center mt-2">
+        {/* 成就图标和等级 */}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xl">{achievement.icon}</span>
+          <span className="text-sm font-semibold text-gray-700">{achievement.level}</span>
+          {achievement.showMoon && (
+            <span className="text-blue-400 text-lg">🌙</span>
+          )}
+        </div>
+        
+        {/* 描述文字 */}
+        <div className="text-xs text-gray-500 text-center">
+          {achievement.description}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -294,6 +392,8 @@ export default function MatchesPage() {
                           />
                         </div>
                         <div className="font-bold text-2xl font-['Poppins'] mb-2 text-gray-800">{currentMatch.username}</div>
+                        {/* 显示用户成就等级 */}
+                        {renderAchievement(currentMatch.id)}
                         {currentMatch.bio && (
                           <div className="text-base text-gray-500 mb-2 text-center max-w-xs mx-auto">{currentMatch.bio}</div>
                         )}
@@ -410,6 +510,17 @@ export default function MatchesPage() {
                       </div>
                     </div>
                   )}
+                  {state.activeTab === 'matches' && (
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center">
+                        <span className="text-xl mr-3">🏆</span>
+                        <div className="text-sm text-blue-800">
+                          <p className="font-semibold mb-1">成就等级系统</p>
+                          <p>完成面试获得经验，提升等级！🌱新用户 → ⭐面试新手 → 🌟面试新星 → 🌙面试达人 → 👑面试导师。每次成功面试都会让你更接近下一个成就！</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {state.showGuide && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
                       <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
@@ -437,8 +548,23 @@ export default function MatchesPage() {
                             <div className="avatar">
                               {(match.username || '?').charAt(0).toUpperCase()}
                             </div>
-                            <div>
+                                                        <div>
                               <div className="name">{match.username || '匿名用户'}</div>
+                                                             {/* 显示用户成就等级 */}
+                               <div className="flex items-center gap-1 mb-1">
+                                 {(() => {
+                                   const achievement = getUserAchievementData(match.id);
+                                   return (
+                                     <>
+                                       <span className="text-sm">{achievement.icon}</span>
+                                       <span className="text-xs font-medium text-gray-600">{achievement.level}</span>
+                                       {achievement.showMoon && (
+                                         <span className="text-blue-400 text-xs">🌙</span>
+                                       )}
+                                     </>
+                                   );
+                                 })()}
+                               </div>
                               <div className="title">
                                 {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
                               </div>

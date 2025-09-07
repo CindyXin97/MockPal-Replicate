@@ -80,6 +80,17 @@ export const feedbacks = pgTable('feedbacks', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// User achievements schema
+export const userAchievements = pgTable('user_achievements', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull().unique(),
+  totalInterviews: integer('total_interviews').default(0).notNull(),
+  experiencePoints: integer('experience_points').default(0).notNull(),
+  currentLevel: varchar('current_level', { length: 50 }).default('新用户').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // 用户每日浏览记录
 export const userDailyViews = pgTable('user_daily_views', {
   id: serial('id').primaryKey(),
@@ -159,6 +170,7 @@ export type User = InferModel<typeof users>;
 export type UserProfile = InferModel<typeof userProfiles>;
 export type Match = InferModel<typeof matches>;
 export type Feedback = InferModel<typeof feedbacks>;
+export type UserAchievement = InferModel<typeof userAchievements>;
 export type Account = InferModel<typeof accounts>;
 export type Session = InferModel<typeof sessions>;
 export type VerificationToken = InferModel<typeof verificationTokens>; 
