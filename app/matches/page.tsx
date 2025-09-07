@@ -456,15 +456,19 @@ const RequestInterviewExperienceCard = () => {
         <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
           <div className="flex items-center gap-1">
             <span className="text-green-500">✓</span>
-            <span>已收集 15+ 公司</span>
+            <span>已收集 8+ 公司</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-green-500">✓</span>
-            <span>41+ 道真题</span>
+            <span>17+ 道真题</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-blue-500">🔥</span>
             <span>2025年最新</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-purple-500">📚</span>
+            <span>一亩三分地</span>
           </div>
         </div>
       </CardContent>
