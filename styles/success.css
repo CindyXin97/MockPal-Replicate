@@ -91,6 +91,10 @@ a { text-decoration: none; color: inherit; }
     cursor: pointer;
     border-bottom: 4px solid transparent;
     transition: border-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .tab-nav button:hover {
@@ -99,6 +103,14 @@ a { text-decoration: none; color: inherit; }
 
 .tab-nav button.active {
     border-bottom-color: #2b6cb0;
+}
+
+/* Tab logo styling */
+.tab-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 4px;
 }
 
 /* Notification banners - 使用响应式容器 */

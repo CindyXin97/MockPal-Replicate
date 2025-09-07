@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import { useAtom } from 'jotai';
 import { toast } from 'sonner';
 import { potentialMatchesAtom, currentMatchIndexAtom } from '@/lib/store';
@@ -306,19 +307,20 @@ export default function MatchesPage() {
               className={state.activeTab === "browse" ? "active" : ""}
               onClick={() => dispatch({ type: "SET_TAB", payload: "browse" })}
             >
-              浏览候选人
+              🔍 浏览候选人
             </button>
             <button
               className={state.activeTab === "matches" ? "active" : ""}
               onClick={() => dispatch({ type: "SET_TAB", payload: "matches" })}
             >
+              <Image src="/logo-icon.png" alt="Logo" width={20} height={20} className="tab-logo" />
               成功匹配
             </button>
             <button
               className={state.activeTab === "guide" ? "active" : ""}
               onClick={() => dispatch({ type: "SET_TAB", payload: "guide" })}
             >
-              面试指南🧭
+              🧭 面试指南
             </button>
           </div>
         </div>
