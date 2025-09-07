@@ -86,7 +86,7 @@ const originalInterviewQuestions = [
     question: '如何设计一个系统来实时检测Instagram上的异常用户行为（如机器人账户）？',
     recommendedAnswer: '异常检测系统设计：1. 特征提取：用户行为特征：发布频率、互动模式、在线时间分布；内容特征：文本相似度、图片重复率、标签使用模式；网络特征：关注者质量、互动网络结构、传播模式；设备特征：设备指纹、IP地址、地理位置一致性2. 实时流处理：使用Kafka收集用户行为日志；Spark Streaming进行实时特征计算；Redis缓存用户状态和历史特征3. 异常检测算法：无监督方法：Isolation Forest、One-Class SVM、LOF；监督学习：基于已知机器人账户训练分类器；深度学习：自编码器检测异常模式4. 规则引擎：基于业务规则的快速筛选；阈值告警和自动处理5. 反馈机制：人工审核结果用于模型优化；持续学习和模型更新',
     tags: '',
-    source: '一亩三分地',
+    source: 'LeetCode Discuss',
     year: 2025,
     isVerified: true
   },
@@ -250,11 +250,11 @@ const originalInterviewQuestions = [
   },
   {
     company: 'Google',
-    position: '产品分析师',
-    questionType: 'stats',
+    position: '数据工程师',
+    questionType: 'technical',
     difficulty: 'hard',
-    question: '在分析Google Ads的点击率数据时，如何处理季节性和趋势？请描述时间序列分析方法。',
-    recommendedAnswer: '时间序列分析方法：1. 数据探索和预处理：趋势识别：使用移动平均、线性回归识别长期趋势；季节性检测：ACF/PACF图、季节性分解；异常值处理：识别和处理异常数据点；数据平稳化：差分、对数变换使序列平稳2. 分解方法：经典分解：加法模型 Y(t) = Trend(t) + Seasonal(t) + Error(t)；STL分解：Seasonal and Trend decomposition using Loess；X-11/X-13分解：更复杂的官方统计方法3. 建模方法：ARIMA模型：自回归移动平均模型处理非季节性；SARIMA模型：季节性ARIMA处理周期性模式；状态空间模型：卡尔曼滤波处理复杂动态；Prophet模型：Facebook开源的时间序列预测工具4. 外部因素整合：协变量：广告支出、竞争活动、经济指标；事件影响：节假日、产品发布、市场事件；多元时间序列：VAR模型考虑多个序列间关系5. 模型评估：样本内评估：AIC、BIC信息准则；样本外评估：MAPE、RMSE等预测误差；交叉验证：时间序列特有的验证方法6. 业务应用：预测：未来点击率的预测和置信区间；异常检测：识别异常的点击率变化；因子分析：量化各因素对点击率的贡献',
+    question: '设计一个大规模数据管道来处理Google Analytics的实时数据流，每秒需要处理100万个事件。请描述架构和技术选择。',
+    recommendedAnswer: '大规模数据管道设计：1. 数据接入层：Apache Kafka：高吞吐量消息队列，支持分区和副本；数据格式：Avro/Protobuf确保schema演化；负载均衡：多个Kafka broker分担负载2. 流处理层：Apache Beam：统一批处理和流处理API；Apache Flink：低延迟流处理，支持exactly-once语义；数据转换：清洗、聚合、丰富数据；窗口操作：滑动窗口、会话窗口处理3. 存储层：实时存储：Apache Cassandra/HBase支持高写入；批处理存储：HDFS/Google Cloud Storage；数据仓库：BigQuery进行OLAP查询；缓存层：Redis/Memcached支持快速查询4. 监控和容错：数据质量监控：数据完整性、准确性检查；系统监控：Prometheus + Grafana；容错机制：检查点、重启策略；数据血缘：跟踪数据流转和依赖5. 性能优化：分区策略：按时间、用户ID等分区；压缩：数据压缩减少存储和传输成本；并行度：根据资源调整并行度；背压处理：流量控制避免系统过载',
     tags: '',
     source: 'LeetCode Discuss',
     year: 2024,
@@ -276,7 +276,7 @@ const originalInterviewQuestions = [
   },
   {
     company: 'Amazon',
-    position: '产品分析师',
+    position: '商业分析师',
     questionType: 'case_study',
     difficulty: 'hard',
     question: 'Amazon考虑推出一个新的配送服务，如何评估这个项目的可行性和潜在ROI？',
@@ -312,7 +312,7 @@ const originalInterviewQuestions = [
   },
   {
     company: 'Amazon',
-    position: '产品分析师',
+    position: '商业分析师',
     questionType: 'behavioral',
     difficulty: 'medium',
     question: '描述一次你的分析结果与直觉或预期不符的情况，你是如何处理的？',
@@ -335,7 +335,7 @@ const originalInterviewQuestions = [
     isVerified: true
   },
 
-  // 其他公司题目 (14道)
+  // 其他公司题目 (14道) - 新增数据工程师和商业分析师题目
   {
     company: 'Microsoft',
     position: '数据分析师',
@@ -350,11 +350,11 @@ const originalInterviewQuestions = [
   },
   {
     company: 'Microsoft',
-    position: '数据科学家',
+    position: '数据工程师',
     questionType: 'technical',
     difficulty: 'medium',
-    question: '如何为Microsoft Teams设计一个用户活跃度预测模型？',
-    recommendedAnswer: '用户活跃度预测模型：1. 问题定义：活跃度定义：登录频率、消息发送、会议参与等综合指标；预测时间窗口：预测未来7天、30天的活跃度；业务目标：识别流失风险用户，制定干预策略2. 特征工程：使用行为特征：登录频率、在线时长、消息发送数量；功能使用特征：视频通话、文件共享、应用集成使用；社交网络特征：团队规模、互动网络、影响力指标；时间特征：使用时间分布、工作日vs周末的使用模式3. 数据准备：时间窗口：使用历史30天数据预测未来活跃度；标签定义：基于活跃度阈值定义活跃/非活跃用户；数据平衡：处理活跃用户占比较高的不平衡问题4. 模型选择：逻辑回归：基线模型，可解释性强；随机森林：处理特征交互，feature importance；梯度提升：XGBoost/LightGBM，高预测精度；时间序列模型：LSTM捕捉时间依赖性5. 模型评估：准确率指标：Precision、Recall、F1-score、AUC；业务指标：预测准确的用户比例、干预成功率；时间稳定性：模型在不同时间段的表现一致性',
+    question: '如何为Microsoft Teams设计一个ETL管道来处理用户活动数据？请描述数据架构和处理流程。',
+    recommendedAnswer: 'Teams数据ETL管道设计：1. 数据提取(Extract)：数据源：Teams客户端日志、服务器日志、数据库表；提取方式：CDC(Change Data Capture)实时捕获；API调用：Graph API获取用户和团队信息；日志收集：使用Azure Event Hubs收集实时事件2. 数据转换(Transform)：数据清洗：去重、格式标准化、异常值处理；数据丰富：用户信息、组织结构、地理位置；聚合计算：会议时长、消息统计、活跃度指标；隐私保护：PII数据脱敏、GDPR合规处理3. 数据加载(Load)：数据仓库：Azure Synapse Analytics存储结构化数据；数据湖：Azure Data Lake存储原始和半结构化数据；实时存储：Azure Cosmos DB支持低延迟查询4. 技术栈：编排工具：Azure Data Factory管理ETL流程；处理引擎：Spark/Databricks进行大规模数据处理；监控：Azure Monitor + Application Insights；数据质量：Great Expectations验证数据质量5. 性能优化：分区策略：按日期、租户分区；增量处理：只处理变更数据；并行处理：多线程、分布式处理；缓存策略：热数据缓存加速查询',
     tags: '',
     source: 'LeetCode Discuss',
     year: 2024,
@@ -362,7 +362,7 @@ const originalInterviewQuestions = [
   },
   {
     company: 'Netflix',
-    position: '产品分析师',
+    position: '商业分析师',
     questionType: 'case_study',
     difficulty: 'hard',
     question: '如何评估Netflix新内容投资的ROI？请设计一个完整的评估框架。',
@@ -374,11 +374,11 @@ const originalInterviewQuestions = [
   },
   {
     company: 'Uber',
-    position: '数据科学家',
+    position: '数据工程师',
     questionType: 'technical',
     difficulty: 'hard',
-    question: '设计一个算法来优化Uber的司机配送效率，考虑实时需求和供给变化。',
-    recommendedAnswer: '司机配送优化算法：1. 问题建模：目标函数：最小化乘客等待时间、最大化司机利用率、优化总行程时间；约束条件：司机容量限制、乘客时间窗口、地理约束；动态性：实时需求变化、司机位置更新、交通状况变化2. 需求预测：历史数据：基于历史订单模式预测需求热点；实时数据：当前订单量、排队乘客数；外部因素：天气、事件、交通状况；机器学习：时间序列预测、回归模型3. 供给分析：司机分布：实时司机位置和可用性；司机行为：接单偏好、工作时间模式；动态调整：司机在线/离线状态变化4. 匹配算法：贪心算法：基于距离的最近匹配；匈牙利算法：全局最优匹配；动态规划：考虑未来需求的最优决策；强化学习：在线学习最优策略5. 实时优化：流处理：使用Kafka、Storm处理实时数据；增量更新：快速更新匹配结果；负载均衡：分布式计算处理大规模数据6. 系统架构：微服务：模块化的系统设计；缓存：Redis缓存热点数据；监控：实时监控系统性能和业务指标',
+    question: '设计一个实时数据平台来处理Uber的出行数据，支持司机匹配、定价和路线优化。请描述系统架构。',
+    recommendedAnswer: 'Uber实时数据平台设计：1. 数据接入层：位置数据：司机和乘客的实时GPS数据；订单数据：下单、接单、行程状态变更；外部数据：交通状况、天气、事件信息；消息队列：Apache Kafka高吞吐量数据接入2. 流处理层：Apache Flink：低延迟流处理，支持复杂事件处理；数据处理：位置聚合、供需计算、异常检测；窗口操作：滑动窗口计算实时指标；状态管理：维护司机状态、订单状态3. 存储层：实时存储：Redis存储热数据，支持毫秒级查询；时序数据库：InfluxDB存储位置轨迹数据；图数据库：Neo4j存储路网和POI数据；数据湖：S3存储历史数据用于离线分析4. 服务层：匹配服务：基于位置、供需的实时司机匹配；定价服务：动态定价算法，考虑供需、距离、时间；路径服务：实时路径规划和ETA预测；地理服务：地理编码、逆地理编码5. 监控和运维：实时监控：Prometheus + Grafana监控系统指标；数据质量：实时数据质量检查和告警；容灾：多区域部署，故障自动切换；性能调优：根据负载动态调整资源',
     tags: '',
     source: 'LeetCode Discuss',
     year: 2024,
@@ -398,7 +398,7 @@ const originalInterviewQuestions = [
   },
   {
     company: 'Airbnb',
-    position: '数据科学家',
+    position: '商业分析师',
     questionType: 'case_study',
     difficulty: 'hard',
     question: 'Airbnb想要进入一个新的城市市场，如何评估市场机会和制定进入策略？',
@@ -446,7 +446,7 @@ const originalInterviewQuestions = [
   },
   {
     company: 'TikTok',
-    position: '产品分析师',
+    position: '商业分析师',
     questionType: 'case_study',
     difficulty: 'medium',
     question: 'TikTok的视频完成率在某个地区突然下降了12%，你会如何调查这个问题？',
@@ -494,11 +494,11 @@ const originalInterviewQuestions = [
   },
   {
     company: '阿里巴巴',
-    position: '数据科学家',
+    position: '数据工程师',
     questionType: 'technical',
     difficulty: 'hard',
-    question: '如何为淘宝设计一个实时反欺诈系统？请描述算法选择和系统架构。',
-    recommendedAnswer: '实时反欺诈系统设计：1. 欺诈类型识别：账户欺诈：虚假注册、账户盗用、批量注册；交易欺诈：虚假交易、刷单、恶意退款；支付欺诈：盗刷、套现、洗钱；商家欺诈：虚假商品、价格欺诈2. 特征工程：用户特征：注册信息、行为模式、设备指纹；交易特征：金额、频率、时间模式、商品类型；网络特征：IP地址、地理位置、网络环境；关系特征：用户关系网络、商家关联3. 实时检测算法：规则引擎：基于业务规则的快速筛选；异常检测：Isolation Forest、One-Class SVM；机器学习：随机森林、XGBoost实时评分；深度学习：神经网络检测复杂模式4. 系统架构：数据接入：Kafka接收实时交易数据；特征计算：Flink/Storm实时特征工程；模型服务：高并发的模型预测服务；决策引擎：基于规则和模型的综合决策；反馈系统：人工审核结果的模型更新5. 模型更新：在线学习：实时更新模型参数；增量训练：定期使用新数据更新模型；A/B测试：新模型的效果验证；模型监控：模型性能和数据漂移监控6. 业务集成：风险等级：输出不同等级的风险评分；处理策略：自动拦截、人工审核、额外验证；用户体验：最小化对正常用户的影响；反馈机制：处理结果的业务反馈',
+    question: '如何为淘宝设计一个大数据平台来支持实时推荐和批量分析？请描述技术架构和数据流。',
+    recommendedAnswer: '淘宝大数据平台设计：1. 数据接入层：用户行为：点击、浏览、购买、收藏等实时行为数据；商品数据：商品信息、库存、价格变化；交易数据：订单、支付、物流状态；外部数据：天气、节假日、热点事件；消息队列：Apache RocketMQ处理高并发消息2. 数据存储层：实时存储：HBase存储用户画像、商品特征；流式存储：Apache Kafka存储实时事件流；批量存储：HDFS存储历史数据；缓存层：Redis/Tair支持毫秒级查询3. 计算层：流计算：Apache Flink实时特征计算和推荐；批计算：Apache Spark离线模型训练；图计算：GraphX处理用户关系和商品关联；机器学习：PAI平台支持大规模模型训练4. 服务层：推荐服务：实时个性化推荐API；特征服务：实时特征查询和计算；模型服务：在线模型预测和A/B测试；数据服务：统一数据查询和分析接口5. 运维监控：数据质量：实时数据质量监控和修复；系统监控：集群资源、任务状态监控；性能调优：根据负载自动扩缩容；故障恢复：多机房容灾和快速恢复6. 数据治理：元数据管理：数据血缘、质量、安全；权限控制：细粒度的数据访问权限；合规性：用户隐私保护、数据合规',
     tags: '',
     source: 'LeetCode Discuss',
     year: 2024,
