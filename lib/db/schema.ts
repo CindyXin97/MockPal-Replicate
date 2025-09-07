@@ -42,6 +42,7 @@ export const userProfiles = pgTable('user_profiles', {
   technicalInterview: boolean('technical_interview').default(false),
   behavioralInterview: boolean('behavioral_interview').default(false),
   caseAnalysis: boolean('case_analysis').default(false),
+  statsQuestions: boolean('stats_questions').default(false),
   
   // Contact information (revealed after match)
   email: varchar('email', { length: 255 }),

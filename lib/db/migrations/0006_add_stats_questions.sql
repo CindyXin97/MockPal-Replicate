@@ -1,0 +1,1 @@
+ALTER TABLE user_profiles ADD COLUMN stats_questions BOOLEAN DEFAULT false; 
