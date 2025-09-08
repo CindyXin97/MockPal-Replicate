@@ -1435,7 +1435,7 @@ async function updateTechnicalQuestions() {
       SET question_type = 'case_study' 
       WHERE question_type = 'technical'
     `;
-    console.log(`✅ 已将 ${updateResult.rowCount} 道technical题目重分类为case_study\n`);
+    console.log(`✅ 已将technical题目重分类为case_study\n`);
     
     // 2. 插入新的Python/SQL编程题目
     console.log('📝 步骤2: 插入新的Python/SQL编程题目...');
