@@ -4,7 +4,7 @@ import { eq, count } from 'drizzle-orm';
 
 // 成就等级定义
 export const ACHIEVEMENT_LEVELS = {
-  '新用户': { minExperience: 0, icon: '🌱', description: '欢迎加入面试练习' },
+  '新用户': { minExperience: 0, icon: '🌱', description: '刚加入平台的新成员' },
   '面试新手': { minExperience: 1, icon: '⭐', description: '开始积累经验' },
   '面试新星': { minExperience: 5, icon: '🌟', description: '积极的面试伙伴' },
   '面试达人': { minExperience: 10, icon: '🌙', description: '完成第一阶段挑战' },

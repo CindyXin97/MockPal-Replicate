@@ -706,16 +706,16 @@ export default function MatchesPage() {
   const getUserAchievementData = (userId: number) => {
     const achievement = userAchievements[userId];
     if (!achievement) {
-      return { 
+            return {
         icon: '🌱', 
         level: '新用户', 
-        description: '欢迎加入面试练习',
+        description: '刚加入平台的新成员',
         showMoon: false
       };
     }
 
     const levelMap: { [key: string]: any } = {
-      '新用户': { icon: '🌱', description: '欢迎加入面试练习', showMoon: false },
+      '新用户': { icon: '🌱', description: '刚加入平台的新成员', showMoon: false },
       '面试新手': { icon: '⭐', description: '开始积累经验', showMoon: false },
       '面试新星': { icon: '🌟', description: '积极的面试伙伴', showMoon: false },
       '面试达人': { icon: '🌙', description: '完成第一阶段挑战', showMoon: true },
@@ -730,24 +730,81 @@ export default function MatchesPage() {
     };
   };
 
+  // 获取等级样式配置
+  const getLevelStyle = (level: string) => {
+    const levelStyles = {
+      '新用户': {
+        bg: 'bg-green-100',
+        text: 'text-green-700',
+        border: 'border-green-200',
+        hover: 'hover:bg-green-200',
+        title: '新用户标识',
+        description: '刚注册的用户，还未完成面试练习'
+      },
+      '面试新手': {
+        bg: 'bg-blue-100',
+        text: 'text-blue-700',
+        border: 'border-blue-200',
+        hover: 'hover:bg-blue-200',
+        title: '面试新手',
+        description: '开始积累面试经验，正在学习阶段'
+      },
+      '面试新星': {
+        bg: 'bg-purple-100',
+        text: 'text-purple-700',
+        border: 'border-purple-200',
+        hover: 'hover:bg-purple-200',
+        title: '面试新星',
+        description: '积极参与面试练习，表现优秀'
+      },
+      '面试达人': {
+        bg: 'bg-yellow-100',
+        text: 'text-yellow-700',
+        border: 'border-yellow-200',
+        hover: 'hover:bg-yellow-200',
+        title: '面试达人',
+        description: '经验丰富的面试者，完成第一阶段挑战'
+      },
+      '面试导师': {
+        bg: 'bg-red-100',
+        text: 'text-red-700',
+        border: 'border-red-200',
+        hover: 'hover:bg-red-200',
+        title: '面试导师',
+        description: '最高级别用户，经验丰富的面试专家'
+      }
+    };
+    
+    return levelStyles[level] || levelStyles['新用户'];
+  };
+
   // 渲染成就等级的函数
   const renderAchievement = (userId: number) => {
     const achievement = getUserAchievementData(userId);
+    const levelStyle = getLevelStyle(achievement.level);
     
     return (
       <div className="flex flex-col items-center justify-center mt-2">
         {/* 成就图标和等级 */}
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xl">{achievement.icon}</span>
-          <span className="text-sm font-semibold text-gray-700">{achievement.level}</span>
+          <div className="relative group">
+            <span className={`text-sm font-semibold px-2 py-1 rounded-md transition-all duration-200 cursor-help shadow-sm hover:shadow-md ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border} ${levelStyle.hover} border`}>
+              {achievement.level}
+            </span>
+            {/* 悬停提示 */}
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              <div className="text-center">
+                <div className="font-medium">{levelStyle.title}</div>
+                <div className="text-gray-300 mt-1">{levelStyle.description}</div>
+              </div>
+              {/* 小三角形箭头 */}
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+            </div>
+          </div>
           {achievement.showMoon && (
             <span className="text-blue-400 text-lg">🌙</span>
           )}
-        </div>
-        
-        {/* 描述文字 */}
-        <div className="text-xs text-gray-500 text-center">
-          {achievement.description}
         </div>
       </div>
     );
