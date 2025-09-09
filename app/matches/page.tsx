@@ -1317,13 +1317,13 @@ export default function MatchesPage() {
                                         onChange={e => handleFeedbackChange(match.id, e.target.value)}
                                         placeholder="请描述你的面试体验、收获或建议"
                                       />
-                                      <button
-                                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:bg-gray-400"
-                                        onClick={() => handleFeedbackSubmit(match.id)}
-                                        disabled={!state.feedbacks[match.id]}
-                                      >
-                                        提交反馈
-                                      </button>
+                                                                              <button
+                                          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:bg-gray-400"
+                                          onClick={() => handleFeedbackSubmit(match.matchId || match.id)}
+                                          disabled={!state.feedbacks[match.id]}
+                                        >
+                                          提交反馈
+                                        </button>
                                     </>
                                   )}
                                 </div>
@@ -1451,7 +1451,7 @@ export default function MatchesPage() {
                               />
                               <button
                                 className="contact-button"
-                                onClick={() => handleFeedbackSubmit(match.id)}
+                                onClick={() => handleFeedbackSubmit(match.matchId || match.id)}
                                 disabled={state.submitted[match.id] || !state.feedbacks[match.id]}
                               >
                                 {state.submitted[match.id] ? '已提交' : '提交反馈'}

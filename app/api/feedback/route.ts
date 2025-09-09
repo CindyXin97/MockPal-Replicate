@@ -3,13 +3,27 @@ import { saveFeedback } from '@/lib/matching';
 
 export async function POST(req: NextRequest) {
   try {
-    const { matchId, userId, interviewStatus, content } = await req.json();
+    const body = await req.json();
+    console.log('Feedback API - 收到请求:', body);
+    
+    const { matchId, userId, interviewStatus, content } = body;
+    
     if (!matchId || !userId || !interviewStatus) {
+      console.log('Feedback API - 参数验证失败:', { matchId, userId, interviewStatus });
       return NextResponse.json({ success: false, message: '参数不完整' }, { status: 400 });
     }
+    
+    console.log('Feedback API - 调用saveFeedback:', { matchId, userId, interviewStatus, content });
     const result = await saveFeedback({ matchId, userId, interviewStatus, content });
+    console.log('Feedback API - saveFeedback结果:', result);
+    
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ success: false, message: '服务器错误' }, { status: 500 });
+    console.error('Feedback API - 错误:', error);
+    return NextResponse.json({ 
+      success: false, 
+      message: '服务器错误',
+      error: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 } 

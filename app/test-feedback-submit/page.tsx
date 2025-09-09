@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 export default function TestFeedbackSubmit() {
   const { data: session } = useSession();
   const [result, setResult] = useState<any>(null);
+  const [dbData, setDbData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const testFeedbackSubmit = async () => {
@@ -62,11 +63,31 @@ export default function TestFeedbackSubmit() {
     }
   };
 
+  const loadDbData = async () => {
+    if (!session?.user?.id) {
+      toast.error('请先登录');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/debug-db');
+      const data = await response.json();
+      setDbData(data);
+      toast.success('数据库数据已加载');
+    } catch (error) {
+      console.error('Error loading DB data:', error);
+      toast.error('加载数据库数据失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <Card className="max-w-2xl mx-auto">
+      <Card className="max-w-4xl mx-auto">
         <CardHeader>
-          <CardTitle>反馈提交测试</CardTitle>
+          <CardTitle>反馈提交测试 & 数据库调试</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -74,12 +95,22 @@ export default function TestFeedbackSubmit() {
             <p><strong>用户名:</strong> {session?.user?.name || '未登录'}</p>
           </div>
 
-          <Button 
-            onClick={testFeedbackSubmit}
-            disabled={loading || !session?.user?.id}
-          >
-            {loading ? '测试中...' : '测试反馈提交API'}
-          </Button>
+          <div className="flex gap-4">
+            <Button 
+              onClick={testFeedbackSubmit}
+              disabled={loading || !session?.user?.id}
+            >
+              {loading ? '测试中...' : '测试反馈提交API'}
+            </Button>
+
+            <Button 
+              onClick={loadDbData}
+              disabled={loading || !session?.user?.id}
+              variant="outline"
+            >
+              {loading ? '加载中...' : '查看数据库数据'}
+            </Button>
+          </div>
 
           {result && (
             <Card>
@@ -94,13 +125,86 @@ export default function TestFeedbackSubmit() {
             </Card>
           )}
 
+          {dbData && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">数据库数据</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-2">匹配记录 (matches表):</h4>
+                  {dbData.matches && dbData.matches.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full text-xs border">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="border p-1">ID</th>
+                            <th className="border p-1">User1</th>
+                            <th className="border p-1">User2</th>
+                            <th className="border p-1">Status</th>
+                            <th className="border p-1">Contact Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dbData.matches.map((match: any) => (
+                            <tr key={match.id}>
+                              <td className="border p-1">{match.id}</td>
+                              <td className="border p-1">{match.user1Id}</td>
+                              <td className="border p-1">{match.user2Id}</td>
+                              <td className="border p-1">{match.status}</td>
+                              <td className="border p-1">{match.contactStatus || 'N/A'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">没有匹配记录</p>
+                  )}
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">反馈记录 (feedbacks表):</h4>
+                  {dbData.feedbacks && dbData.feedbacks.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full text-xs border">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="border p-1">ID</th>
+                            <th className="border p-1">Match ID</th>
+                            <th className="border p-1">User ID</th>
+                            <th className="border p-1">Status</th>
+                            <th className="border p-1">Content</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dbData.feedbacks.map((feedback: any) => (
+                            <tr key={feedback.id}>
+                              <td className="border p-1">{feedback.id}</td>
+                              <td className="border p-1">{feedback.matchId}</td>
+                              <td className="border p-1">{feedback.userId}</td>
+                              <td className="border p-1">{feedback.interviewStatus}</td>
+                              <td className="border p-1">{feedback.content}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">没有反馈记录</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="text-sm text-gray-600">
             <h3 className="font-semibold mb-2">使用说明：</h3>
             <ul className="list-disc list-inside space-y-1">
               <li>确保你已经登录</li>
-              <li>点击按钮测试反馈提交API</li>
+              <li>先点击"查看数据库数据"了解当前的匹配记录</li>
+              <li>使用真实的matchId测试反馈提交</li>
               <li>查看响应结果和控制台日志</li>
-              <li>检查是否有错误信息</li>
             </ul>
           </div>
         </CardContent>

@@ -356,24 +356,35 @@ export async function getSuccessfulMatches(userId: number) {
 // 保存面试反馈
 export async function saveFeedback({ matchId, userId, interviewStatus, content }: { matchId: number, userId: number, interviewStatus: string, content?: string }) {
   try {
+    console.log('saveFeedback - 开始保存反馈:', { matchId, userId, interviewStatus, content });
+    
     // 保存反馈
-    await db.insert(feedbacks).values({
+    const insertResult = await db.insert(feedbacks).values({
       matchId,
       userId,
       interviewStatus,
       content: content || null,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
+    }).returning();
+    
+    console.log('saveFeedback - 数据库插入结果:', insertResult);
 
     // 如果面试状态是成功的，更新用户成就
     if (interviewStatus === 'yes') {
+      console.log('saveFeedback - 更新用户成就:', userId);
       await updateUserAchievement(userId);
     }
 
+    console.log('saveFeedback - 成功完成');
     return { success: true };
   } catch (error) {
-    console.error('Save feedback error:', error);
-    return { success: false, message: '保存反馈失败，请稍后再试' };
+    console.error('saveFeedback - 错误详情:', error);
+    console.error('saveFeedback - 错误堆栈:', error instanceof Error ? error.stack : 'No stack');
+    return { 
+      success: false, 
+      message: '保存反馈失败，请稍后再试',
+      error: error instanceof Error ? error.message : String(error)
+    };
   }
 } 
