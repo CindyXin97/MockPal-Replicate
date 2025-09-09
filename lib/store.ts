@@ -51,6 +51,12 @@ export type Match = {
   contactStatus?: string | null;
   contactUpdatedAt?: string | null;
   createdAt?: string | null;
+  // 反馈信息
+  feedback?: {
+    interviewStatus: string;
+    content: string | null;
+    createdAt: string;
+  } | null;
 };
 
 // Auth state

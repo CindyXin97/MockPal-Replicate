@@ -292,6 +292,18 @@ export async function getSuccessfulMatches(userId: number) {
     // 构建Map用于快速查找
     const usersMap = new Map(matchedUsers.map(u => [u.id, u]));
 
+    // 批量查询所有匹配的反馈数据
+    const matchIds = successfulMatches.map(match => match.id);
+    const feedbacks = matchIds.length > 0 ? await db.query.feedbacks.findMany({
+      where: and(
+        inArray(feedbacks.matchId, matchIds),
+        eq(feedbacks.userId, userId)
+      )
+    }) : [];
+    
+    // 构建反馈Map用于快速查找
+    const feedbacksMap = new Map(feedbacks.map(f => [f.matchId, f]));
+
     // 组装返回数据
     const formattedMatches = successfulMatches
       .map(match => {
@@ -299,6 +311,9 @@ export async function getSuccessfulMatches(userId: number) {
         const user = usersMap.get(partnerId);
         if (!user || !user.profile) return null;
 
+        // 获取该匹配的反馈信息
+        const feedback = feedbacksMap.get(match.id);
+        
         return {
           id: user.id, // 用户ID，用于显示
           matchId: match.id, // 匹配记录ID，用于状态更新
@@ -321,6 +336,12 @@ export async function getSuccessfulMatches(userId: number) {
           contactStatus: match.contactStatus,
           createdAt: match.createdAt?.toISOString(),
           contactUpdatedAt: match.contactUpdatedAt?.toISOString(),
+          // 添加反馈信息
+          feedback: feedback ? {
+            interviewStatus: feedback.interviewStatus,
+            content: feedback.content,
+            createdAt: feedback.createdAt?.toISOString(),
+          } : null,
         };
       })
       .filter(Boolean);

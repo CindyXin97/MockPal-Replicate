@@ -547,6 +547,27 @@ export default function MatchesPage() {
       // 使用dispatch更新所有状态
       dispatch({ type: 'LOAD_MATCHES', payload: { potentialMatches, successfulMatches } });
       
+      // 初始化反馈状态 - 从服务器数据恢复已有的反馈
+      successfulMatches.forEach(match => {
+        if (match.feedback || match.contactStatus) {
+          // 确定联系状态（基于contactStatus字段）
+          let contactStatus: string | undefined;
+          if (match.contactStatus && match.contactStatus !== 'not_contacted') {
+            contactStatus = 'yes';
+          }
+          
+          dispatch({ 
+            type: 'INITIALIZE_FEEDBACK_FROM_DATA', 
+            payload: { 
+              matchId: match.matchId || match.id,
+              contactStatus,
+              interviewStatus: match.feedback?.interviewStatus,
+              feedbackContent: match.feedback?.content || undefined,
+            } 
+          });
+        }
+      });
+      
       // 同步到Jotai全局状态
       setPotentialMatches(potentialMatches);
       setCurrentMatchIndex(0);
@@ -1271,22 +1292,40 @@ export default function MatchesPage() {
                               {/* 面试反馈 - 只在进行面试后显示 */}
                               {state.contactStatus?.[match.id] === 'yes' && state.interviewStatus[match.id] === 'yes' && (
                                 <div className="feedback-section">
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">✍️ 请填写你的面试反馈：</label>
-                                  <textarea
-                                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                    rows={3}
-                                    value={state.feedbacks[match.id] || ''}
-                                    onChange={e => handleFeedbackChange(match.id, e.target.value)}
-                                    placeholder="请描述你的面试体验、收获或建议"
-                                    disabled={state.submitted[match.id]}
-                                  />
-                                  <button
-                                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:bg-gray-400"
-                                    onClick={() => handleFeedbackSubmit(match.id)}
-                                    disabled={state.submitted[match.id] || !state.feedbacks[match.id]}
-                                  >
-                                    {state.submitted[match.id] ? '已提交' : '提交反馈'}
-                                  </button>
+                                  {state.submitted[match.id] ? (
+                                    // 已提交的反馈 - 折叠显示
+                                    <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-green-600">✅</span>
+                                        <span className="text-sm font-medium text-green-800">面试反馈已提交</span>
+                                      </div>
+                                      {state.feedbacks[match.id] && (
+                                        <div className="text-sm text-gray-700 bg-white p-2 rounded border">
+                                          <strong>你的反馈：</strong>
+                                          <p className="mt-1">{state.feedbacks[match.id]}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    // 未提交的反馈 - 展开表单
+                                    <>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">✍️ 请填写你的面试反馈：</label>
+                                      <textarea
+                                        className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                        rows={3}
+                                        value={state.feedbacks[match.id] || ''}
+                                        onChange={e => handleFeedbackChange(match.id, e.target.value)}
+                                        placeholder="请描述你的面试体验、收获或建议"
+                                      />
+                                      <button
+                                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:bg-gray-400"
+                                        onClick={() => handleFeedbackSubmit(match.id)}
+                                        disabled={!state.feedbacks[match.id]}
+                                      >
+                                        提交反馈
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               )}
                             </div>

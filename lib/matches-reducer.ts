@@ -56,6 +56,7 @@ export type MatchesAction =
   | { type: 'SHOW_CONTACT_TEMPLATES'; payload: Match | null }
   | { type: 'ADD_SUCCESSFUL_MATCH'; payload: Match }
   | { type: 'UPDATE_MATCH_STATUS'; payload: { matchId: number; contactStatus: string } }
+  | { type: 'INITIALIZE_FEEDBACK_FROM_DATA'; payload: { matchId: number; contactStatus?: string; interviewStatus?: string; feedbackContent?: string } }
   | { type: 'RESET_MATCHES' };
 
 /**
@@ -169,6 +170,27 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
             ? { ...match, contactStatus: action.payload.contactStatus }
             : match
         ),
+      };
+
+    case 'INITIALIZE_FEEDBACK_FROM_DATA':
+      return {
+        ...state,
+        contactStatus: action.payload.contactStatus ? {
+          ...state.contactStatus,
+          [action.payload.matchId]: action.payload.contactStatus === 'yes' ? 'yes' : 'no'
+        } : state.contactStatus,
+        interviewStatus: action.payload.interviewStatus ? {
+          ...state.interviewStatus,
+          [action.payload.matchId]: action.payload.interviewStatus === 'yes' ? 'yes' : 'no'
+        } : state.interviewStatus,
+        feedbacks: action.payload.feedbackContent ? {
+          ...state.feedbacks,
+          [action.payload.matchId]: action.payload.feedbackContent
+        } : state.feedbacks,
+        submitted: action.payload.feedbackContent ? {
+          ...state.submitted,
+          [action.payload.matchId]: true
+        } : state.submitted,
       };
 
     case 'RESET_MATCHES':
