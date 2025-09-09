@@ -1205,19 +1205,19 @@ export default function MatchesPage() {
                             {/* 2. 联系方式参考格式 */}
                             <div className="contact">
                               <div className="contact-title">联系方式：</div>
-                              {(match.contactInfo?.email || match.email) && (
+                              {match.contactInfo?.email && (
                                 <div className="contact-item">
-                                  <span>📧 邮箱: {match.contactInfo?.email || match.email}</span>
+                                  <span>📧 邮箱: {match.contactInfo.email}</span>
                                 </div>
                               )}
-                              {(match.contactInfo?.wechat || match.wechat) && (
+                              {match.contactInfo?.wechat && (
                                 <div className="contact-item">
-                                  <span>💬 微信: {match.contactInfo?.wechat || match.wechat}</span>
+                                  <span>💬 微信: {match.contactInfo.wechat}</span>
                                 </div>
                               )}
-                              {(match.contactInfo?.linkedin || match.linkedin) && (
+                              {match.contactInfo?.linkedin && (
                                 <div className="contact-item">
-                                  <span>🔗 领英: {match.contactInfo?.linkedin || match.linkedin}</span>
+                                  <span>🔗 领英: {match.contactInfo.linkedin}</span>
                                 </div>
                               )}
                             </div>

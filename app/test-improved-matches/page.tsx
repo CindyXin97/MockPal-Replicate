@@ -13,8 +13,10 @@ export default function TestImprovedMatches() {
       jobType: 'DA',
       experienceLevel: '应届',
       bio: '热爱数据分析，擅长Python和SQL',
-      email: 'zhangsan@example.com',
-      wechat: 'zhangsan123',
+      contactInfo: {
+        email: 'zhangsan@example.com',
+        wechat: 'zhangsan123'
+      },
       contactStatus: 'contacted',
       createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2小时前
       practicePreferences: {
@@ -29,8 +31,10 @@ export default function TestImprovedMatches() {
       jobType: 'DS',
       experienceLevel: '1-3年',
       bio: '机器学习工程师，专注于推荐系统',
-      email: 'lisi@example.com',
-      linkedin: 'linkedin.com/in/lisi',
+      contactInfo: {
+        email: 'lisi@example.com',
+        linkedin: 'linkedin.com/in/lisi'
+      },
       contactStatus: 'contacted',
       createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1天前
       practicePreferences: {
@@ -45,8 +49,10 @@ export default function TestImprovedMatches() {
       jobType: 'DE',
       experienceLevel: '3-5年',
       bio: '数据工程师，熟悉大数据处理框架',
-      email: 'wangwu@example.com',
-      wechat: 'wangwu456',
+      contactInfo: {
+        email: 'wangwu@example.com',
+        wechat: 'wangwu456'
+      },
       contactStatus: 'completed',
       createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3天前
       practicePreferences: {
@@ -198,18 +204,18 @@ export default function TestImprovedMatches() {
                     <span className="tag">案例分析</span>
                   )}
                 </div>
-                                 <div className="contact">
-                   <div className="contact-title">联系方式：</div>
-                   {match.email && (
-                     <div className="contact-item">📧 邮箱: {match.email}</div>
-                   )}
-                   {match.wechat && (
-                     <div className="contact-item">💬 微信: {match.wechat}</div>
-                   )}
-                   {match.linkedin && (
-                     <div className="contact-item">🔗 领英: {match.linkedin}</div>
-                   )}
-                 </div>
+                                                  <div className="contact">
+                  <div className="contact-title">联系方式：</div>
+                  {match.contactInfo?.email && (
+                    <div className="contact-item">📧 邮箱: {match.contactInfo.email}</div>
+                  )}
+                  {match.contactInfo?.wechat && (
+                    <div className="contact-item">💬 微信: {match.contactInfo.wechat}</div>
+                  )}
+                  {match.contactInfo?.linkedin && (
+                    <div className="contact-item">🔗 领英: {match.contactInfo.linkedin}</div>
+                  )}
+                </div>
               </div>
                              <div className="card-footer">
                  <button className="contact-button">
