@@ -732,7 +732,14 @@ export default function MatchesPage() {
 
   // 获取等级样式配置
   const getLevelStyle = (level: string) => {
-    const levelStyles = {
+    const levelStyles: Record<string, {
+      bg: string;
+      text: string;
+      border: string;
+      hover: string;
+      title: string;
+      description: string;
+    }> = {
       '新用户': {
         bg: 'bg-green-100',
         text: 'text-green-700',
