@@ -294,7 +294,7 @@ export async function getSuccessfulMatches(userId: number) {
 
     // 批量查询所有匹配的反馈数据
     const matchIds = successfulMatches.map(match => match.id);
-    const feedbacks = matchIds.length > 0 ? await db.query.feedbacks.findMany({
+    const matchFeedbacks = matchIds.length > 0 ? await db.query.feedbacks.findMany({
       where: and(
         inArray(feedbacks.matchId, matchIds),
         eq(feedbacks.userId, userId)
@@ -302,7 +302,7 @@ export async function getSuccessfulMatches(userId: number) {
     }) : [];
     
     // 构建反馈Map用于快速查找
-    const feedbacksMap = new Map(feedbacks.map(f => [f.matchId, f]));
+    const feedbacksMap = new Map(matchFeedbacks.map(f => [f.matchId, f]));
 
     // 组装返回数据
     const formattedMatches = successfulMatches
