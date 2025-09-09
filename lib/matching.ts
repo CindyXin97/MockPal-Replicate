@@ -3,6 +3,7 @@ import { users, userProfiles, matches, feedbacks, userDailyViews } from '@/lib/d
 import { eq, and, or, not, desc, exists, inArray } from 'drizzle-orm';
 import { format } from 'date-fns';
 import { matchBetweenUsers, matchesForUser, errorResponse, successResponse } from '@/lib/matching-utils';
+import { updateUserAchievement } from './achievements';
 
 // Get potential matches for a user
 export async function getPotentialMatches(userId: number) {
@@ -353,8 +354,6 @@ export async function getSuccessfulMatches(userId: number) {
 }
 
 // 保存面试反馈
-import { updateUserAchievement } from './achievements';
-
 export async function saveFeedback({ matchId, userId, interviewStatus, content }: { matchId: number, userId: number, interviewStatus: string, content?: string }) {
   try {
     // 保存反馈
