@@ -458,10 +458,10 @@ const RequestInterviewExperienceCard = () => {
             <span className="text-green-500">✓</span>
             <span>已收集 16+ 公司</span>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="text-green-500">✓</span>
-            <span>62+ 道真题</span>
-          </div>
+                  <div className="flex items-center gap-1">
+          <span className="text-green-500">✓</span>
+          <span>58+ 道真题</span>
+        </div>
           <div className="flex items-center gap-1">
             <span className="text-blue-500">🔥</span>
             <span>2025年最新</span>
