@@ -45,7 +45,7 @@ export default function TestStatusUpdate() {
     } catch (error) {
       console.error('Error:', error);
       setResult({
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       });
       toast.error('请求失败');
     } finally {
