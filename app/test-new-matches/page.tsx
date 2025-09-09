@@ -71,6 +71,7 @@ export default function TestNewMatches() {
   const matches = [
     {
       id: 1,
+      matchId: 101, // 模拟的匹配记录ID
       username: '张三',
       jobType: 'DA',
       experienceLevel: '应届',
@@ -88,6 +89,7 @@ export default function TestNewMatches() {
     },
     {
       id: 2,
+      matchId: 102, // 模拟的匹配记录ID
       username: '李四',
       jobType: 'DS',
       experienceLevel: '1-3年',
