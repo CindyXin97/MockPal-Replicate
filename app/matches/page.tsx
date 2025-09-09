@@ -460,7 +460,7 @@ const RequestInterviewExperienceCard = () => {
           </div>
                   <div className="flex items-center gap-1">
           <span className="text-green-500">✓</span>
-          <span>58+ 道真题</span>
+          <span>56+ 道真题</span>
         </div>
           <div className="flex items-center gap-1">
             <span className="text-blue-500">🔥</span>
