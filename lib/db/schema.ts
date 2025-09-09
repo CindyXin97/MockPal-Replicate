@@ -61,6 +61,13 @@ export const matches = pgTable('matches', {
   user1Id: integer('user1_id').references(() => users.id).notNull(),
   user2Id: integer('user2_id').references(() => users.id).notNull(),
   status: varchar('status', { length: 50 }).notNull().default('pending'), // pending, accepted, rejected
+  
+  // 新增：联系和面试状态跟踪
+  contactStatus: varchar('contact_status', { length: 50 }).default('not_contacted'), // not_contacted, contacted, scheduled, completed, no_response
+  contactUpdatedAt: timestamp('contact_updated_at'),
+  interviewScheduledAt: timestamp('interview_scheduled_at'),
+  lastReminderSent: timestamp('last_reminder_sent'),
+  
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => {

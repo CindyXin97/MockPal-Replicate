@@ -190,6 +190,7 @@ a { text-decoration: none; color: inherit; }
     display: flex;
     align-items: center;
     margin-bottom: 16px;
+    position: relative;
 }
 .avatar {
     width: 50px;
@@ -243,6 +244,15 @@ a { text-decoration: none; color: inherit; }
 .contact a {
     color: #2b6cb0;
     text-decoration: underline;
+}
+.contact-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+.contact-item {
+    margin-bottom: 4px;
+    line-height: 1.4;
 }
 .card-footer {
     display: flex;

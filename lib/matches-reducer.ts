@@ -9,6 +9,7 @@ export interface MatchesState {
   successfulMatches: Match[];
   isLoading: boolean;
   activeTab: string;
+  contactStatus: { [key: number]: 'yes' | 'no' | undefined }; // 是否添加联系方式
   interviewStatus: { [key: number]: 'yes' | 'no' | undefined };
   feedbacks: { [key: number]: string };
   submitted: { [key: number]: boolean };
@@ -27,6 +28,7 @@ export const initialMatchesState: MatchesState = {
   successfulMatches: [],
   isLoading: true,
   activeTab: 'browse',
+  contactStatus: {},
   interviewStatus: {},
   feedbacks: {},
   submitted: {},
@@ -44,6 +46,7 @@ export type MatchesAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'NEXT_MATCH' }
   | { type: 'SET_TAB'; payload: string }
+  | { type: 'SET_CONTACT_STATUS'; payload: { matchId: number; status: 'yes' | 'no' } }
   | { type: 'SET_INTERVIEW_STATUS'; payload: { matchId: number; status: 'yes' | 'no' } }
   | { type: 'SET_FEEDBACK'; payload: { matchId: number; feedback: string } }
   | { type: 'SUBMIT_FEEDBACK'; payload: number }
@@ -52,6 +55,7 @@ export type MatchesAction =
   | { type: 'TOGGLE_GUIDE' }
   | { type: 'SHOW_CONTACT_TEMPLATES'; payload: Match | null }
   | { type: 'ADD_SUCCESSFUL_MATCH'; payload: Match }
+  | { type: 'UPDATE_MATCH_STATUS'; payload: { matchId: number; contactStatus: string } }
   | { type: 'RESET_MATCHES' };
 
 /**
@@ -84,6 +88,15 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
       return {
         ...state,
         activeTab: action.payload,
+      };
+
+    case 'SET_CONTACT_STATUS':
+      return {
+        ...state,
+        contactStatus: {
+          ...state.contactStatus,
+          [action.payload.matchId]: action.payload.status,
+        },
       };
 
     case 'SET_INTERVIEW_STATUS':
@@ -146,6 +159,16 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
         ...state,
         successfulMatches: [...state.successfulMatches, action.payload],
         currentMatchIndex: state.currentMatchIndex + 1,
+      };
+
+    case 'UPDATE_MATCH_STATUS':
+      return {
+        ...state,
+        successfulMatches: state.successfulMatches.map(match => 
+          match.id === action.payload.matchId 
+            ? { ...match, contactStatus: action.payload.contactStatus }
+            : match
+        ),
       };
 
     case 'RESET_MATCHES':

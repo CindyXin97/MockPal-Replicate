@@ -30,6 +30,7 @@ export type UserProfile = {
 
 export type Match = {
   id: number;
+  matchId?: number; // 匹配记录ID，用于状态更新
   username: string | null;
   jobType?: string | null;
   experienceLevel?: string | null;
@@ -46,6 +47,10 @@ export type Match = {
     linkedin?: string | null;
   };
   bio?: string | null;
+  // 新增状态跟踪字段
+  contactStatus?: string | null;
+  contactUpdatedAt?: string | null;
+  createdAt?: string | null;
 };
 
 // Auth state

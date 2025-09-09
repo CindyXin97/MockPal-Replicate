@@ -19,6 +19,9 @@ import type { Match } from '@/lib/store';
 import { matchesReducer, initialMatchesState, type MatchesAction } from '@/lib/matches-reducer';
 import React from 'react';
 import '@/styles/success.css';
+import { FeedbackModal } from '@/components/feedback-modal';
+import { MatchStatusCard } from '@/components/match-status-card';
+
 
 // 面试真题类型定义
 interface InterviewQuestion {
@@ -502,6 +505,10 @@ export default function MatchesPage() {
   const [, setPotentialMatches] = useAtom(potentialMatchesAtom);
   const [, setCurrentMatchIndex] = useAtom(currentMatchIndexAtom);
 
+  // 移除硬绑定反馈相关状态 - 现在使用渐进式反馈系统
+  // const [pendingFeedback, setPendingFeedback] = useState(null);
+  // const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+
   useEffect(() => {
     if (status === 'loading') return;
     if (status === 'unauthenticated') {
@@ -518,11 +525,15 @@ export default function MatchesPage() {
     }
   }, [user?.id, status, isComplete]);
 
+  // 移除硬绑定反馈检查 - 现在使用渐进式反馈系统
+  // const checkPendingFeedback = async () => { ... };
+
   const loadMatches = async () => {
     if (!user) return;
     
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
+      // 直接加载匹配数据，不再检查待反馈匹配
       // Load potential matches
       const potentialResult = await fetchPotentialMatches(user.id);
       // Load successful matches
@@ -634,6 +645,32 @@ export default function MatchesPage() {
   const resetMatches = async () => {
     setCurrentMatchIndex(0);
     await loadMatches();
+  };
+
+  // 处理"期待看到更多"点击，收集用户反馈数据
+  const handleExpectMore = async () => {
+    if (!user) return;
+    
+    try {
+      // 收集用户点击"期待看到更多"的数据
+      await fetch('/api/user-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          action: 'expect_more_matches',
+          timestamp: new Date().toISOString(),
+          context: 'daily_limit_reached'
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to collect feedback:', error);
+    }
+    
+    // 仍然执行重新加载功能
+    await resetMatches();
   };
 
   const currentMatch = state.potentialMatches.length > 0 && state.currentMatchIndex < state.potentialMatches.length
@@ -817,6 +854,43 @@ export default function MatchesPage() {
     );
   };
 
+  // 移除硬绑定反馈提交函数 - 现在使用渐进式反馈系统
+  // const handleModalFeedbackSubmit = async (completed: boolean, content?: string) => { ... };
+
+  // 更新匹配状态
+  const updateMatchStatus = async (matchId: number, newStatus: string) => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch('/api/matches/update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          matchId,
+          contactStatus: newStatus,
+        }),
+      });
+
+      if (response.ok) {
+        // 更新本地状态
+        dispatch({ 
+          type: 'UPDATE_MATCH_STATUS', 
+          payload: { matchId, contactStatus: newStatus } 
+        });
+        toast.success('状态更新成功！');
+      } else {
+        const errorData = await response.json();
+        console.error('Status update failed:', response.status, errorData);
+        toast.error(`状态更新失败：${errorData.error || '请稍后再试'}`);
+      }
+    } catch (error) {
+      console.error('更新状态失败:', error);
+      toast.error('状态更新失败，请稍后再试');
+    }
+  };
+
   return (
     <AuthLayout>
       <div className="flex flex-col min-h-screen pt-20">
@@ -854,7 +928,8 @@ export default function MatchesPage() {
         {/* 响应式内容区域 */}
         <div className="responsive-container">
           <Tabs value={state.activeTab} onValueChange={(value) => dispatch({ type: 'SET_TAB', payload: value })} className="w-full">
-            <TabsContent value="browse" className="space-y-4 mt-8">
+            <TabsContent value="browse" className="space-y-4 mt-4">
+
               {state.isLoading ? (
                 <Card className="w-full max-w-lg mx-auto rounded-3xl shadow-xl border-0 bg-white p-5 animate-pulse mt-4">
                   <div className="flex flex-col items-center">
@@ -979,17 +1054,17 @@ export default function MatchesPage() {
                       <p className="text-2xl font-extrabold text-blue-700 mb-1 tracking-wide">今日推荐已用完！</p>
                       <p className="text-lg text-blue-900/80 mb-8">明天再来发现新伙伴吧～<br/>或者刷新看看有没有新机会！</p>
                       <Button
-                        onClick={resetMatches}
+                        onClick={handleExpectMore}
                         className="rounded-full px-10 py-3 text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-lg hover:scale-105 hover:from-blue-500 hover:to-blue-700 transition-all"
                       >
-                        重新加载
+                        期待看到更多
                       </Button>
                     </Card>
                   )}
                 </>
               )}
             </TabsContent>
-            <TabsContent value="matches" className="space-y-4 mt-8">
+            <TabsContent value="matches" className="space-y-4 mt-4">
               {state.isLoading ? (
                 <div className="cards-container">
                   {[1, 2, 3, 4].map((i) => (
@@ -1045,6 +1120,193 @@ export default function MatchesPage() {
                     </div>
                   )}
                   {state.successfulMatches.length > 0 ? (
+                    <div className="cards-container">
+                      {state.successfulMatches.map((match) => (
+                        <div key={match.id} className="card">
+                          <div className="card-header">
+                            <div className="avatar">
+                              <img
+                                src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${match.username || 'user'}`}
+                                alt="avatar"
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            </div>
+                            <div>
+                              <div className="name">{match.username || '匿名用户'}</div>
+                              {/* 显示用户成就等级 */}
+                              <div className="flex items-center gap-1 mb-1">
+                                {(() => {
+                                  const achievement = getUserAchievementData(match.id);
+                                  return (
+                                    <>
+                                      <span className="text-sm">{achievement.icon}</span>
+                                      <span className="text-xs font-medium text-gray-600">{achievement.level}</span>
+                                      {achievement.showMoon && (
+                                        <span className="text-blue-400 text-xs">🌙</span>
+                                      )}
+                                    </>
+                                  );
+                                })()}
+                              </div>
+                              <div className="title">
+                                {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
+                              </div>
+                              {/* 添加匹配时间显示 */}
+                              {match.createdAt && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  匹配于 {(() => {
+                                    const hours = Math.floor((Date.now() - new Date(match.createdAt).getTime()) / (1000 * 60 * 60));
+                                    if (hours < 24) return `${hours}小时前`;
+                                    const days = Math.floor(hours / 24);
+                                    return `${days}天前`;
+                                  })()}
+                                </div>
+                              )}
+                            </div>
+
+                          </div>
+                          <div className="card-body">
+                            {match.bio && (
+                              <div className="intro">{match.bio}</div>
+                            )}
+                            <div className="tags">
+                              {match.practicePreferences?.technicalInterview && (
+                                <span className="tag">技术面</span>
+                              )}
+                              {match.practicePreferences?.behavioralInterview && (
+                                <span className="tag">行为面</span>
+                              )}
+                              {match.practicePreferences?.caseAnalysis && (
+                                <span className="tag">案例分析</span>
+                              )}
+                            </div>
+                            
+                            {/* 2. 联系方式参考格式 */}
+                            <div className="contact">
+                              <div className="contact-title">联系方式：</div>
+                              {(match.contactInfo?.email || match.email) && (
+                                <div className="contact-item">
+                                  <span>📧 邮箱: {match.contactInfo?.email || match.email}</span>
+                                </div>
+                              )}
+                              {(match.contactInfo?.wechat || match.wechat) && (
+                                <div className="contact-item">
+                                  <span>💬 微信: {match.contactInfo?.wechat || match.wechat}</span>
+                                </div>
+                              )}
+                              {(match.contactInfo?.linkedin || match.linkedin) && (
+                                <div className="contact-item">
+                                  <span>🔗 领英: {match.contactInfo?.linkedin || match.linkedin}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="mt-4">
+                              <button
+                                onClick={() => handleShowContactTemplates(match)}
+                                className="contact-button"
+                              >
+                                查看联系模板
+                              </button>
+                            </div>
+                            
+                            {/* 4. 修改后的反馈流程 */}
+                            <div className="feedback-flow mt-3 p-2 bg-gray-50 rounded-md">
+                              {/* 是否添加联系方式？ */}
+                              <div className="mb-2">
+                                <div className="text-sm font-medium text-gray-700 mb-1">📋 是否添加联系方式？</div>
+                                <label className="inline-flex items-center mr-4">
+                                  <input
+                                    type="radio"
+                                    name={`contact_${match.id}`}
+                                    value="yes"
+                                    checked={state.contactStatus?.[match.id] === 'yes'}
+                                    onChange={() => dispatch({ type: 'SET_CONTACT_STATUS', payload: { matchId: match.id, status: 'yes' } })}
+                                    className="mr-1"
+                                  />
+                                  是
+                                </label>
+                                <label className="inline-flex items-center">
+                                  <input
+                                    type="radio"
+                                    name={`contact_${match.id}`}
+                                    value="no"
+                                    checked={state.contactStatus?.[match.id] === 'no'}
+                                    onChange={() => dispatch({ type: 'SET_CONTACT_STATUS', payload: { matchId: match.id, status: 'no' } })}
+                                    className="mr-1"
+                                  />
+                                  否
+                                </label>
+                              </div>
+                              
+                              {/* 是否进行面试？- 只在添加联系方式后显示 */}
+                              {state.contactStatus?.[match.id] === 'yes' && (
+                                <div className="mb-2">
+                                  <div className="text-sm font-medium text-gray-700 mb-1">🎯 是否进行面试？</div>
+                                  <label className="inline-flex items-center mr-4">
+                                    <input
+                                      type="radio"
+                                      name={`interview_${match.id}`}
+                                      value="yes"
+                                      checked={state.interviewStatus[match.id] === 'yes'}
+                                      onChange={() => dispatch({ type: 'SET_INTERVIEW_STATUS', payload: { matchId: match.id, status: 'yes' } })}
+                                      className="mr-1"
+                                    />
+                                    是
+                                  </label>
+                                  <label className="inline-flex items-center">
+                                    <input
+                                      type="radio"
+                                      name={`interview_${match.id}`}
+                                      value="no"
+                                      checked={state.interviewStatus[match.id] === 'no'}
+                                      onChange={() => dispatch({ type: 'SET_INTERVIEW_STATUS', payload: { matchId: match.id, status: 'no' } })}
+                                      className="mr-1"
+                                    />
+                                    否
+                                  </label>
+                                </div>
+                              )}
+                              
+                              {/* 面试反馈 - 只在进行面试后显示 */}
+                              {state.contactStatus?.[match.id] === 'yes' && state.interviewStatus[match.id] === 'yes' && (
+                                <div className="feedback-section">
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">✍️ 请填写你的面试反馈：</label>
+                                  <textarea
+                                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                    rows={3}
+                                    value={state.feedbacks[match.id] || ''}
+                                    onChange={e => handleFeedbackChange(match.id, e.target.value)}
+                                    placeholder="请描述你的面试体验、收获或建议"
+                                    disabled={state.submitted[match.id]}
+                                  />
+                                  <button
+                                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:bg-gray-400"
+                                    onClick={() => handleFeedbackSubmit(match.id)}
+                                    disabled={state.submitted[match.id] || !state.feedbacks[match.id]}
+                                  >
+                                    {state.submitted[match.id] ? '已提交' : '提交反馈'}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="cards-container">
+                      <div className="card">
+                        <div className="card-body text-center py-12">
+                          <p className="text-xl mb-4">暂无成功匹配</p>
+                          <p className="text-gray-500">继续浏览候选人，找到合适的练习伙伴吧！</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 恢复原来的匹配卡片布局 */}
+                  {false && state.successfulMatches.length > 0 && (
                     <div className="cards-container">
                       {state.successfulMatches.map((match) => (
                         <div key={match.id} className="card">
@@ -1160,21 +1422,12 @@ export default function MatchesPage() {
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <div className="cards-container">
-                      <div className="card">
-                        <div className="card-body text-center py-12">
-                          <p className="text-xl mb-4">暂无成功匹配</p>
-                          <p className="text-gray-500">继续浏览候选人，找到合适的练习伙伴吧！</p>
-                        </div>
-                      </div>
-                    </div>
                   )}
                 </>
               )}
             </TabsContent>
 
-            <TabsContent value="guide" className="space-y-4 mt-8">
+            <TabsContent value="guide" className="space-y-4 mt-4">
               <div className="max-w-4xl mx-auto px-4">
                 {/* 页面标题 */}
                 <div className="text-center mb-8">
@@ -1211,9 +1464,9 @@ export default function MatchesPage() {
                     <CardContent className="space-y-3">
                       <ul className="text-sm text-gray-600 space-y-1">
                         <li>• 点击"联系TA"获取联系方式</li>
-                        <li>• 主动联系约定面试时间（30-60分钟）</li>
+                        <li>• 主动联系约定面试时间 60分钟</li>
                         <li>• 确定面试平台和会议链接</li>
-                        <li>• 提前沟通面试重点和角色分配</li>
+                        <li>• 每个人建议20分钟面试10分钟反馈</li>
                       </ul>
                     </CardContent>
                   </Card>
@@ -1282,7 +1535,7 @@ export default function MatchesPage() {
               </div>
             </TabsContent>
 
-            <TabsContent value="questions" className="space-y-4 mt-8">
+            <TabsContent value="questions" className="space-y-4 mt-4">
               <InterviewQuestionsTab />
             </TabsContent>
           </Tabs>
@@ -1301,6 +1554,9 @@ export default function MatchesPage() {
           onClose={handleCloseContactTemplates}
         />
       )}
+      
+      {/* 移除硬绑定反馈弹窗 - 现在使用渐进式反馈系统 */}
+      {/* <FeedbackModal ... /> */}
     </AuthLayout>
   );
 }

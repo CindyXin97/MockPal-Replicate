@@ -293,13 +293,15 @@ export async function getSuccessfulMatches(userId: number) {
     const usersMap = new Map(matchedUsers.map(u => [u.id, u]));
 
     // 组装返回数据
-    const formattedMatches = matchedUserIds
-      .map(id => {
-        const user = usersMap.get(id);
+    const formattedMatches = successfulMatches
+      .map(match => {
+        const partnerId = match.user1Id === userId ? match.user2Id : match.user1Id;
+        const user = usersMap.get(partnerId);
         if (!user || !user.profile) return null;
 
         return {
-          id: user.id,
+          id: user.id, // 用户ID，用于显示
+          matchId: match.id, // 匹配记录ID，用于状态更新
           username: user.name,
           jobType: user.profile.jobType,
           experienceLevel: user.profile.experienceLevel,
@@ -315,6 +317,10 @@ export async function getSuccessfulMatches(userId: number) {
             wechat: user.profile.wechat,
           },
           bio: user.profile.bio,
+          // 添加匹配相关信息
+          contactStatus: match.contactStatus,
+          createdAt: match.createdAt?.toISOString(),
+          contactUpdatedAt: match.contactUpdatedAt?.toISOString(),
         };
       })
       .filter(Boolean);
