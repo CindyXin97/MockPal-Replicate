@@ -80,7 +80,7 @@ export const matches = pgTable('matches', {
 // Feedbacks schema
 export const feedbacks = pgTable('feedbacks', {
   id: serial('id').primaryKey(),
-  matchId: integer('match_id').references(() => matches.id).notNull(),
+  matchId: integer('match_id').references(() => matches.id),
   userId: integer('user_id').references(() => users.id).notNull(),
   interviewStatus: varchar('interview_status', { length: 10 }).notNull(), // 'yes' or 'no'
   content: text('content'),
