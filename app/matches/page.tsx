@@ -509,6 +509,80 @@ export default function MatchesPage() {
   // const [pendingFeedback, setPendingFeedback] = useState(null);
   // const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
+  // 新增：localStorage键名生成函数
+  const getStorageKey = (matchId: number, field: string) => {
+    return `mockpal_feedback_${user?.id}_${matchId}_${field}`;
+  };
+
+  // 新增：保存表单数据到localStorage
+  const saveToLocalStorage = (matchId: number, field: string, value: string) => {
+    if (!user?.id) return;
+    try {
+      localStorage.setItem(getStorageKey(matchId, field), value);
+    } catch (error) {
+      console.warn('Failed to save to localStorage:', error);
+    }
+  };
+
+  // 新增：从localStorage加载表单数据
+  const loadFromLocalStorage = (matchId: number, field: string): string => {
+    if (!user?.id) return '';
+    try {
+      return localStorage.getItem(getStorageKey(matchId, field)) || '';
+    } catch (error) {
+      console.warn('Failed to load from localStorage:', error);
+      return '';
+    }
+  };
+
+  // 新增：清除localStorage中的表单数据
+  const clearFromLocalStorage = (matchId: number) => {
+    if (!user?.id) return;
+    try {
+      localStorage.removeItem(getStorageKey(matchId, 'contactStatus'));
+      localStorage.removeItem(getStorageKey(matchId, 'interviewStatus'));
+      localStorage.removeItem(getStorageKey(matchId, 'feedback'));
+    } catch (error) {
+      console.warn('Failed to clear localStorage:', error);
+    }
+  };
+
+  // 新增：恢复表单数据
+  const restoreFormData = (matches: Match[]) => {
+    if (!user?.id) return;
+    
+    matches.forEach(match => {
+      const matchId = match.id;
+      
+      // 恢复联系状态
+      const savedContactStatus = loadFromLocalStorage(matchId, 'contactStatus');
+      if (savedContactStatus && (savedContactStatus === 'yes' || savedContactStatus === 'no')) {
+        dispatch({ 
+          type: 'SET_CONTACT_STATUS', 
+          payload: { matchId, status: savedContactStatus as 'yes' | 'no' } 
+        });
+      }
+      
+      // 恢复面试状态
+      const savedInterviewStatus = loadFromLocalStorage(matchId, 'interviewStatus');
+      if (savedInterviewStatus && (savedInterviewStatus === 'yes' || savedInterviewStatus === 'no')) {
+        dispatch({ 
+          type: 'SET_INTERVIEW_STATUS', 
+          payload: { matchId, status: savedInterviewStatus as 'yes' | 'no' } 
+        });
+      }
+      
+      // 恢复反馈内容
+      const savedFeedback = loadFromLocalStorage(matchId, 'feedback');
+      if (savedFeedback) {
+        dispatch({ 
+          type: 'SET_FEEDBACK', 
+          payload: { matchId, feedback: savedFeedback } 
+        });
+      }
+    });
+  };
+
   useEffect(() => {
     if (status === 'loading') return;
     if (status === 'unauthenticated') {
@@ -577,6 +651,11 @@ export default function MatchesPage() {
       if (allUserIds.length > 0) {
         loadUserAchievements(allUserIds);
       }
+
+      // 恢复localStorage中的表单数据（对于未提交的反馈）
+      setTimeout(() => {
+        restoreFormData(successfulMatches);
+      }, 100);
       
       if (potentialResult.message) {
         toast.error(potentialResult.message);
@@ -700,10 +779,20 @@ export default function MatchesPage() {
 
   const handleInterviewChange = (id: number, value: 'yes' | 'no') => {
     dispatch({ type: 'SET_INTERVIEW_STATUS', payload: { matchId: id, status: value } });
+    // 保存到localStorage
+    saveToLocalStorage(id, 'interviewStatus', value);
   };
 
   const handleFeedbackChange = (id: number, value: string) => {
     dispatch({ type: 'SET_FEEDBACK', payload: { matchId: id, feedback: value } });
+    // 保存到localStorage
+    saveToLocalStorage(id, 'feedback', value);
+  };
+
+  const handleContactStatusChange = (id: number, value: 'yes' | 'no') => {
+    dispatch({ type: 'SET_CONTACT_STATUS', payload: { matchId: id, status: value } });
+    // 保存到localStorage
+    saveToLocalStorage(id, 'contactStatus', value);
   };
 
   const handleFeedbackSubmit = async (matchId: number) => {
@@ -729,6 +818,9 @@ export default function MatchesPage() {
       const data = await res.json();
       
       if (data.success) {
+        // 提交成功后清除localStorage中的数据
+        clearFromLocalStorage(matchId);
+        
         if (interviewStatusValue === 'yes') {
           toast.success('反馈已提交！🌟 恭喜获得面试经验，等级提升！');
           // 重新加载当前用户的成就数据
@@ -1242,7 +1334,7 @@ export default function MatchesPage() {
                                     name={`contact_${match.id}`}
                                     value="yes"
                                     checked={state.contactStatus?.[match.id] === 'yes'}
-                                    onChange={() => dispatch({ type: 'SET_CONTACT_STATUS', payload: { matchId: match.id, status: 'yes' } })}
+                                    onChange={() => handleContactStatusChange(match.id, 'yes')}
                                     className="mr-1"
                                   />
                                   是
@@ -1253,7 +1345,7 @@ export default function MatchesPage() {
                                     name={`contact_${match.id}`}
                                     value="no"
                                     checked={state.contactStatus?.[match.id] === 'no'}
-                                    onChange={() => dispatch({ type: 'SET_CONTACT_STATUS', payload: { matchId: match.id, status: 'no' } })}
+                                    onChange={() => handleContactStatusChange(match.id, 'no')}
                                     className="mr-1"
                                   />
                                   否
@@ -1270,7 +1362,7 @@ export default function MatchesPage() {
                                       name={`interview_${match.id}`}
                                       value="yes"
                                       checked={state.interviewStatus[match.id] === 'yes'}
-                                      onChange={() => dispatch({ type: 'SET_INTERVIEW_STATUS', payload: { matchId: match.id, status: 'yes' } })}
+                                      onChange={() => handleInterviewChange(match.id, 'yes')}
                                       className="mr-1"
                                     />
                                     是
@@ -1281,7 +1373,7 @@ export default function MatchesPage() {
                                       name={`interview_${match.id}`}
                                       value="no"
                                       checked={state.interviewStatus[match.id] === 'no'}
-                                      onChange={() => dispatch({ type: 'SET_INTERVIEW_STATUS', payload: { matchId: match.id, status: 'no' } })}
+                                      onChange={() => handleInterviewChange(match.id, 'no')}
                                       className="mr-1"
                                     />
                                     否
@@ -1293,16 +1385,26 @@ export default function MatchesPage() {
                               {state.contactStatus?.[match.id] === 'yes' && state.interviewStatus[match.id] === 'yes' && (
                                 <div className="feedback-section">
                                   {state.submitted[match.id] ? (
-                                    // 已提交的反馈 - 折叠显示
-                                    <div className="bg-green-50 border border-green-200 rounded-md p-3">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-green-600">✅</span>
-                                        <span className="text-sm font-medium text-green-800">面试反馈已提交</span>
+                                    // 已提交的反馈 - 紧凑折叠显示
+                                    <div className="bg-green-50 border border-green-200 rounded-md p-2">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-green-600">✅</span>
+                                          <span className="text-xs font-medium text-green-800">面试反馈已提交</span>
+                                        </div>
+                                        <button
+                                          onClick={() => dispatch({ type: 'REVERT_FEEDBACK_SUBMISSION', payload: match.id })}
+                                          className="text-xs text-blue-600 hover:text-blue-800 underline"
+                                        >
+                                          修改
+                                        </button>
                                       </div>
                                       {state.feedbacks[match.id] && (
-                                        <div className="text-sm text-gray-700 bg-white p-2 rounded border">
-                                          <strong>你的反馈：</strong>
-                                          <p className="mt-1">{state.feedbacks[match.id]}</p>
+                                        <div className="text-xs text-gray-600 mt-1 bg-white p-2 rounded border">
+                                          {state.feedbacks[match.id].length > 50 
+                                            ? `${state.feedbacks[match.id].substring(0, 50)}...` 
+                                            : state.feedbacks[match.id]
+                                          }
                                         </div>
                                       )}
                                     </div>
