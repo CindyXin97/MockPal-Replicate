@@ -12,7 +12,8 @@
     "seed-questions": "tsx scripts/seed-original-41-questions.ts",
     "clear-data": "tsx scripts/clear-test-data.ts",
     "clear-prod-data": "tsx scripts/clear-production-test-data.ts",
-    "safe-truncate-users": "tsx scripts/safe-truncate-users.ts"
+    "safe-truncate-users": "tsx scripts/safe-truncate-users.ts",
+    "emergency-restore": "tsx scripts/emergency-restore-questions.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",
