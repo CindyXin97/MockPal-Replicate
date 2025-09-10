@@ -547,12 +547,23 @@ export default function MatchesPage() {
     }
   };
 
-  // 新增：恢复表单数据
+  // 新增：恢复表单数据（只恢复未提交的数据）
   const restoreFormData = (matches: Match[]) => {
     if (!user?.id) return;
     
     matches.forEach(match => {
-      const matchId = match.id;
+      const matchId = match.matchId || match.id; // 使用正确的matchId
+      
+      // 如果已经有服务器数据（已提交的反馈），则不恢复localStorage
+      if (match.feedback?.content) {
+        // 清除localStorage中的旧数据，避免冲突
+        clearFromLocalStorage(matchId);
+        console.log('已有反馈数据，清除localStorage:', matchId);
+        return;
+      }
+      
+      // 只对未提交的匹配恢复localStorage数据
+      console.log('恢复localStorage数据:', matchId);
       
       // 恢复联系状态
       const savedContactStatus = loadFromLocalStorage(matchId, 'contactStatus');
@@ -561,6 +572,7 @@ export default function MatchesPage() {
           type: 'SET_CONTACT_STATUS', 
           payload: { matchId, status: savedContactStatus as 'yes' | 'no' } 
         });
+        console.log('恢复联系状态:', matchId, savedContactStatus);
       }
       
       // 恢复面试状态
@@ -570,6 +582,7 @@ export default function MatchesPage() {
           type: 'SET_INTERVIEW_STATUS', 
           payload: { matchId, status: savedInterviewStatus as 'yes' | 'no' } 
         });
+        console.log('恢复面试状态:', matchId, savedInterviewStatus);
       }
       
       // 恢复反馈内容
@@ -579,6 +592,7 @@ export default function MatchesPage() {
           type: 'SET_FEEDBACK', 
           payload: { matchId, feedback: savedFeedback } 
         });
+        console.log('恢复反馈内容:', matchId, savedFeedback);
       }
     });
   };
@@ -623,21 +637,31 @@ export default function MatchesPage() {
       
       // 初始化反馈状态 - 从服务器数据恢复已有的反馈
       successfulMatches.forEach(match => {
-        if (match.feedback || match.contactStatus) {
-          // 确定联系状态（基于contactStatus字段）
-          let contactStatus: string | undefined;
-          if (match.contactStatus && match.contactStatus !== 'not_contacted') {
-            contactStatus = 'yes';
-          }
-          
-          dispatch({ 
-            type: 'INITIALIZE_FEEDBACK_FROM_DATA', 
-            payload: { 
-              matchId: match.matchId || match.id,
-              contactStatus,
-              interviewStatus: match.feedback?.interviewStatus,
-              feedbackContent: match.feedback?.content || undefined,
-            } 
+        const matchId = match.matchId || match.id; // 使用matchId进行状态管理
+        
+        // 确定联系状态（基于contactStatus字段）
+        let contactStatus: string | undefined;
+        if (match.contactStatus && match.contactStatus !== 'not_contacted') {
+          contactStatus = 'yes';
+        }
+        
+        // 总是初始化基本状态
+        dispatch({ 
+          type: 'INITIALIZE_FEEDBACK_FROM_DATA', 
+          payload: { 
+            matchId: matchId,
+            contactStatus,
+            interviewStatus: match.feedback?.interviewStatus,
+            feedbackContent: match.feedback?.content || undefined,
+          } 
+        });
+        
+        // 如果有反馈数据，打印日志用于调试
+        if (match.feedback?.content) {
+          console.log('初始化反馈数据:', {
+            matchId: matchId,
+            userId: match.id,
+            feedback: match.feedback
           });
         }
       });
@@ -1234,7 +1258,9 @@ export default function MatchesPage() {
                   )}
                   {state.successfulMatches.length > 0 ? (
                     <div className="cards-container">
-                      {state.successfulMatches.map((match) => (
+                      {state.successfulMatches.map((match) => {
+                        const matchId = match.matchId || match.id; // 统一使用matchId进行状态管理
+                        return (
                         <div key={match.id} className="card">
                           <div className="card-header">
                             <div className="avatar">
@@ -1333,8 +1359,8 @@ export default function MatchesPage() {
                                     type="radio"
                                     name={`contact_${match.id}`}
                                     value="yes"
-                                    checked={state.contactStatus?.[match.id] === 'yes'}
-                                    onChange={() => handleContactStatusChange(match.id, 'yes')}
+                                    checked={state.contactStatus?.[matchId] === 'yes'}
+                                    onChange={() => handleContactStatusChange(matchId, 'yes')}
                                     className="mr-1"
                                   />
                                   是
@@ -1344,8 +1370,8 @@ export default function MatchesPage() {
                                     type="radio"
                                     name={`contact_${match.id}`}
                                     value="no"
-                                    checked={state.contactStatus?.[match.id] === 'no'}
-                                    onChange={() => handleContactStatusChange(match.id, 'no')}
+                                    checked={state.contactStatus?.[matchId] === 'no'}
+                                    onChange={() => handleContactStatusChange(matchId, 'no')}
                                     className="mr-1"
                                   />
                                   否
@@ -1353,7 +1379,7 @@ export default function MatchesPage() {
                               </div>
                               
                               {/* 是否进行面试？- 只在添加联系方式后显示 */}
-                              {state.contactStatus?.[match.id] === 'yes' && (
+                              {state.contactStatus?.[matchId] === 'yes' && (
                                 <div className="mb-2">
                                   <div className="text-sm font-medium text-gray-700 mb-1">🎯 是否进行面试？</div>
                                   <label className="inline-flex items-center mr-4">
@@ -1361,8 +1387,8 @@ export default function MatchesPage() {
                                       type="radio"
                                       name={`interview_${match.id}`}
                                       value="yes"
-                                      checked={state.interviewStatus[match.id] === 'yes'}
-                                      onChange={() => handleInterviewChange(match.id, 'yes')}
+                                      checked={state.interviewStatus[matchId] === 'yes'}
+                                      onChange={() => handleInterviewChange(matchId, 'yes')}
                                       className="mr-1"
                                     />
                                     是
@@ -1372,8 +1398,8 @@ export default function MatchesPage() {
                                       type="radio"
                                       name={`interview_${match.id}`}
                                       value="no"
-                                      checked={state.interviewStatus[match.id] === 'no'}
-                                      onChange={() => handleInterviewChange(match.id, 'no')}
+                                      checked={state.interviewStatus[matchId] === 'no'}
+                                      onChange={() => handleInterviewChange(matchId, 'no')}
                                       className="mr-1"
                                     />
                                     否
@@ -1382,9 +1408,9 @@ export default function MatchesPage() {
                               )}
                               
                               {/* 面试反馈 - 只在进行面试后显示 */}
-                              {state.contactStatus?.[match.id] === 'yes' && state.interviewStatus[match.id] === 'yes' && (
+                              {state.contactStatus?.[matchId] === 'yes' && state.interviewStatus[matchId] === 'yes' && (
                                 <div className="feedback-section">
-                                  {state.submitted[match.id] ? (
+                                  {state.submitted[matchId] ? (
                                     // 已提交的反馈 - 紧凑折叠显示
                                     <div className="bg-green-50 border border-green-200 rounded-md p-2">
                                       <div className="flex items-center justify-between">
@@ -1393,17 +1419,17 @@ export default function MatchesPage() {
                                           <span className="text-xs font-medium text-green-800">面试反馈已提交</span>
                                         </div>
                                         <button
-                                          onClick={() => dispatch({ type: 'REVERT_FEEDBACK_SUBMISSION', payload: match.id })}
+                                          onClick={() => dispatch({ type: 'REVERT_FEEDBACK_SUBMISSION', payload: matchId })}
                                           className="text-xs text-blue-600 hover:text-blue-800 underline"
                                         >
                                           修改
                                         </button>
                                       </div>
-                                      {state.feedbacks[match.id] && (
+                                      {state.feedbacks[matchId] && (
                                         <div className="text-xs text-gray-600 mt-1 bg-white p-2 rounded border">
-                                          {state.feedbacks[match.id].length > 50 
-                                            ? `${state.feedbacks[match.id].substring(0, 50)}...` 
-                                            : state.feedbacks[match.id]
+                                          {state.feedbacks[matchId].length > 50 
+                                            ? `${state.feedbacks[matchId].substring(0, 50)}...` 
+                                            : state.feedbacks[matchId]
                                           }
                                         </div>
                                       )}
@@ -1415,14 +1441,14 @@ export default function MatchesPage() {
                                       <textarea
                                         className="w-full p-2 border border-gray-300 rounded-md text-sm"
                                         rows={3}
-                                        value={state.feedbacks[match.id] || ''}
-                                        onChange={e => handleFeedbackChange(match.id, e.target.value)}
+                                        value={state.feedbacks[matchId] || ''}
+                                        onChange={e => handleFeedbackChange(matchId, e.target.value)}
                                         placeholder="请描述你的面试体验、收获或建议"
                                       />
                                                                               <button
                                           className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:bg-gray-400"
-                                          onClick={() => handleFeedbackSubmit(match.matchId || match.id)}
-                                          disabled={!state.feedbacks[match.id]}
+                                          onClick={() => handleFeedbackSubmit(matchId)}
+                                          disabled={!state.feedbacks[matchId]}
                                         >
                                           提交反馈
                                         </button>
@@ -1433,7 +1459,8 @@ export default function MatchesPage() {
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="cards-container">
