@@ -331,6 +331,7 @@ export async function getSuccessfulMatches(userId: number) {
           contactInfo: {
             email: user.profile.email,
             wechat: user.profile.wechat,
+            linkedin: user.profile.linkedin,
           },
           bio: user.profile.bio,
           // 添加匹配相关信息
