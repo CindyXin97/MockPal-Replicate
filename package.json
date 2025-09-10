@@ -11,7 +11,8 @@
     "setup-prod-db": "tsx scripts/setup-production-db.ts",
     "seed-questions": "tsx scripts/seed-original-41-questions.ts",
     "clear-data": "tsx scripts/clear-test-data.ts",
-    "clear-prod-data": "tsx scripts/clear-production-test-data.ts"
+    "clear-prod-data": "tsx scripts/clear-production-test-data.ts",
+    "safe-truncate-users": "tsx scripts/safe-truncate-users.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",
