@@ -1651,7 +1651,7 @@ export default function MatchesPage() {
                         <li>• 双方轮流扮演面试官和候选人</li>
                         <li>• 参考网站面试题目（随时更新）</li>
                         <li>• 根据经验水平调整题目难度</li>
-                        <li>• 准备算法、系统设计或行为问题</li>
+                        <li>• 准备Coding, Case, 统计，BQ</li>
                       </ul>
                     </CardContent>
                   </Card>
