@@ -145,12 +145,12 @@ function AuthPageContent() {
 
   return (
     <PublicLayout redirectIfAuthenticated={false}>
-      <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-white to-gray-50 -z-10" aria-hidden="true"></div>
+      <div className="fixed inset-0 w-full h-full -z-10" style={{backgroundColor: '#f5f7fa'}} aria-hidden="true"></div>
       <div className="flex min-h-[70vh] items-center justify-center w-full">
         <Card className="w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10 mt-8">
           <CardHeader>
             <CardTitle className="text-2xl font-extrabold text-center tracking-tight text-gray-900 mb-2">
-              <span className="text-blue-500">{authMode === 'login' ? '登录' : '注册'}</span> MockPal
+              <span style={{color: '#2b6cb0'}}>{authMode === 'login' ? '登录' : '注册'}</span> MockPal
             </CardTitle>
             <p className="text-base text-gray-500 text-center font-medium">
               {authMode === 'login' ? '欢迎登录，开启你的模拟面试之旅' : '欢迎注册，开启你的模拟面试之旅'}
@@ -204,7 +204,8 @@ function AuthPageContent() {
                         </div>
                         <Button
                           type="submit"
-                          className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600"
+                          className="w-full px-10 py-2 text-lg font-semibold text-white border-0 shadow-md hover:shadow-lg transition-all"
+                          style={{background: '#2b6cb0'}}
                           disabled={isLoading}
                         >
                           {isLoading ? '登录中...' : '登录'}
@@ -233,7 +234,8 @@ function AuthPageContent() {
                         <Button
                           type="button"
                           onClick={handleEmailAuth}
-                          className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600"
+                          className="w-full px-10 py-2 text-lg font-semibold text-white border-0 shadow-md hover:shadow-lg transition-all"
+                          style={{background: '#2b6cb0'}}
                           disabled={isLoading}
                         >
                           {isLoading ? '发送中...' : '发送验证邮件'}
@@ -306,7 +308,8 @@ function AuthPageContent() {
                     <Button
                       type="button"
                       onClick={handleEmailRegister}
-                      className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600"
+                      className="w-full px-10 py-2 text-lg font-semibold text-white border-0 shadow-md hover:shadow-lg transition-all"
+                      style={{background: '#2b6cb0'}}
                       disabled={isLoading}
                     >
                       {isLoading ? '发送中...' : '发送设置密码邮件'}
@@ -362,7 +365,8 @@ function AuthPageContent() {
               {authMode === 'login' ? '还没有账号？' : '已有账号？'}{' '}
               <button
                 onClick={switchAuthMode}
-                className="text-blue-600 font-semibold hover:underline"
+                className="font-semibold hover:underline"
+                style={{color: '#2b6cb0'}}
               >
                 {authMode === 'login' ? '立即注册' : '立即登录'}
               </button>
