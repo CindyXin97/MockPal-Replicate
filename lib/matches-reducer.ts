@@ -9,6 +9,7 @@ export interface MatchesState {
   successfulMatches: Match[];
   isLoading: boolean;
   activeTab: string;
+  contactStatus: { [key: number]: 'yes' | 'no' | undefined }; // 是否添加联系方式
   interviewStatus: { [key: number]: 'yes' | 'no' | undefined };
   feedbacks: { [key: number]: string };
   submitted: { [key: number]: boolean };
@@ -27,6 +28,7 @@ export const initialMatchesState: MatchesState = {
   successfulMatches: [],
   isLoading: true,
   activeTab: 'browse',
+  contactStatus: {},
   interviewStatus: {},
   feedbacks: {},
   submitted: {},
@@ -44,13 +46,17 @@ export type MatchesAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'NEXT_MATCH' }
   | { type: 'SET_TAB'; payload: string }
+  | { type: 'SET_CONTACT_STATUS'; payload: { matchId: number; status: 'yes' | 'no' } }
   | { type: 'SET_INTERVIEW_STATUS'; payload: { matchId: number; status: 'yes' | 'no' } }
   | { type: 'SET_FEEDBACK'; payload: { matchId: number; feedback: string } }
   | { type: 'SUBMIT_FEEDBACK'; payload: number }
+  | { type: 'REVERT_FEEDBACK_SUBMISSION'; payload: number }
   | { type: 'TOGGLE_BANNER' }
   | { type: 'TOGGLE_GUIDE' }
   | { type: 'SHOW_CONTACT_TEMPLATES'; payload: Match | null }
   | { type: 'ADD_SUCCESSFUL_MATCH'; payload: Match }
+  | { type: 'UPDATE_MATCH_STATUS'; payload: { matchId: number; contactStatus: string } }
+  | { type: 'INITIALIZE_FEEDBACK_FROM_DATA'; payload: { matchId: number; contactStatus?: string; interviewStatus?: string; feedbackContent?: string } }
   | { type: 'RESET_MATCHES' };
 
 /**
@@ -85,6 +91,15 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
         activeTab: action.payload,
       };
 
+    case 'SET_CONTACT_STATUS':
+      return {
+        ...state,
+        contactStatus: {
+          ...state.contactStatus,
+          [action.payload.matchId]: action.payload.status,
+        },
+      };
+
     case 'SET_INTERVIEW_STATUS':
       return {
         ...state,
@@ -112,6 +127,15 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
         },
       };
 
+    case 'REVERT_FEEDBACK_SUBMISSION':
+      return {
+        ...state,
+        submitted: {
+          ...state.submitted,
+          [action.payload]: false,
+        },
+      };
+
     case 'TOGGLE_BANNER':
       return {
         ...state,
@@ -136,6 +160,37 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
         ...state,
         successfulMatches: [...state.successfulMatches, action.payload],
         currentMatchIndex: state.currentMatchIndex + 1,
+      };
+
+    case 'UPDATE_MATCH_STATUS':
+      return {
+        ...state,
+        successfulMatches: state.successfulMatches.map(match => 
+          match.id === action.payload.matchId 
+            ? { ...match, contactStatus: action.payload.contactStatus }
+            : match
+        ),
+      };
+
+    case 'INITIALIZE_FEEDBACK_FROM_DATA':
+      return {
+        ...state,
+        contactStatus: action.payload.contactStatus ? {
+          ...state.contactStatus,
+          [action.payload.matchId]: action.payload.contactStatus === 'yes' ? 'yes' : 'no'
+        } : state.contactStatus,
+        interviewStatus: action.payload.interviewStatus ? {
+          ...state.interviewStatus,
+          [action.payload.matchId]: action.payload.interviewStatus === 'yes' ? 'yes' : 'no'
+        } : state.interviewStatus,
+        feedbacks: action.payload.feedbackContent ? {
+          ...state.feedbacks,
+          [action.payload.matchId]: action.payload.feedbackContent
+        } : state.feedbacks,
+        submitted: action.payload.feedbackContent ? {
+          ...state.submitted,
+          [action.payload.matchId]: true
+        } : state.submitted,
       };
 
     case 'RESET_MATCHES':

@@ -42,6 +42,7 @@ export const userProfiles = pgTable('user_profiles', {
   technicalInterview: boolean('technical_interview').default(false),
   behavioralInterview: boolean('behavioral_interview').default(false),
   caseAnalysis: boolean('case_analysis').default(false),
+  statsQuestions: boolean('stats_questions').default(false),
   
   // Contact information (revealed after match)
   email: varchar('email', { length: 255 }),
@@ -60,6 +61,13 @@ export const matches = pgTable('matches', {
   user1Id: integer('user1_id').references(() => users.id).notNull(),
   user2Id: integer('user2_id').references(() => users.id).notNull(),
   status: varchar('status', { length: 50 }).notNull().default('pending'), // pending, accepted, rejected
+  
+  // 新增：联系和面试状态跟踪
+  contactStatus: varchar('contact_status', { length: 50 }).default('not_contacted'), // not_contacted, contacted, scheduled, completed, no_response
+  contactUpdatedAt: timestamp('contact_updated_at'),
+  interviewScheduledAt: timestamp('interview_scheduled_at'),
+  lastReminderSent: timestamp('last_reminder_sent'),
+  
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => {
@@ -72,10 +80,21 @@ export const matches = pgTable('matches', {
 // Feedbacks schema
 export const feedbacks = pgTable('feedbacks', {
   id: serial('id').primaryKey(),
-  matchId: integer('match_id').references(() => matches.id).notNull(),
+  matchId: integer('match_id').references(() => matches.id),
   userId: integer('user_id').references(() => users.id).notNull(),
   interviewStatus: varchar('interview_status', { length: 10 }).notNull(), // 'yes' or 'no'
   content: text('content'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// User achievements schema
+export const userAchievements = pgTable('user_achievements', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull().unique(),
+  totalInterviews: integer('total_interviews').default(0).notNull(),
+  experiencePoints: integer('experience_points').default(0).notNull(),
+  currentLevel: varchar('current_level', { length: 50 }).default('新用户').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -87,6 +106,34 @@ export const userDailyViews = pgTable('user_daily_views', {
   viewedUserId: integer('viewed_user_id').references(() => users.id).notNull(),
   date: varchar('date', { length: 10 }).notNull(), // 格式: YYYY-MM-DD
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 面试真题表
+export const interviewQuestions = pgTable('interview_questions', {
+  id: serial('id').primaryKey(),
+  company: varchar('company', { length: 100 }).notNull(), // 公司名称
+  position: varchar('position', { length: 100 }).notNull(), // 职位
+  questionType: varchar('question_type', { length: 50 }).notNull(), // 题目类型: technical, behavioral, case_study, stats
+  difficulty: varchar('difficulty', { length: 20 }).notNull(), // 难度: easy, medium, hard
+  question: text('question').notNull(), // 问题内容
+  recommendedAnswer: text('recommended_answer'), // 推荐答案
+  tags: text('tags'), // 标签，JSON格式存储
+  source: varchar('source', { length: 100 }), // 来源
+  year: integer('year').notNull(), // 年份
+  isVerified: boolean('is_verified').default(false), // 是否已验证
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 面经需求表
+export const interviewRequests = pgTable('interview_requests', {
+  id: serial('id').primaryKey(),
+  company: varchar('company', { length: 100 }).notNull(), // 公司名称
+  position: varchar('position', { length: 100 }).notNull(), // 职位名称
+  message: text('message'), // 补充说明
+  status: varchar('status', { length: 20 }).default('pending').notNull(), // pending, processing, completed
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 // Relations
@@ -159,6 +206,9 @@ export type User = InferModel<typeof users>;
 export type UserProfile = InferModel<typeof userProfiles>;
 export type Match = InferModel<typeof matches>;
 export type Feedback = InferModel<typeof feedbacks>;
+export type UserAchievement = InferModel<typeof userAchievements>;
 export type Account = InferModel<typeof accounts>;
 export type Session = InferModel<typeof sessions>;
-export type VerificationToken = InferModel<typeof verificationTokens>; 
+export type VerificationToken = InferModel<typeof verificationTokens>;
+export type InterviewQuestion = InferModel<typeof interviewQuestions>;
+export type InterviewRequest = InferModel<typeof interviewRequests>; 

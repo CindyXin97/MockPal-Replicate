@@ -25,6 +25,7 @@ export type ProfileFormData = {
   technicalInterview: boolean;
   behavioralInterview: boolean;
   caseAnalysis: boolean;
+  statsQuestions: boolean;
   email?: string;
   wechat?: string;
   linkedin?: string;
@@ -71,6 +72,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       if (profileData.technicalInterview !== undefined) updateData.technicalInterview = profileData.technicalInterview;
       if (profileData.behavioralInterview !== undefined) updateData.behavioralInterview = profileData.behavioralInterview;
       if (profileData.caseAnalysis !== undefined) updateData.caseAnalysis = profileData.caseAnalysis;
+      if (profileData.statsQuestions !== undefined) updateData.statsQuestions = profileData.statsQuestions;
       if (profileData.email !== undefined) updateData.email = profileData.email || null;
       if (profileData.wechat !== undefined) updateData.wechat = profileData.wechat || null;
       if (profileData.linkedin !== undefined) updateData.linkedin = profileData.linkedin || null;
@@ -97,6 +99,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
         technicalInterview: profileData.technicalInterview || false,
         behavioralInterview: profileData.behavioralInterview || false,
         caseAnalysis: profileData.caseAnalysis || false,
+        statsQuestions: profileData.statsQuestions || false,
         email: profileData.email || null,
         wechat: profileData.wechat || null,
         linkedin: profileData.linkedin || null,
@@ -124,6 +127,7 @@ export async function createProfile(userId: number, profileData: ProfileFormData
       technicalInterview: profileData.technicalInterview,
       behavioralInterview: profileData.behavioralInterview,
       caseAnalysis: profileData.caseAnalysis,
+      statsQuestions: profileData.statsQuestions,
       email: profileData.email || null,
       wechat: profileData.wechat || null,
       linkedin: profileData.linkedin || null,

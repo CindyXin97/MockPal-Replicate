@@ -47,6 +47,7 @@ function ProfilePageContent() {
     technicalInterview: false,
     behavioralInterview: false,
     caseAnalysis: false,
+    statsQuestions: false,
     email: '',
     wechat: '',
     linkedin: '',
@@ -72,6 +73,7 @@ function ProfilePageContent() {
         technicalInterview: profile.technicalInterview || false,
         behavioralInterview: profile.behavioralInterview || false,
         caseAnalysis: profile.caseAnalysis || false,
+        statsQuestions: profile.statsQuestions || false,
         email: profile.email || '',
         wechat: profile.wechat || '',
         linkedin: profile.linkedin || '',
@@ -143,8 +145,14 @@ function ProfilePageContent() {
     }
 
     // 验证至少选择一种练习内容
-    if (!formData.technicalInterview && !formData.behavioralInterview && !formData.caseAnalysis) {
+    if (!formData.technicalInterview && !formData.behavioralInterview && !formData.caseAnalysis && !formData.statsQuestions) {
       toast.error('请至少选择一种期望练习内容');
+      return;
+    }
+
+    // 验证一句话介绍必填
+    if (!formData.bio?.trim()) {
+      toast.error('请填写一句话介绍');
       return;
     }
 
@@ -194,29 +202,30 @@ function ProfilePageContent() {
       <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-white to-gray-50 -z-10" aria-hidden="true"></div>
       <div className="flex min-h-screen items-center justify-center w-full">
         <Card className="w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10">
-          <CardHeader>
-            <CardTitle className="text-2xl font-extrabold text-center tracking-tight text-gray-900 mb-2">个人资料</CardTitle>
-            <p className="text-base text-gray-500 text-center font-medium">完善资料，获得更精准的匹配推荐</p>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl font-extrabold text-center tracking-tight text-gray-900 mb-1">个人资料</CardTitle>
+            <p className="text-sm text-gray-500 text-center font-medium">完善资料，获得更精准的匹配推荐</p>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">显示名称 <span className="text-red-500 ml-1">*</span></Label>
+          <CardContent className="pt-0 pb-6">
+            <form onSubmit={handleSubmit} className="space-y-3">
+                              <div className="space-y-1">
+                  <Label htmlFor="name">显示名称 <span className="text-red-500 ml-1">*</span></Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="请输入您的显示名称"
+                  className="h-10"
                 />
                 <p className="text-sm text-gray-500">这是其他用户看到的您的名称</p>
               </div>
             
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
                   <Label htmlFor="jobType">岗位类型 <span className="text-red-500 ml-1">*</span></Label>
                   {profile ? (
                     <Select key="jobType" value={formData.jobType} onValueChange={(value) => handleInputChange('jobType', value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="请选择岗位类型" />
                       </SelectTrigger>
                       <SelectContent>
@@ -230,11 +239,11 @@ function ProfilePageContent() {
                     <div className="h-10 bg-gray-100 animate-pulse rounded-md"></div>
                   )}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor="experienceLevel">经验水平 <span className="text-red-500 ml-1">*</span></Label>
                   {!profileLoading ? (
                     <Select key={`experienceLevel-${profile?.experienceLevel || 'default'}`} value={formData.experienceLevel} onValueChange={(value) => handleInputChange('experienceLevel', value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="请选择经验水平" />
                       </SelectTrigger>
                       <SelectContent>
@@ -252,15 +261,15 @@ function ProfilePageContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
                   <Label htmlFor="targetCompany">目标公司 <span className="text-red-500 ml-1">*</span></Label>
                   {!profileLoading ? (
                     <Select key={`targetCompany-${profile?.targetCompany || 'default'}`} value={formData.targetCompany} onValueChange={(value) => {
                       handleInputChange('targetCompany', value);
                       setShowOtherCompanyInput(value === 'other');
                     }}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="请选择目标公司" />
                       </SelectTrigger>
                       <SelectContent>
@@ -281,15 +290,15 @@ function ProfilePageContent() {
                       placeholder="请输入目标公司名称"
                       value={otherCompanyName}
                       onChange={(e) => setOtherCompanyName(e.target.value)}
-                      className="mt-2"
+                      className="mt-2 h-10"
                     />
                   )}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor="targetIndustry">目标行业 <span className="text-red-500 ml-1">*</span></Label>
                   {!profileLoading ? (
                     <Select key={`targetIndustry-${profile?.targetIndustry || 'default'}`} value={formData.targetIndustry} onValueChange={(value) => handleInputChange('targetIndustry', value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="请选择目标行业" />
                       </SelectTrigger>
                       <SelectContent>
@@ -308,9 +317,9 @@ function ProfilePageContent() {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Label>期望练习内容 <span className="text-red-500 ml-1">*</span></Label>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="technicalInterview"
@@ -335,39 +344,53 @@ function ProfilePageContent() {
                     />
                     <Label htmlFor="caseAnalysis">案例分析</Label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="statsQuestions"
+                      checked={formData.statsQuestions || false}
+                      onCheckedChange={(checked) => handleInputChange('statsQuestions', checked)}
+                    />
+                    <Label htmlFor="statsQuestions">统计题目</Label>
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>联系方式 (匹配成功后可见，推荐添加微信)</Label>
-                <Input
-                  placeholder="邮箱"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                />
-                <Input
-                  placeholder="微信"
-                  value={formData.wechat}
-                  onChange={(e) => handleInputChange('wechat', e.target.value)}
-                />
-                <Input
-                  placeholder="LinkedIn https://www.linkedin.com/in/your-profile"
-                  value={formData.linkedin}
-                  onChange={(e) => handleInputChange('linkedin', e.target.value)}
-                />
+                <div className="space-y-2">
+                  <Input
+                    placeholder="邮箱"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className="h-10"
+                  />
+                  <Input
+                    placeholder="微信"
+                    value={formData.wechat}
+                    onChange={(e) => handleInputChange('wechat', e.target.value)}
+                    className="h-10"
+                  />
+                  <Input
+                    placeholder="LinkedIn https://www.linkedin.com/in/your-profile"
+                    value={formData.linkedin}
+                    onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                    className="h-10"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="bio">一句话介绍（可选，能提升曝光和匹配度哦～）</Label>
+              <div className="space-y-1">
+                <Label htmlFor="bio">一句话介绍 <span className="text-red-500 ml-1">*</span></Label>
                 <Input
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => handleInputChange('bio', e.target.value)}
                   placeholder="如：三年打工人，在美东时区，希望找到小姐妹一起练case～"
+                  className="h-10"
                 />
               </div>
 
-              <Button type="submit" className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600" disabled={isLoading}>
+              <Button type="submit" className="w-full px-8 py-2 text-base font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600" disabled={isLoading}>
                 {isLoading ? '保存中...' : '保存资料'}
               </Button>
             </form>

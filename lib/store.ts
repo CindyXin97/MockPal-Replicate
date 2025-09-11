@@ -19,6 +19,7 @@ export type UserProfile = {
   technicalInterview?: boolean;
   behavioralInterview?: boolean;
   caseAnalysis?: boolean;
+  statsQuestions?: boolean;
   email?: string;
   wechat?: string;
   linkedin?: string;
@@ -29,6 +30,7 @@ export type UserProfile = {
 
 export type Match = {
   id: number;
+  matchId?: number; // 匹配记录ID，用于状态更新
   username: string | null;
   jobType?: string | null;
   experienceLevel?: string | null;
@@ -45,6 +47,16 @@ export type Match = {
     linkedin?: string | null;
   };
   bio?: string | null;
+  // 新增状态跟踪字段
+  contactStatus?: string | null;
+  contactUpdatedAt?: string | null;
+  createdAt?: string | null;
+  // 反馈信息
+  feedback?: {
+    interviewStatus: string;
+    content: string | null;
+    createdAt: string;
+  } | null;
 };
 
 // Auth state

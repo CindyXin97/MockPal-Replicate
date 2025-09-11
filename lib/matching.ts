@@ -3,6 +3,7 @@ import { users, userProfiles, matches, feedbacks, userDailyViews } from '@/lib/d
 import { eq, and, or, not, desc, exists, inArray } from 'drizzle-orm';
 import { format } from 'date-fns';
 import { matchBetweenUsers, matchesForUser, errorResponse, successResponse } from '@/lib/matching-utils';
+import { updateUserAchievement } from './achievements';
 
 // Get potential matches for a user
 export async function getPotentialMatches(userId: number) {
@@ -292,14 +293,31 @@ export async function getSuccessfulMatches(userId: number) {
     // 构建Map用于快速查找
     const usersMap = new Map(matchedUsers.map(u => [u.id, u]));
 
+    // 批量查询所有匹配的反馈数据
+    const matchIds = successfulMatches.map(match => match.id);
+    const matchFeedbacks = matchIds.length > 0 ? await db.query.feedbacks.findMany({
+      where: and(
+        inArray(feedbacks.matchId, matchIds),
+        eq(feedbacks.userId, userId)
+      )
+    }) : [];
+    
+    // 构建反馈Map用于快速查找
+    const feedbacksMap = new Map(matchFeedbacks.map(f => [f.matchId, f]));
+
     // 组装返回数据
-    const formattedMatches = matchedUserIds
-      .map(id => {
-        const user = usersMap.get(id);
+    const formattedMatches = successfulMatches
+      .map(match => {
+        const partnerId = match.user1Id === userId ? match.user2Id : match.user1Id;
+        const user = usersMap.get(partnerId);
         if (!user || !user.profile) return null;
 
+        // 获取该匹配的反馈信息
+        const feedback = feedbacksMap.get(match.id);
+        
         return {
-          id: user.id,
+          id: user.id, // 用户ID，用于显示
+          matchId: match.id, // 匹配记录ID，用于状态更新
           username: user.name,
           jobType: user.profile.jobType,
           experienceLevel: user.profile.experienceLevel,
@@ -313,8 +331,19 @@ export async function getSuccessfulMatches(userId: number) {
           contactInfo: {
             email: user.profile.email,
             wechat: user.profile.wechat,
+            linkedin: user.profile.linkedin,
           },
           bio: user.profile.bio,
+          // 添加匹配相关信息
+          contactStatus: match.contactStatus,
+          createdAt: match.createdAt?.toISOString(),
+          contactUpdatedAt: match.contactUpdatedAt?.toISOString(),
+          // 添加反馈信息
+          feedback: feedback ? {
+            interviewStatus: feedback.interviewStatus,
+            content: feedback.content,
+            createdAt: feedback.createdAt?.toISOString(),
+          } : null,
         };
       })
       .filter(Boolean);
@@ -328,17 +357,35 @@ export async function getSuccessfulMatches(userId: number) {
 // 保存面试反馈
 export async function saveFeedback({ matchId, userId, interviewStatus, content }: { matchId: number, userId: number, interviewStatus: string, content?: string }) {
   try {
-    await db.insert(feedbacks).values({
+    console.log('saveFeedback - 开始保存反馈:', { matchId, userId, interviewStatus, content });
+    
+    // 保存反馈
+    const insertResult = await db.insert(feedbacks).values({
       matchId,
       userId,
       interviewStatus,
       content: content || null,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
+    }).returning();
+    
+    console.log('saveFeedback - 数据库插入结果:', insertResult);
+
+    // 如果面试状态是成功的，更新用户成就
+    if (interviewStatus === 'yes') {
+      console.log('saveFeedback - 更新用户成就:', userId);
+      await updateUserAchievement(userId);
+    }
+
+    console.log('saveFeedback - 成功完成');
     return { success: true };
   } catch (error) {
-    console.error('Save feedback error:', error);
-    return { success: false, message: '保存反馈失败，请稍后再试' };
+    console.error('saveFeedback - 错误详情:', error);
+    console.error('saveFeedback - 错误堆栈:', error instanceof Error ? error.stack : 'No stack');
+    return { 
+      success: false, 
+      message: '保存反馈失败，请稍后再试',
+      error: error instanceof Error ? error.message : String(error)
+    };
   }
 } 

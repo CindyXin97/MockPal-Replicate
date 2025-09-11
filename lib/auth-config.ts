@@ -127,6 +127,7 @@ export const authConfig: NextAuthOptions = {
               technicalInterview: false,
               behavioralInterview: false,
               caseAnalysis: false,
+              statsQuestions: false,
               email: user.email!,
               wechat: '',
               linkedin: '',
