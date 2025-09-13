@@ -43,6 +43,7 @@ export const initialMatchesState: MatchesState = {
  */
 export type MatchesAction =
   | { type: 'LOAD_MATCHES'; payload: { potentialMatches: Match[]; successfulMatches: Match[] } }
+  | { type: 'UPDATE_SUCCESSFUL_MATCHES'; payload: { successfulMatches: Match[] } }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'NEXT_MATCH' }
   | { type: 'SET_TAB'; payload: string }
@@ -71,6 +72,13 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
         successfulMatches: action.payload.successfulMatches,
         currentMatchIndex: 0,
         isLoading: false,
+      };
+
+    case 'UPDATE_SUCCESSFUL_MATCHES':
+      return {
+        ...state,
+        successfulMatches: action.payload.successfulMatches,
+        // 不重置currentMatchIndex，保持当前位置
       };
 
     case 'SET_LOADING':

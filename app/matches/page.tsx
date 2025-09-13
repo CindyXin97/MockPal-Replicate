@@ -742,32 +742,37 @@ export default function MatchesPage() {
     }
 
     const targetUser = state.potentialMatches[state.currentMatchIndex];
+    
+    // 先切换到下一个人（无论什么情况都要跳转）
+    const nextIndex = state.currentMatchIndex + 1;
+    dispatch({ type: 'NEXT_MATCH' });
+    setCurrentMatchIndex(nextIndex);
+    
     try {
       const result = await likeUser(user.id, targetUser.id);
       
       if (result.success) {
         if ('match' in result && result.match) {
-          // If it's a match, reload the successful matches
-          toast.success(result.message || '匹配成功！');
+          // 匹配成功：显示toast并更新成功匹配列表
+          toast.success('匹配成功！请到成功匹配页面查看');
           const successfulResult = await fetchSuccessfulMatches(user.id);
-          // 更新成功匹配列表
+          // 只更新成功匹配列表，不影响当前索引
           if (successfulResult.success && 'matches' in successfulResult && Array.isArray(successfulResult.matches)) {
             const filteredMatches = successfulResult.matches.filter(match => match !== null) as Match[];
-            dispatch({ type: 'LOAD_MATCHES', payload: { potentialMatches: state.potentialMatches, successfulMatches: filteredMatches } });
+            dispatch({ 
+              type: 'UPDATE_SUCCESSFUL_MATCHES', 
+              payload: { successfulMatches: filteredMatches } 
+            });
           }
         } else {
           toast.success(result.message || '已收到你的喜欢！');
         }
-        
-        // Move to next potential match
-        dispatch({ type: 'NEXT_MATCH' });
-        setCurrentMatchIndex(state.currentMatchIndex + 1);
       } else {
-        toast.error(result.message || '操作失败');
+        toast.error(result.message || '操作失败，但已切换到下一个人');
       }
     } catch (error) {
       console.error('Like error:', error);
-      toast.error('操作失败，请稍后再试');
+      toast.error('操作失败，但已切换到下一个人');
     }
   };
 
@@ -777,19 +782,22 @@ export default function MatchesPage() {
     }
 
     const targetUser = state.potentialMatches[state.currentMatchIndex];
+    
+    // 先切换到下一个人（无论操作是否成功）
+    const nextIndex = state.currentMatchIndex + 1;
+    dispatch({ type: 'NEXT_MATCH' });
+    setCurrentMatchIndex(nextIndex);
+    
     try {
       const result = await dislikeUser(user.id, targetUser.id);
       
-      if (result.success) {
-        // Move to next potential match
-        dispatch({ type: 'NEXT_MATCH' });
-        setCurrentMatchIndex(state.currentMatchIndex + 1);
-      } else {
-        toast.error(result.message || '操作失败');
+      if (!result.success) {
+        toast.error(result.message || '操作失败，但已切换到下一个人');
       }
+      // 成功时不显示toast，直接切换即可
     } catch (error) {
       console.error('Dislike error:', error);
-      toast.error('操作失败，请稍后再试');
+      toast.error('操作失败，但已切换到下一个人');
     }
   };
 
@@ -940,6 +948,10 @@ export default function MatchesPage() {
       hover: string;
       title: string;
       description: string;
+      customBg?: string;
+      customText?: string;
+      customBorder?: string;
+      customHover?: string;
     }> = {
       '新用户': {
         bg: 'bg-green-100',
