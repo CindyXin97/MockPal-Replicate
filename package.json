@@ -15,6 +15,12 @@
     "test-reset-views": "dotenv -e .env.local -- tsx scripts/test-helper.ts reset-views",
     "test-clear-matches": "dotenv -e .env.local -- tsx scripts/test-helper.ts clear-matches",
     "test-status": "dotenv -e .env.local -- tsx scripts/test-helper.ts status",
+    "debug-matches": "dotenv -e .env.local -- tsx scripts/debug-matches.ts",
+    "fix-test-profiles": "dotenv -e .env.local -- tsx scripts/fix-test-profiles.ts",
+    "check-user-matches": "dotenv -e .env.local -- tsx scripts/check-user-matches.ts",
+    "test-matching-api": "dotenv -e .env.local -- tsx scripts/test-matching-api.ts",
+
+
     "migrate": "tsx scripts/migrate.ts",
     "setup-prod-db": "tsx scripts/setup-production-db.ts",
     "seed-questions": "tsx scripts/seed-original-41-questions.ts",

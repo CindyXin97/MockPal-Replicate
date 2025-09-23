@@ -39,9 +39,9 @@ export async function fetchSuccessfulMatches(userId: number) {
 }
 
 // 保存面试反馈 action
-export async function saveFeedbackAction({ matchId, userId, interviewStatus, content }: { matchId: number, userId: number, interviewStatus: string, content?: string }) {
+export async function saveFeedbackAction({ matchId, userId, contactStatus, interviewStatus, content }: { matchId: number, userId: number, contactStatus?: string, interviewStatus: string, content?: string }) {
   if (!matchId || !userId || !interviewStatus) {
     return { success: false, message: '参数不完整' };
   }
-  return saveFeedback({ matchId, userId, interviewStatus, content });
+  return saveFeedback({ matchId, userId, contactStatus, interviewStatus, content });
 } 

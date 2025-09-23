@@ -355,14 +355,15 @@ export async function getSuccessfulMatches(userId: number) {
 }
 
 // 保存面试反馈
-export async function saveFeedback({ matchId, userId, interviewStatus, content }: { matchId: number, userId: number, interviewStatus: string, content?: string }) {
+export async function saveFeedback({ matchId, userId, contactStatus, interviewStatus, content }: { matchId: number, userId: number, contactStatus?: string, interviewStatus: string, content?: string }) {
   try {
-    console.log('saveFeedback - 开始保存反馈:', { matchId, userId, interviewStatus, content });
+    console.log('saveFeedback - 开始保存反馈:', { matchId, userId, contactStatus, interviewStatus, content });
     
     // 保存反馈
     const insertResult = await db.insert(feedbacks).values({
       matchId,
       userId,
+      contactStatus: contactStatus || null,
       interviewStatus,
       content: content || null,
       createdAt: new Date(),

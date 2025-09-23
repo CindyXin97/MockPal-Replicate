@@ -656,10 +656,17 @@ export default function MatchesPage() {
       // Load successful matches
       const successfulResult = await fetchSuccessfulMatches(user.id);
       
-      const potentialMatches = (potentialResult.success && 'matches' in potentialResult) ? potentialResult.matches || [] : [];
-      const successfulMatches = (successfulResult.success && 'matches' in successfulResult && Array.isArray(successfulResult.matches)) 
-        ? (successfulResult.matches.filter(match => match !== null) as Match[])
-        : [];
+      // 安全地处理potentialMatches数据
+      let potentialMatches: any[] = [];
+      if (potentialResult.success && 'matches' in potentialResult && Array.isArray(potentialResult.matches)) {
+        potentialMatches = potentialResult.matches;
+      }
+      
+      // 安全地处理successfulMatches数据
+      let successfulMatches: Match[] = [];
+      if (successfulResult.success && 'matches' in successfulResult && Array.isArray(successfulResult.matches)) {
+        successfulMatches = successfulResult.matches.filter(match => match !== null) as Match[];
+      }
         
       // 使用dispatch更新所有状态
       dispatch({ type: 'LOAD_MATCHES', payload: { potentialMatches, successfulMatches } });
@@ -756,7 +763,7 @@ export default function MatchesPage() {
       if (result.success) {
         if ('match' in result && result.match) {
           // 匹配成功：显示toast并更新成功匹配列表
-          toast.success('匹配成功！请到成功匹配页面查看');
+          toast.success('匹配成功！🎉 请到成功匹配页面查看');
           const successfulResult = await fetchSuccessfulMatches(user.id);
           // 只更新成功匹配列表，不影响当前索引
           if (successfulResult.success && 'matches' in successfulResult && Array.isArray(successfulResult.matches)) {
@@ -858,8 +865,9 @@ export default function MatchesPage() {
 
   const handleFeedbackSubmit = async (matchId: number) => {
     if (!user) return;
-    const interviewStatusValue = state.interviewStatus[matchId];
-    const feedbackContent = state.feedbacks[matchId] || '';
+    const contactStatusValue = state.contactStatus?.[matchId];
+    const interviewStatusValue = state.interviewStatus?.[matchId];
+    const feedbackContent = state.feedbacks?.[matchId] || '';
     
     // 先标记为已提交（乐观更新）
     dispatch({ type: 'SUBMIT_FEEDBACK', payload: matchId });
@@ -871,6 +879,7 @@ export default function MatchesPage() {
         body: JSON.stringify({
           matchId,
           userId: user.id,
+          contactStatus: contactStatusValue || '',
           interviewStatus: interviewStatusValue || '',
           content: feedbackContent,
         }),
@@ -1449,8 +1458,9 @@ export default function MatchesPage() {
                               </button>
                             </div>
                             
-                            {/* 简化的反馈流程，与 www.mockpals.com 保持一致 */}
+                            {/* 完整的三步反馈流程 */}
                             <div className="feedback-flow mt-3 p-2 bg-gray-50 rounded-md">
+                              {/* 第一步：是否添加联系方式？ */}
                               <div className="mb-2">
                                 <div className="text-sm font-medium text-gray-700 mb-1">📋 是否添加联系方式？</div>
                                 <label className="inline-flex items-center mr-4">
@@ -1476,6 +1486,75 @@ export default function MatchesPage() {
                                   否
                                 </label>
                               </div>
+                              
+                              {/* 第二步：是否进行面试？- 只在添加联系方式后显示 */}
+                              {state.contactStatus?.[matchId] === 'yes' && (
+                                <div className="mb-2">
+                                  <div className="text-sm font-medium text-gray-700 mb-1">🎯 是否进行面试？</div>
+                                  <label className="inline-flex items-center mr-4">
+                                    <input
+                                      type="radio"
+                                      name={`interview_${match.id}`}
+                                      value="yes"
+                                                                             checked={state.interviewStatus?.[matchId] === 'yes'}
+                                       onChange={() => handleInterviewChange(matchId, 'yes')}
+                                      className="mr-1"
+                                    />
+                                    是
+                                  </label>
+                                  <label className="inline-flex items-center">
+                                    <input
+                                      type="radio"
+                                      name={`interview_${match.id}`}
+                                      value="no"
+                                                                             checked={state.interviewStatus?.[matchId] === 'no'}
+                                       onChange={() => handleInterviewChange(matchId, 'no')}
+                                      className="mr-1"
+                                    />
+                                    否
+                                  </label>
+                                </div>
+                              )}
+                              
+                              {/* 第三步：面试反馈 - 只在进行面试后显示 */}
+                              {state.contactStatus?.[matchId] === 'yes' && state.interviewStatus?.[matchId] === 'yes' && (
+                                <div className="feedback-section">
+                                  {state.submitted?.[matchId] ? (
+                                    // 已提交的反馈 - 折叠显示
+                                    <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-green-600">✅</span>
+                                        <span className="text-sm font-medium text-green-800">面试反馈已提交</span>
+                                      </div>
+                                      {state.feedbacks?.[matchId] && (
+                                        <div className="text-sm text-gray-700 bg-white p-2 rounded border">
+                                          <strong>你的反馈：</strong>
+                                          <p className="mt-1">{state.feedbacks[matchId]}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    // 未提交的反馈 - 展开表单
+                                    <>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">✍️ 请填写你的面试反馈：</label>
+                                      <textarea
+                                        className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                        rows={3}
+                                        value={state.feedbacks?.[matchId] || ''}
+                                        onChange={e => handleFeedbackChange(matchId, e.target.value)}
+                                        placeholder="请描述你的面试体验、收获或建议"
+                                      />
+                                      <button
+                                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:bg-gray-400"
+                                        onClick={() => handleFeedbackSubmit(matchId)}
+                                        disabled={!state.feedbacks?.[matchId]}
+                                      >
+                                        提交反馈
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>

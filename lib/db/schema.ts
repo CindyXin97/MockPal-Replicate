@@ -82,8 +82,9 @@ export const feedbacks = pgTable('feedbacks', {
   id: serial('id').primaryKey(),
   matchId: integer('match_id').references(() => matches.id),
   userId: integer('user_id').references(() => users.id).notNull(),
-  interviewStatus: varchar('interview_status', { length: 10 }).notNull(), // 'yes' or 'no'
-  content: text('content'),
+  contactStatus: varchar('contact_status', { length: 10 }), // 'yes' or 'no' - 是否添加联系方式
+  interviewStatus: varchar('interview_status', { length: 10 }).notNull(), // 'yes' or 'no' - 是否进行面试
+  content: text('content'), // 面试反馈内容
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
