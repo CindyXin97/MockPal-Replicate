@@ -26,7 +26,7 @@ a { text-decoration: none; color: inherit; }
     align-items: center;
     font-weight: 700;
     font-size: 24px;
-    color: #2b6cb0;
+    color: #3b82f6;
 }
 .logo img {
     width: 32px;
@@ -46,20 +46,21 @@ a { text-decoration: none; color: inherit; }
     margin-left: 24px;
     font-size: 14px;
     font-weight: 600;
-    color: #2b6cb0;
+    color: #3b82f6;
     transition: color 0.2s;
 }
 .nav-links a:hover {
-    color: #2c5282;
+    color: #2563eb;
 }
 .nav-links .email {
     margin-left: 24px;
     padding: 6px 12px;
     border-radius: 4px;
-    background: #e2e8f0;
-    color: #2b6cb0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+    color: #3b82f6;
     font-size: 14px;
     font-weight: 600;
+    border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 /* 响应式宽屏容器 - 用于Tab和内容区域 */
@@ -87,10 +88,10 @@ a { text-decoration: none; color: inherit; }
     background: none;
     font-size: 16px;
     font-weight: 600;
-    color: #2b6cb0;
+    color: #3b82f6;
     cursor: pointer;
     border-bottom: 4px solid transparent;
-    transition: border-color 0.2s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -98,11 +99,15 @@ a { text-decoration: none; color: inherit; }
 }
 
 .tab-nav button:hover {
-    color: #2c5282;
+    color: #2563eb;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
 }
 
 .tab-nav button.active {
-    border-bottom-color: #2b6cb0;
+    border-bottom: 4px solid transparent;
+    border-image: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+    border-image-slice: 1;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
 }
 
 /* Tab logo styling */
@@ -174,7 +179,7 @@ a { text-decoration: none; color: inherit; }
 }
 .card {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #BFDBFE;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     padding: 24px;
@@ -196,18 +201,19 @@ a { text-decoration: none; color: inherit; }
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: #e2e8f0;
+    background: rgba(59, 130, 246, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
-    color: #2b6cb0;
+    color: #3B82F6;
     margin-right: 12px;
+    border: 2px solid #BFDBFE;
 }
 .card-header .name {
     font-size: 18px;
     font-weight: 600;
-    color: #333;
+    color: #3B82F6;
 }
 .card-header .title {
     font-size: 14px;
@@ -220,7 +226,7 @@ a { text-decoration: none; color: inherit; }
 }
 .card-body .intro {
     font-size: 14px;
-    color: #555;
+    color: #374151;
     margin-bottom: 12px;
 }
 .card-body .tags {
@@ -232,23 +238,24 @@ a { text-decoration: none; color: inherit; }
     margin-right: 8px;
     margin-bottom: 6px;
     font-size: 12px;
-    color: #2b6cb0;
-    background: #e2e8f0;
+    color: #3B82F6;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid #BFDBFE;
     border-radius: 4px;
 }
 .contact {
     margin-bottom: 12px;
     font-size: 14px;
-    color: #555;
+    color: #374151;
 }
 .contact a {
-    color: #2b6cb0;
+    color: #3B82F6;
     text-decoration: underline;
 }
 .contact-title {
     font-weight: 600;
     margin-bottom: 8px;
-    color: #333;
+    color: #3B82F6;
 }
 .contact-item {
     margin-bottom: 4px;
@@ -262,17 +269,20 @@ a { text-decoration: none; color: inherit; }
 }
 .contact-button {
     padding: 8px 20px;
-    background: #2b6cb0;
-    color: #ffffff;
+    background: #2563EB;
+    color: #FFFFFF;
     border: none;
     border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
 }
 .contact-button:hover {
-    background: #2c5282;
+    background: #1d4ed8;
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
 }
 .status {
     margin-top: 12px;
@@ -318,8 +328,8 @@ a { text-decoration: none; color: inherit; }
 
 .feedback-form textarea:focus {
     outline: none;
-    border-color: #2b6cb0;
-    box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .feedback-form textarea:disabled {

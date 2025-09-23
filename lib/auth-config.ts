@@ -11,6 +11,20 @@ import { sendVerificationRequest } from './email-service';
 
 export const authConfig: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development',
+  // 添加更详细的日志
+  logger: {
+    error(code, metadata) {
+      console.error('NextAuth Error:', code, metadata);
+    },
+    warn(code) {
+      console.warn('NextAuth Warning:', code);
+    },
+    debug(code, metadata) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('NextAuth Debug:', code, metadata);
+      }
+    },
+  },
   adapter: DrizzleAdapter(db, {
     usersTable: users as any,
     accountsTable: accounts as any,

@@ -150,7 +150,7 @@ function AuthPageContent() {
         <Card className="w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10 mt-8">
           <CardHeader>
             <CardTitle className="text-2xl font-extrabold text-center tracking-tight text-gray-900 mb-2">
-              <span style={{color: '#2b6cb0'}}>{authMode === 'login' ? '登录' : '注册'}</span> MockPal
+              <span style={{color: '#3b82f6'}}>{authMode === 'login' ? '登录' : '注册'}</span> MockPal
             </CardTitle>
             <p className="text-base text-gray-500 text-center font-medium">
               {authMode === 'login' ? '欢迎登录，开启你的模拟面试之旅' : '欢迎注册，开启你的模拟面试之旅'}
@@ -205,7 +205,7 @@ function AuthPageContent() {
                         <Button
                           type="submit"
                           className="w-full px-10 py-2 text-lg font-semibold text-white border-0 shadow-md hover:shadow-lg transition-all"
-                          style={{background: '#2b6cb0'}}
+                          style={{background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)'}}
                           disabled={isLoading}
                         >
                           {isLoading ? '登录中...' : '登录'}
@@ -235,7 +235,7 @@ function AuthPageContent() {
                           type="button"
                           onClick={handleEmailAuth}
                           className="w-full px-10 py-2 text-lg font-semibold text-white border-0 shadow-md hover:shadow-lg transition-all"
-                          style={{background: '#2b6cb0'}}
+                          style={{background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)'}}
                           disabled={isLoading}
                         >
                           {isLoading ? '发送中...' : '发送验证邮件'}
@@ -309,7 +309,7 @@ function AuthPageContent() {
                       type="button"
                       onClick={handleEmailRegister}
                       className="w-full px-10 py-2 text-lg font-semibold text-white border-0 shadow-md hover:shadow-lg transition-all"
-                      style={{background: '#2b6cb0'}}
+                      style={{background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)'}}
                       disabled={isLoading}
                     >
                       {isLoading ? '发送中...' : '发送设置密码邮件'}
@@ -366,7 +366,7 @@ function AuthPageContent() {
               <button
                 onClick={switchAuthMode}
                 className="font-semibold hover:underline"
-                style={{color: '#2b6cb0'}}
+                style={{color: '#3b82f6'}}
               >
                 {authMode === 'login' ? '立即注册' : '立即登录'}
               </button>

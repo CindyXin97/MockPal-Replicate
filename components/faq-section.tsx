@@ -56,43 +56,43 @@ export function FAQSection() {
   };
 
   return (
-    <section className="w-full py-16 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="w-full py-10 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
         {/* 标题区域 */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-10">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
             常见问题
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
             关于MockPal你可能想了解的问题，我们都为你准备了答案
           </p>
         </div>
 
         {/* FAQ列表 */}
-        <div className="space-y-4">
+        <div className="space-y-2 sm:space-y-3 lg:space-y-4">
           {faqData.map((faq) => {
             const isOpen = openItems.has(faq.id);
-            
+
             return (
               <div
                 key={faq.id}
-                className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden transition-all duration-200 hover:shadow-lg"
+                className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all duration-200 hover:shadow-lg"
               >
                 {/* 问题标题 */}
                 <button
-                  className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                  className="w-full p-3 sm:p-4 lg:p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
                   onClick={() => toggleItem(faq.id)}
                   aria-expanded={isOpen}
                   aria-controls={`faq-answer-${faq.id}`}
                 >
-                  <h3 className="text-lg font-semibold text-gray-900 pr-4">
+                  <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 pr-3 sm:pr-4">
                     {faq.question}
                   </h3>
                   <div className="flex-shrink-0 transition-transform duration-200" style={{transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'}}>
                     {isOpen ? (
-                      <ChevronUp className="w-5 h-5" style={{color: '#2b6cb0'}} />
+                      <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" style={{color: '#2b6cb0'}} />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-400" />
+                      <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                     )}
                   </div>
                 </button>
@@ -100,43 +100,21 @@ export function FAQSection() {
                 {/* 答案内容 */}
                 <div
                   id={`faq-answer-${faq.id}`}
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}
+                  role="region"
+                  aria-labelledby={`faq-question-${faq.id}`}
+                  className="px-3 sm:px-4 lg:px-6 pb-3 sm:pb-4 lg:pb-6 text-gray-700"
+                  style={{
+                    display: isOpen ? 'block' : 'none',
+                    animation: isOpen ? 'slideDown 0.3s ease forwards' : 'none'
+                  }}
                 >
-                  <div className="px-6 pb-6">
-                    <div className="pt-2 border-t border-gray-100">
-                      <p className="text-gray-600 leading-relaxed mt-4">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-xs sm:text-sm lg:text-base leading-relaxed">{faq.answer}</p>
                 </div>
               </div>
             );
           })}
         </div>
-
-        {/* 底部联系信息 */}
-        <div className="mt-12 text-center">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
-            <p className="text-gray-700 mb-2">
-              没有找到你想要的答案？
-            </p>
-            <p className="text-sm text-gray-600">
-              欢迎通过 
-              <a 
-                href="mailto:support@mockpals.com" 
-                className="font-medium hover:underline"
-                style={{color: '#2b6cb0'}}
-              >
-                support@mockpals.com
-              </a> 
-              联系我们
-            </p>
-          </div>
-        </div>
       </div>
-    </section>
+    </div>
   );
 }

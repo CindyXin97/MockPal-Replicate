@@ -5,6 +5,46 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* 确保全屏布局 */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#__next {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* 确保section元素可以完全填充屏幕宽度 */
+section {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+/* 在容器内的section恢复正常宽度 */
+.container section,
+.max-w-7xl section,
+.max-w-6xl section,
+.max-w-5xl section {
+  width: 100%;
+  left: auto;
+  right: auto;
+  margin-left: 0;
+  margin-right: 0;
+  position: static;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

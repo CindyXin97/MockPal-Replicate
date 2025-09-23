@@ -139,8 +139,8 @@ const InterviewQuestionsTab = () => {
     <div className="max-w-6xl mx-auto px-4">
       {/* 页面标题 */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">面试真题库 📝</h1>
-        <p className="text-gray-600">收集各大公司最新面试题目和推荐答案</p>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">面试真题库 📝</h1>
+        <p className="text-lg sm:text-xl text-gray-600">收集各大公司最新面试题目和推荐答案</p>
       </div>
 
       {/* 筛选器 */}
@@ -240,7 +240,7 @@ const InterviewQuestionsTab = () => {
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold" style={{color: '#2b6cb0'}}>{question.company}</span>
+                      <span className="font-semibold" style={{color: '#3b82f6'}}>{question.company}</span>
                       <span className="text-gray-400">·</span>
                       <span className="text-gray-600">{question.position}</span>
                       <span className="text-gray-400">·</span>
@@ -264,9 +264,9 @@ const InterviewQuestionsTab = () => {
                       <button
                         onClick={() => toggleQuestion(question.id)}
                         className="flex items-center gap-2 text-sm font-medium"
-                        style={{color: '#2b6cb0'}}
-                        onMouseEnter={(e) => e.currentTarget.style.color = '#1e40af'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = '#2b6cb0'}
+                        style={{color: '#3B82F6'}}
+                        onMouseEnter={(e) => e.currentTarget.style.color = '#2563EB'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = '#3B82F6'}
                       >
                         {expandedQuestions.has(question.id) ? '🔽' : '▶️'} 查看推荐答案
                       </button>
@@ -322,9 +322,11 @@ const InterviewQuestionsTab = () => {
       ) : (
         <Card>
           <CardContent className="p-12 text-center">
-            <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-lg font-medium text-gray-800 mb-2">暂无相关题目</h3>
-            <p className="text-gray-600">请调整筛选条件或稍后再试</p>
+            <div className="flex flex-col items-center">
+              <div className="text-4xl mb-4">🔍</div>
+              <h3 className="text-lg font-medium text-gray-800 mb-2">暂无相关题目</h3>
+              <p className="text-gray-600">请调整筛选条件或稍后再试</p>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -379,7 +381,7 @@ const RequestInterviewExperienceCard = () => {
   };
 
   return (
-    <Card className="max-w-4xl mx-auto" style={{background: 'linear-gradient(to right, #eef4ff, #eef4ff)', borderColor: '#2b6cb0'}}>
+    <Card className="max-w-4xl mx-auto" style={{background: 'linear-gradient(to right, #eef4ff, #eef4ff)', borderColor: '#3b82f6'}}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -394,7 +396,7 @@ const RequestInterviewExperienceCard = () => {
             variant="outline"
             size="sm"
             className="border-2"
-            style={{borderColor: '#2b6cb0', color: '#2b6cb0'}}
+            style={{borderColor: '#3b82f6', color: '#3b82f6'}}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#eef4ff';
             }}
@@ -407,7 +409,7 @@ const RequestInterviewExperienceCard = () => {
         </div>
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="space-y-4 pt-4 border-t" style={{borderColor: '#2b6cb0'}}>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4 border-t" style={{borderColor: '#3b82f6'}}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -420,7 +422,7 @@ const RequestInterviewExperienceCard = () => {
                   placeholder="如：Google, Meta, 字节跳动..."
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
                   style={{
-                    '--tw-ring-color': '#2b6cb0'
+                    '--tw-ring-color': '#3b82f6'
                   } as React.CSSProperties}
                 />
               </div>
@@ -435,7 +437,7 @@ const RequestInterviewExperienceCard = () => {
                   placeholder="如：数据科学家, 产品分析师..."
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
                   style={{
-                    '--tw-ring-color': '#2b6cb0'
+                    '--tw-ring-color': '#3b82f6'
                   } as React.CSSProperties}
                 />
               </div>
@@ -451,7 +453,7 @@ const RequestInterviewExperienceCard = () => {
                 rows={3}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent resize-none"
                 style={{
-                  '--tw-ring-color': '#2b6cb0'
+                  '--tw-ring-color': '#3b82f6'
                 } as React.CSSProperties}
               />
             </div>
@@ -468,13 +470,13 @@ const RequestInterviewExperienceCard = () => {
                 type="submit"
                 disabled={submitting}
                 style={{
-                  backgroundColor: '#2b6cb0'
+                  backgroundColor: '#3b82f6'
                 }}
                 onMouseEnter={(e) => {
-                  if (!submitting) e.currentTarget.style.backgroundColor = '#1e40af';
+                  if (!submitting) e.currentTarget.style.backgroundColor = '#2563eb';
                 }}
                 onMouseLeave={(e) => {
-                  if (!submitting) e.currentTarget.style.backgroundColor = '#2b6cb0';
+                  if (!submitting) e.currentTarget.style.backgroundColor = '#3b82f6';
                 }}
               >
                 {submitting ? '提交中...' : '提交需求'}
@@ -493,7 +495,7 @@ const RequestInterviewExperienceCard = () => {
                   <span>62+ 道真题</span>
                 </div>
           <div className="flex items-center gap-1">
-            <span style={{color: '#2b6cb0'}}>🔥</span>
+            <span style={{color: '#3b82f6'}}>🔥</span>
             <span>2025年最新</span>
           </div>
           <div className="flex items-center gap-1">
@@ -969,8 +971,8 @@ export default function MatchesPage() {
         title: '面试新手',
         description: '开始积累面试经验，正在学习阶段',
         customBg: '#eef4ff',
-        customText: '#2b6cb0',
-        customBorder: '#2b6cb0',
+        customText: '#3B82F6',
+        customBorder: '#3B82F6',
         customHover: '#dbeafe'
       },
       '面试新星': {
@@ -1154,10 +1156,10 @@ export default function MatchesPage() {
               ) : !isComplete ? (
                 <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 p-10 flex flex-col items-center mt-4" style={{background: 'linear-gradient(135deg, #eef4ff 0%, #ffffff 50%, #eef4ff 100%)'}}>
                   <div className="text-6xl mb-6">👤</div>
-                  <h2 className="text-2xl font-extrabold mb-4 text-center" style={{color: '#2b6cb0'}}>
+                  <h2 className="text-2xl font-extrabold mb-4 text-center" style={{color: '#3b82f6'}}>
                     完善资料，开始匹配！
                   </h2>
-                  <p className="text-lg mb-6 text-center" style={{color: 'rgba(43, 108, 176, 0.8)'}}>
+                  <p className="text-lg mb-6 text-center" style={{color: 'rgba(59, 130, 246, 0.8)'}}>
                     为了为您推荐最合适的练习伙伴，<br/>
                     请先花2分钟完善您的资料
                   </p>
@@ -1174,7 +1176,7 @@ export default function MatchesPage() {
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.background = 'linear-gradient(to right, #60a5fa, #2b6cb0)';
+                      e.currentTarget.style.background = 'linear-gradient(to right, #60a5fa, #3B82F6)';
                     }}
                   >
                     完善我的资料
@@ -1201,33 +1203,33 @@ export default function MatchesPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-8 my-6">
                         <div>
-                          <div className="font-semibold flex items-center gap-1 text-base" style={{color: '#2b6cb0'}}>岗位类型</div>
+                          <div className="font-semibold flex items-center gap-1 text-base" style={{color: '#3b82f6'}}>岗位类型</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.jobType || '未设置'}</div>
-                          <div className="mt-4 font-semibold flex items-center gap-1 text-base" style={{color: '#2b6cb0'}}>目标公司</div>
+                          <div className="mt-4 font-semibold flex items-center gap-1 text-base" style={{color: '#3b82f6'}}>目标公司</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.targetCompany || '未设置'}</div>
-                          <div className="mt-4 font-semibold text-base mb-1" style={{color: '#2b6cb0'}}>期望练习内容</div>
+                          <div className="mt-4 font-semibold text-base mb-1" style={{color: '#3b82f6'}}>期望练习内容</div>
                           <div className="flex gap-2 flex-wrap mb-2">
                             {currentMatch.practicePreferences?.technicalInterview && (
-                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm" style={{backgroundColor: '#eef4ff', color: '#2b6cb0'}}>
+                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm" style={{backgroundColor: '#eef4ff', color: '#3b82f6'}}>
                                 🥊 技术面
                               </span>
                             )}
                             {currentMatch.practicePreferences?.behavioralInterview && (
-                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm" style={{backgroundColor: '#eef4ff', color: '#2b6cb0'}}>
+                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm" style={{backgroundColor: '#eef4ff', color: '#3b82f6'}}>
                                 🧑‍🤝‍🧑 行为面
                               </span>
                             )}
                             {currentMatch.practicePreferences?.caseAnalysis && (
-                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm" style={{backgroundColor: '#eef4ff', color: '#2b6cb0'}}>
+                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm" style={{backgroundColor: '#eef4ff', color: '#3b82f6'}}>
                                 🧩 案例分析
                               </span>
                             )}
                           </div>
                         </div>
                         <div>
-                          <div className="font-semibold flex items-center gap-1 text-base" style={{color: '#2b6cb0'}}>经验水平</div>
+                          <div className="font-semibold flex items-center gap-1 text-base" style={{color: '#3b82f6'}}>经验水平</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.experienceLevel || '未设置'}</div>
-                          <div className="mt-4 font-semibold flex items-center gap-1 text-base" style={{color: '#2b6cb0'}}>目标行业</div>
+                          <div className="mt-4 font-semibold flex items-center gap-1 text-base" style={{color: '#3b82f6'}}>目标行业</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.targetIndustry || '未设置'}</div>
                         </div>
                       </div>
@@ -1238,8 +1240,8 @@ export default function MatchesPage() {
                           onClick={handleDislike} 
                           className="rounded-full px-8 py-2 text-lg font-bold bg-white shadow transition-all border-2"
                           style={{
-                            borderColor: '#2b6cb0',
-                            color: '#2b6cb0'
+                            borderColor: '#3b82f6',
+                            color: '#3b82f6'
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = '#eef4ff';
@@ -1264,7 +1266,7 @@ export default function MatchesPage() {
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.background = 'linear-gradient(to right, #60a5fa, #2b6cb0)';
+                            e.currentTarget.style.background = 'linear-gradient(to right, #60a5fa, #3B82F6)';
                           }}
                         >
                           匹配
@@ -1274,8 +1276,8 @@ export default function MatchesPage() {
                   ) : (
                     <Card className="w-full max-w-xl mx-auto rounded-[2.5rem] shadow-2xl border-0 p-10 flex flex-col items-center mt-4" style={{background: 'linear-gradient(135deg, #dbeafe 0%, #ffffff 50%, #dbeafe 100%)'}}>
                       <div className="text-6xl mb-4">🦉</div>
-                      <p className="text-2xl font-extrabold mb-1 tracking-wide" style={{color: '#2b6cb0'}}>今日推荐已用完！</p>
-                      <p className="text-lg mb-8" style={{color: 'rgba(43, 108, 176, 0.8)'}}>明天再来发现新伙伴吧～<br/>或者刷新看看有没有新机会！</p>
+                      <p className="text-2xl font-extrabold mb-1 tracking-wide" style={{color: '#3b82f6'}}>今日推荐已用完！</p>
+                      <p className="text-lg mb-8" style={{color: 'rgba(59, 130, 246, 0.8)'}}>明天再来发现新伙伴吧～<br/>或者刷新看看有没有新机会！</p>
                       <Button
                         onClick={handleExpectMore}
                         className="rounded-full px-10 py-3 text-lg font-bold text-white shadow-lg transition-all"
@@ -1289,7 +1291,7 @@ export default function MatchesPage() {
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.background = 'linear-gradient(to right, #60a5fa, #2b6cb0)';
+                          e.currentTarget.style.background = 'linear-gradient(to right, #60a5fa, #3B82F6)';
                         }}
                       >
                         期待看到更多
@@ -1342,10 +1344,10 @@ export default function MatchesPage() {
                     </div>
                   )}
                   {state.activeTab === 'matches' && (
-                    <div className="rounded-lg p-4 mb-4 border" style={{background: 'linear-gradient(to right, #eef4ff, #f3e8ff)', borderColor: '#2b6cb0'}}>
+                    <div className="rounded-lg p-4 mb-4 border" style={{background: 'linear-gradient(to right, #eef4ff, #f3e8ff)', borderColor: '#3B82F6'}}>
                       <div className="flex items-center">
                         <span className="text-xl mr-3">🏆</span>
-                        <div className="text-sm" style={{color: 'rgba(43, 108, 176, 0.9)'}}>
+                        <div className="text-sm" style={{color: 'rgba(59, 130, 246, 0.9)'}}>
                           <p className="font-semibold mb-2">成就等级系统</p>
                           <p className="leading-relaxed">
                             完成面试获得经验，提升等级！🌱<span className="font-medium">新用户</span>(0次) → ⭐<span className="font-medium">面试新手</span>(1-4次) → 🌟<span className="font-medium">面试新星</span>(5-9次) → 🌙<span className="font-medium">面试达人</span>(10-14次) → 👑<span className="font-medium">面试导师</span>(15次+)
@@ -1379,7 +1381,7 @@ export default function MatchesPage() {
                                       <span className="text-sm">{achievement.icon}</span>
                                       <span className="text-xs font-medium text-gray-600">{achievement.level}</span>
                                       {achievement.showMoon && (
-                                        <span className="text-xs" style={{color: '#60a5fa'}}>🌙</span>
+                                        <span className="text-xs" style={{color: '#3B82F6'}}>🌙</span>
                                       )}
                                     </>
                                   );
@@ -1447,9 +1449,8 @@ export default function MatchesPage() {
                               </button>
                             </div>
                             
-                            {/* 4. 修改后的反馈流程 */}
+                            {/* 简化的反馈流程，与 www.mockpals.com 保持一致 */}
                             <div className="feedback-flow mt-3 p-2 bg-gray-50 rounded-md">
-                              {/* 是否添加联系方式？ */}
                               <div className="mb-2">
                                 <div className="text-sm font-medium text-gray-700 mb-1">📋 是否添加联系方式？</div>
                                 <label className="inline-flex items-center mr-4">
@@ -1475,103 +1476,6 @@ export default function MatchesPage() {
                                   否
                                 </label>
                               </div>
-                              
-                              {/* 是否进行面试？- 只在添加联系方式后显示 */}
-                              {state.contactStatus?.[matchId] === 'yes' && (
-                                <div className="mb-2">
-                                  <div className="text-sm font-medium text-gray-700 mb-1">🎯 是否进行面试？</div>
-                                  <label className="inline-flex items-center mr-4">
-                                    <input
-                                      type="radio"
-                                      name={`interview_${match.id}`}
-                                      value="yes"
-                                      checked={state.interviewStatus[matchId] === 'yes'}
-                                      onChange={() => handleInterviewChange(matchId, 'yes')}
-                                      className="mr-1"
-                                    />
-                                    是
-                                  </label>
-                                  <label className="inline-flex items-center">
-                                    <input
-                                      type="radio"
-                                      name={`interview_${match.id}`}
-                                      value="no"
-                                      checked={state.interviewStatus[matchId] === 'no'}
-                                      onChange={() => handleInterviewChange(matchId, 'no')}
-                                      className="mr-1"
-                                    />
-                                    否
-                                  </label>
-                                </div>
-                              )}
-                              
-                              {/* 面试反馈 - 只在进行面试后显示 */}
-                              {state.contactStatus?.[matchId] === 'yes' && state.interviewStatus[matchId] === 'yes' && (
-                                <div className="feedback-section">
-                                  {state.submitted[matchId] ? (
-                                    // 已提交的反馈 - 紧凑折叠显示
-                                    <div className="bg-green-50 border border-green-200 rounded-md p-2">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-green-600">✅</span>
-                                          <span className="text-xs font-medium text-green-800">面试反馈已提交</span>
-                                        </div>
-                                        <button
-                                          onClick={() => dispatch({ type: 'REVERT_FEEDBACK_SUBMISSION', payload: matchId })}
-                                          className="text-xs underline"
-                                          style={{color: '#2b6cb0'}}
-                                          onMouseEnter={(e) => {
-                                            e.currentTarget.style.color = '#1e40af';
-                                          }}
-                                          onMouseLeave={(e) => {
-                                            e.currentTarget.style.color = '#2b6cb0';
-                                          }}
-                                        >
-                                          修改
-                                        </button>
-                                      </div>
-                                      {state.feedbacks[matchId] && (
-                                        <div className="text-xs text-gray-600 mt-1 bg-white p-2 rounded border">
-                                          {state.feedbacks[matchId].length > 50 
-                                            ? `${state.feedbacks[matchId].substring(0, 50)}...` 
-                                            : state.feedbacks[matchId]
-                                          }
-                                        </div>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    // 未提交的反馈 - 展开表单
-                                    <>
-                                      <label className="block text-sm font-medium text-gray-700 mb-1">✍️ 请填写你的面试反馈：</label>
-                                      <textarea
-                                        className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                        rows={3}
-                                        value={state.feedbacks[matchId] || ''}
-                                        onChange={e => handleFeedbackChange(matchId, e.target.value)}
-                                        placeholder="请描述你的面试体验、收获或建议"
-                                      />
-                                                                              <button
-                                          className="mt-2 px-4 py-2 text-white rounded-md text-sm disabled:bg-gray-400"
-                                          style={{backgroundColor: '#2b6cb0'}}
-                                          onMouseEnter={(e) => {
-                                            if (!e.currentTarget.disabled) {
-                                              e.currentTarget.style.backgroundColor = '#1e40af';
-                                            }
-                                          }}
-                                          onMouseLeave={(e) => {
-                                            if (!e.currentTarget.disabled) {
-                                              e.currentTarget.style.backgroundColor = '#2b6cb0';
-                                            }
-                                          }}
-                                          onClick={() => handleFeedbackSubmit(matchId)}
-                                          disabled={!state.feedbacks[matchId]}
-                                        >
-                                          提交反馈
-                                        </button>
-                                    </>
-                                  )}
-                                </div>
-                              )}
                             </div>
                           </div>
                         </div>
@@ -1724,7 +1628,7 @@ export default function MatchesPage() {
                   {/* 第一步：寻找匹配 */}
                   <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2" style={{color: '#2b6cb0'}}>
+                      <CardTitle className="flex items-center gap-2" style={{color: '#3B82F6'}}>
                         🎯 寻找匹配
                       </CardTitle>
                     </CardHeader>
@@ -1804,12 +1708,12 @@ export default function MatchesPage() {
                     <Button 
                       onClick={() => dispatch({ type: "SET_TAB", payload: "browse" })}
                       className="text-white"
-                      style={{backgroundColor: '#2b6cb0'}}
+                      style={{backgroundColor: '#2563EB'}}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#1e40af';
+                        e.currentTarget.style.backgroundColor = '#1d4ed8';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = '#2b6cb0';
+                        e.currentTarget.style.backgroundColor = '#2563EB';
                       }}
                     >
                       开始寻找匹配
@@ -1818,7 +1722,7 @@ export default function MatchesPage() {
                       onClick={() => dispatch({ type: "SET_TAB", payload: "matches" })}
                       variant="outline"
                       className="border-2"
-                      style={{borderColor: '#2b6cb0', color: '#2b6cb0'}}
+                      style={{borderColor: '#3B82F6', color: '#3B82F6'}}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = '#eef4ff';
                       }}

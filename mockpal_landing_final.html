@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MockPal 模拟面试平台</title>
+    <style>
+        /* 使用常见的中文网页字体，让界面更亲切 */
+        body {
+            margin: 0;
+            padding: 0;
+            /* 使用系统字体栈，并使用提供的配色 */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* 顶部导航栏 */
+        .top-nav {
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .top-nav .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #2b6cb0;
+        }
+        .top-nav .logo img {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+        }
+        .top-nav .tagline {
+            display: block;
+            font-size: 12px;
+            color: #666;
+        }
+        .top-nav .actions a {
+            margin-left: 20px;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+            color: #2b6cb0;
+            background: transparent;
+        }
+        .top-nav .actions a:hover {
+            color: #2c5282;
+        }
+
+        /* 横幅区域 */
+        .banner {
+            text-align: center;
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .banner-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .banner h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .banner p {
+            font-size: 20px;
+            margin-bottom: 50px;
+            opacity: 0.95;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 三个功能卡片 */
+        .banner-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .banner-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            color: #333;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .banner-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .banner-card .icon-wrapper {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #2b6cb0, #4299e1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .banner-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2b6cb0;
+        }
+
+        .banner-card p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* 按钮样式 */
+        .cta-buttons {
+            margin-top: 50px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #2b6cb0;
+            color: white;
+            box-shadow: 0 4px 15px rgba(43, 108, 176, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #2c5282;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(43, 108, 176, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* 为什么选择MockPal部分 */
+        .advantage-section {
+            padding: 80px 20px;
+            background-color: #f5f7fa;
+        }
+
+        .advantage-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 40px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .section-title .highlight {
+            color: #2b6cb0;
+        }
+
+        .section-title p {
+            font-size: 20px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .comparison-table {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: #eef4ff;
+            display: grid;
+            grid-template-columns: 1fr 200px 200px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-header > div {
+            padding: 24px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .table-header .mockpal-col {
+            color: #2b6cb0;
+            text-align: center;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .table-header .traditional-col {
+            color: #666;
+            text-align: center;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 1fr 200px 200px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background-color 0.2s ease;
+        }
+
+        .table-row:hover {
+            background-color: #f8fafc;
+        }
+
+        .table-row > div {
+            padding: 24px;
+        }
+
+        .feature-info h4 {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .feature-info p {
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .check-col {
+            text-align: center;
+            border-left: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .check-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .check-icon.yes {
+            background: #2b6cb0;
+            color: white;
+        }
+
+        .check-icon.no {
+            background: #e2e8f0;
+            color: #94a3b8;
+        }
+
+        /* FAQ部分 */
+        .faq-section {
+            padding: 80px 20px;
+            background: white;
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-list {
+            margin-top: 40px;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 16px;
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 24px;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            transition: background-color 0.2s ease;
+        }
+
+        .faq-question:hover {
+            background-color: #f8fafc;
+        }
+
+        .faq-icon {
+            font-size: 20px;
+            color: #2b6cb0;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-answer {
+            padding: 0 24px 24px;
+            color: #666;
+            line-height: 1.7;
+            font-size: 16px;
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 页脚 */
+        .footer {
+            background: #2b6cb0;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .footer p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .banner h1 {
+                font-size: 36px;
+            }
+            
+            .banner p {
+                font-size: 18px;
+            }
+            
+            .banner-cards {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .table-header,
+            .table-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-header .mockpal-col,
+            .table-header .traditional-col,
+            .check-col {
+                border-left: none;
+                border-top: 1px solid #e2e8f0;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .section-title h2 {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="top-nav">
+        <div class="logo">
+            <!-- base64 handshake icon as logo -->
+            <img src="data:image/png;base64,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" alt="logo">
+            <div>
+                <span>MockPal</span>
+                <span class="tagline">模拟面试伴你</span>
+            </div>
+        </div>
+        <div class="actions">
+            <a href="https://www.mockpals.com/auth" class="login">登录</a>
+            <a href="https://www.mockpals.com/auth?mode=register" class="register">注册</a>
+        </div>
+    </div>
+
+    <!-- 横幅 -->
+    <div class="banner">
+        <div class="banner-inner">
+            <h1>找到你的面试伙伴</h1>
+            <p>专为数据岗位（DA/DS/DE）求职者设计的模拟面试匹配平台</p>
+
+            <!-- 三个功能卡片：填写标签、匹配伙伴、开始练习 -->
+            <div class="banner-cards">
+                <div class="banner-card">
+                    <div class="icon-wrapper">
+                        📝
+                    </div>
+                    <h3>步骤 1: 填写个人资料</h3>
+                    <p>填写您的岗位、经验水平、目标公司等标签信息，完善个人资料，让系统为您找到最合适的练习伙伴。</p>
+                </div>
+                
+                <div class="banner-card">
+                    <div class="icon-wrapper">
+                        🤝
+                    </div>
+                    <h3>步骤 2: 浏览匹配候选人</h3>
+                    <p>查看系统为您推荐的潜在面试伙伴，了解他们的背景信息，选择合适的候选人进行匹配。</p>
+                </div>
+                
+                <div class="banner-card">
+                    <div class="icon-wrapper">
+                        🚀
+                    </div>
+                    <h3>步骤 3: 查看匹配名单</h3>
+                    <p>在匹配成功后，您可以查看联系方式，立即开始面试练习，并获得宝贵的实战经验。</p>
+                </div>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="https://www.mockpals.com/auth" class="btn btn-primary">立即登录</a>
+                <a href="https://www.mockpals.com/auth?mode=register" class="btn btn-secondary">免费注册</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 为什么选择MockPal部分 -->
+    <div class="advantage-section">
+        <div class="advantage-container">
+            <div class="section-title">
+                <h2>为什么选择 <span class="highlight">MockPal</span>？</h2>
+                <p>专为数据岗位求职者打造，与传统面试准备方式的全面对比</p>
+            </div>
+
+            <div class="comparison-table">
+                <div class="table-header">
+                    <div>功能特性</div>
+                    <div class="mockpal-col">MockPal</div>
+                    <div class="traditional-col">传统方式</div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-info">
+                        <h4>专为数据岗位设计</h4>
+                        <p>针对DA/DS/DE岗位的专业题库和匹配算法</p>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon yes">✓</div>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon no">✗</div>
+                    </div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-info">
+                        <h4>真人一对一练习</h4>
+                        <p>与同行求职者进行真实互动练习</p>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon yes">✓</div>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon no">✗</div>
+                    </div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-info">
+                        <h4>智能匹配系统</h4>
+                        <p>基于标签自动匹配最合适的练习伙伴</p>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon yes">✓</div>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon no">✗</div>
+                    </div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-info">
+                        <h4>即时反馈优化</h4>
+                        <p>练习后获得详细的面试表现反馈</p>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon yes">✓</div>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon yes">✓</div>
+                    </div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-info">
+                        <h4>免费使用</h4>
+                        <p>核心功能完全免费，无隐藏费用</p>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon yes">✓</div>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon no">✗</div>
+                    </div>
+                </div>
+
+                <div class="table-row">
+                    <div class="feature-info">
+                        <h4>时间灵活安排</h4>
+                        <p>随时找到在线的练习伙伴进行面试</p>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon yes">✓</div>
+                    </div>
+                    <div class="check-col">
+                        <div class="check-icon no">✗</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ部分 -->
+    <div class="faq-section">
+        <div class="faq-container">
+            <div class="section-title">
+                <h2>常见问题</h2>
+                <p>关于MockPal你可能想了解的问题，我们都为你准备了答案</p>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        匹配机制是如何工作的？
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        MockPal基于您填写的标签进行智能匹配，包括岗位类型(DA/DS/DE)、经验水平、目标公司和行业等。系统会优先匹配具有相似背景和互补需求的用户，确保双方都能从练习中受益。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        我的个人信息和隐私安全吗？
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        我们非常重视用户隐私安全。个人信息仅在匹配成功后才会相互可见，包括联系方式。我们采用业界标准的数据加密技术，不会将您的信息用于任何商业目的。您可以随时修改隐私设置。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        MockPal是免费的吗？
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        是的！MockPal的核心功能完全免费使用，包括创建档案、浏览匹配、进行面试练习等。我们相信优质的面试准备资源应该人人可得，因此不设置任何付费门槛。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        如果匹配的伙伴不合适怎么办？
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        每个用户每天可以浏览5个新的潜在匹配对象。如果发现不合适，您可以选择跳过。我们的算法会根据您的选择不断优化，为您推荐更合适的练习伙伴。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        面试练习的形式是怎样的？
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        匹配成功后，您可以通过平台内提供的联系方式与伙伴协调具体的练习时间和形式。可以选择视频通话、语音通话等方式，根据双方的偏好和时间安排灵活进行。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFAQ(this)">
+                        如何提高匹配成功率？
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        完善您的个人档案是关键！填写详细的标签信息、工作经验、目标岗位等。真诚的自我介绍和明确的练习需求描述也能帮助您找到更合适的练习伙伴。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        <p>© 2025 MockPal. 版权所有.</p>
+    </div>
+
+    <script>
+        function toggleFAQ(button) {
+            const faqItem = button.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            // 关闭所有其他FAQ
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 切换当前FAQ
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -63,11 +63,33 @@ class EmailService {
     console.log('🔵 [EmailService] 准备发送验证邮件');
     console.log('📧 收件人:', email);
     console.log('🔗 验证链接:', url);
-    console.log('📮 发件人: MockPal <noreply@mockpals.com>');
+    
+    // 开发环境：直接在控制台显示登录链接，不发送邮件
+    if (process.env.NODE_ENV === 'development') {
+      console.log('\n🚀 [开发环境] 邮件登录链接：');
+      console.log('🔗 请复制此链接到浏览器中登录:');
+      console.log(url);
+      console.log('💡 提示：点击上面的链接即可直接登录，无需检查邮箱\n');
+      return { data: { id: 'dev-mode-skip' }, error: null };
+    }
+    
+    // ⚠️ 测试环境配置 - 推送到生产前需要修改回 noreply@mockpals.com
+    const isProduction = process.env.NODE_ENV === 'production';
+    const fromEmail = isProduction 
+      ? 'MockPal <noreply@mockpals.com>'  // 生产环境：使用自定义域名
+      : 'MockPal <onboarding@resend.dev>'; // 测试环境：使用Resend验证域名
+    
+    console.log('📮 发件人:', fromEmail);
+    
+    if (!isProduction) {
+      console.log('⚠️ 警告：当前使用测试环境邮件配置！');
+      console.log('🔔 推送到生产前记得检查邮件配置！');
+      console.log('💡 注意：Resend免费版只能发送到注册邮箱 (xincindy924@gmail.com)');
+    }
     
     try {
       const emailPayload = {
-        from: 'MockPal <noreply@mockpals.com>', // 使用自定义域名
+        from: fromEmail,
         to: email,
         subject: 'MockPal - 登录验证',
         html: this.getEmailTemplate(url),
@@ -100,9 +122,32 @@ class EmailService {
     console.log('📧 收件人:', email);
     console.log('🔗 设置密码链接:', url);
     
+    // 开发环境：直接在控制台显示设置密码链接，不发送邮件
+    if (process.env.NODE_ENV === 'development') {
+      console.log('\n🚀 [开发环境] 设置密码链接：');
+      console.log('🔗 请复制此链接到浏览器中设置密码:');
+      console.log(url);
+      console.log('💡 提示：点击上面的链接即可直接设置密码，无需检查邮箱\n');
+      return { data: { id: 'dev-mode-skip' }, error: null };
+    }
+    
+    // ⚠️ 测试环境配置 - 推送到生产前需要修改回 noreply@mockpals.com
+    const isProduction = process.env.NODE_ENV === 'production';
+    const fromEmail = isProduction 
+      ? 'MockPal <noreply@mockpals.com>'  // 生产环境：使用自定义域名
+      : 'MockPal <onboarding@resend.dev>'; // 测试环境：使用Resend验证域名
+    
+    console.log('📮 发件人:', fromEmail);
+    
+    if (!isProduction) {
+      console.log('⚠️ 警告：当前使用测试环境邮件配置！');
+      console.log('🔔 推送到生产前记得检查邮件配置！');
+      console.log('💡 注意：Resend免费版只能发送到注册邮箱 (xincindy924@gmail.com)');
+    }
+    
     try {
       const emailPayload = {
-        from: 'MockPal <noreply@mockpals.com>',
+        from: fromEmail,
         to: email,
         subject: 'MockPal - 设置密码',
         html: this.getEmailTemplate(url, 'password'),

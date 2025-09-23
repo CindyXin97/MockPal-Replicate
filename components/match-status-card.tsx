@@ -28,9 +28,10 @@ const statusConfig = {
   },
   contacted: {
     label: '已联系',
-    color: 'bg-blue-100 text-blue-700',
+    color: 'text-white',
     icon: MessageCircle,
-    description: '太好了！你们已经开始沟通'
+    description: '太好了！你们已经开始沟通',
+    style: { backgroundColor: '#2563EB' }
   },
   scheduled: {
     label: '已安排面试',
@@ -97,12 +98,12 @@ export const MatchStatusCard: React.FC<MatchStatusCardProps> = ({
   };
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500">
+    <Card className="hover:shadow-lg transition-all duration-200 border-l-4" style={{borderLeftColor: '#3B82F6', borderColor: '#BFDBFE'}}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Users size={20} className="text-blue-600" />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{backgroundColor: 'rgba(59, 130, 246, 0.1)', border: '2px solid #BFDBFE'}}>
+              <Users size={20} style={{color: '#3B82F6'}} />
             </div>
             <div>
               <CardTitle className="text-lg">{match.partnerName}</CardTitle>
@@ -110,7 +111,7 @@ export const MatchStatusCard: React.FC<MatchStatusCardProps> = ({
             </div>
           </div>
           
-          <Badge className={`${currentStatus.color} border-0`}>
+          <Badge className={`${currentStatus.color} border-0`} style={currentStatus.style}>
             <StatusIcon size={14} className="mr-1" />
             {currentStatus.label}
           </Badge>
