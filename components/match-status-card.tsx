@@ -24,32 +24,36 @@ const statusConfig = {
     label: '还未联系',
     color: 'bg-gray-100 text-gray-700',
     icon: Clock,
-    description: '匹配成功！可以开始联系了'
+    description: '匹配成功！可以开始联系了',
+    style: undefined
   },
   contacted: {
     label: '已联系',
-    color: 'text-white',
+    color: 'bg-blue-600 text-white',
     icon: MessageCircle,
     description: '太好了！你们已经开始沟通',
-    style: { backgroundColor: '#2563EB' }
+    style: undefined
   },
   scheduled: {
     label: '已安排面试',
     color: 'bg-purple-100 text-purple-700',
     icon: Calendar,
-    description: '面试时间已确定，加油！'
+    description: '面试时间已确定，加油！',
+    style: undefined
   },
   completed: {
     label: '已完成面试',
     color: 'bg-green-100 text-green-700',
     icon: CheckCircle,
-    description: '面试练习完成，希望对你有帮助'
+    description: '面试练习完成，希望对你有帮助',
+    style: undefined
   },
   no_response: {
     label: '对方未回应',
     color: 'bg-orange-100 text-orange-700',
     icon: AlertCircle,
-    description: '没关系，继续寻找其他练习伙伴'
+    description: '没关系，继续寻找其他练习伙伴',
+    style: undefined
   }
 };
 
@@ -98,12 +102,12 @@ export const MatchStatusCard: React.FC<MatchStatusCardProps> = ({
   };
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-200 border-l-4" style={{borderLeftColor: '#3B82F6', borderColor: '#BFDBFE'}}>
+    <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500 border-blue-200">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{backgroundColor: 'rgba(59, 130, 246, 0.1)', border: '2px solid #BFDBFE'}}>
-              <Users size={20} style={{color: '#3B82F6'}} />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-500/10 border-2 border-blue-200">
+              <Users size={20} className="text-blue-500" />
             </div>
             <div>
               <CardTitle className="text-lg">{match.partnerName}</CardTitle>

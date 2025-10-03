@@ -240,7 +240,7 @@ const InterviewQuestionsTab = () => {
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold" style={{color: '#3b82f6'}}>{question.company}</span>
+                      <span className="font-semibold text-blue-500">{question.company}</span>
                       <span className="text-gray-400">·</span>
                       <span className="text-gray-600">{question.position}</span>
                       <span className="text-gray-400">·</span>
@@ -263,16 +263,13 @@ const InterviewQuestionsTab = () => {
                     <div className="mb-4">
                       <button
                         onClick={() => toggleQuestion(question.id)}
-                        className="flex items-center gap-2 text-sm font-medium"
-                        style={{color: '#3B82F6'}}
-                        onMouseEnter={(e) => e.currentTarget.style.color = '#2563EB'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = '#3B82F6'}
+                        className="flex items-center gap-2 text-sm font-medium text-blue-500 hover:text-blue-600"
                       >
                         {expandedQuestions.has(question.id) ? '🔽' : '▶️'} 查看推荐答案
                       </button>
                       
                       {expandedQuestions.has(question.id) && (
-                        <div className="mt-3 p-4 rounded-lg" style={{backgroundColor: '#eef4ff'}}>
+                        <div className="mt-3 p-4 rounded-lg bg-blue-50">
                           <h4 className="font-medium text-gray-800 mb-2">推荐答案：</h4>
                           <div className="text-gray-700 leading-relaxed whitespace-pre-line">
                             {question.recommendedAnswer}
@@ -381,7 +378,7 @@ const RequestInterviewExperienceCard = () => {
   };
 
   return (
-    <Card className="max-w-4xl mx-auto" style={{background: 'linear-gradient(to right, #eef4ff, #eef4ff)', borderColor: '#3b82f6'}}>
+    <Card className="max-w-4xl mx-auto bg-blue-50 border-blue-500">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -395,21 +392,14 @@ const RequestInterviewExperienceCard = () => {
             onClick={() => setShowForm(!showForm)}
             variant="outline"
             size="sm"
-            className="border-2"
-            style={{borderColor: '#3b82f6', color: '#3b82f6'}}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#eef4ff';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            className="border-2 border-blue-500 text-blue-500 hover:bg-blue-50"
           >
             {showForm ? '收起' : '提需求'}
           </Button>
         </div>
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="space-y-4 pt-4 border-t" style={{borderColor: '#3b82f6'}}>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4 border-t border-blue-500">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -420,10 +410,7 @@ const RequestInterviewExperienceCard = () => {
                   value={formData.company}
                   onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
                   placeholder="如：Google, Meta, 字节跳动..."
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
-                  style={{
-                    '--tw-ring-color': '#3b82f6'
-                  } as React.CSSProperties}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -435,10 +422,7 @@ const RequestInterviewExperienceCard = () => {
                   value={formData.position}
                   onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
                   placeholder="如：数据科学家, 产品分析师..."
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
-                  style={{
-                    '--tw-ring-color': '#3b82f6'
-                  } as React.CSSProperties}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -451,10 +435,7 @@ const RequestInterviewExperienceCard = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                 placeholder="如：希望看到2025年最新的面试题目，或者特定的面试类型..."
                 rows={3}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent resize-none"
-                style={{
-                  '--tw-ring-color': '#3b82f6'
-                } as React.CSSProperties}
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
             </div>
             <div className="flex justify-end gap-3">
@@ -469,15 +450,7 @@ const RequestInterviewExperienceCard = () => {
               <Button
                 type="submit"
                 disabled={submitting}
-                style={{
-                  backgroundColor: '#3b82f6'
-                }}
-                onMouseEnter={(e) => {
-                  if (!submitting) e.currentTarget.style.backgroundColor = '#2563eb';
-                }}
-                onMouseLeave={(e) => {
-                  if (!submitting) e.currentTarget.style.backgroundColor = '#3b82f6';
-                }}
+                className="bg-blue-500 hover:bg-blue-600 text-white"
               >
                 {submitting ? '提交中...' : '提交需求'}
               </Button>
@@ -495,7 +468,7 @@ const RequestInterviewExperienceCard = () => {
                   <span>62+ 道真题</span>
                 </div>
           <div className="flex items-center gap-1">
-            <span style={{color: '#3b82f6'}}>🔥</span>
+            <span className="text-blue-500">🔥</span>
             <span>2025年最新</span>
           </div>
           <div className="flex items-center gap-1">
@@ -974,15 +947,11 @@ export default function MatchesPage() {
       },
       '面试新手': {
         bg: 'bg-blue-100',
-        text: 'text-blue-700', 
+        text: 'text-blue-700',
         border: 'border-blue-200',
         hover: 'hover:bg-blue-200',
         title: '面试新手',
-        description: '开始积累面试经验，正在学习阶段',
-        customBg: '#eef4ff',
-        customText: '#3B82F6',
-        customBorder: '#3B82F6',
-        customHover: '#dbeafe'
+        description: '开始积累面试经验，正在学习阶段'
       },
       '面试新星': {
         bg: 'bg-purple-100',
@@ -1038,7 +1007,7 @@ export default function MatchesPage() {
             </div>
           </div>
           {achievement.showMoon && (
-            <span className="text-lg" style={{color: '#60a5fa'}}>🌙</span>
+            <span className="text-lg text-blue-400">🌙</span>
           )}
         </div>
       </div>
@@ -1163,30 +1132,18 @@ export default function MatchesPage() {
                   </div>
                 </Card>
               ) : !isComplete ? (
-                <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 p-10 flex flex-col items-center mt-4" style={{background: 'linear-gradient(135deg, #eef4ff 0%, #ffffff 50%, #eef4ff 100%)'}}>
+                <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 p-10 flex flex-col items-center mt-4 bg-gradient-to-r from-blue-50 via-white to-blue-50">
                   <div className="text-6xl mb-6">👤</div>
-                  <h2 className="text-2xl font-extrabold mb-4 text-center" style={{color: '#3b82f6'}}>
+                  <h2 className="text-2xl font-extrabold mb-4 text-center text-blue-500">
                     完善资料，开始匹配！
                   </h2>
-                  <p className="text-lg mb-6 text-center" style={{color: 'rgba(59, 130, 246, 0.8)'}}>
+                  <p className="text-lg mb-6 text-center text-blue-500/80">
                     为了为您推荐最合适的练习伙伴，<br/>
                     请先花2分钟完善您的资料
                   </p>
                   <Button
                     onClick={() => router.push('/profile?from=matches')}
-                    className="rounded-full px-10 py-3 text-lg font-bold text-white shadow-lg transition-all"
-                    style={{
-                      background: 'linear-gradient(to right, #60a5fa, #2b6cb0)',
-                      transform: 'scale(1)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.05)';
-                      e.currentTarget.style.background = 'linear-gradient(to right, #3b82f6, #1e40af)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.background = 'linear-gradient(to right, #60a5fa, #3B82F6)';
-                    }}
+                    className="rounded-full px-10 py-3 text-lg font-bold text-white shadow-lg transition-all bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 hover:scale-105"
                   >
                     完善我的资料
                   </Button>
@@ -1196,7 +1153,7 @@ export default function MatchesPage() {
                   {currentMatch ? (
                     <Card className="w-full max-w-lg mx-auto rounded-3xl shadow-xl border-0 bg-white p-5 mt-4">
                       <div className="flex flex-col items-center">
-                        <div className="w-28 h-28 rounded-full shadow flex items-center justify-center mb-4 border-4 border-white" style={{backgroundColor: '#eef4ff'}}>
+                        <div className="w-28 h-28 rounded-full shadow flex items-center justify-center mb-4 border-4 border-white bg-blue-50">
                           <img
                             src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${currentMatch.username}`}
                             alt="avatar"
@@ -1212,96 +1169,62 @@ export default function MatchesPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-8 my-6">
                         <div>
-                          <div className="font-semibold flex items-center gap-1 text-base" style={{color: '#3b82f6'}}>岗位类型</div>
+                          <div className="font-semibold flex items-center gap-1 text-base text-blue-500">岗位类型</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.jobType || '未设置'}</div>
-                          <div className="mt-4 font-semibold flex items-center gap-1 text-base" style={{color: '#3b82f6'}}>目标公司</div>
+                          <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">目标公司</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.targetCompany || '未设置'}</div>
-                          <div className="mt-4 font-semibold text-base mb-1" style={{color: '#3b82f6'}}>期望练习内容</div>
+                          <div className="mt-4 font-semibold text-base mb-1 text-blue-500">期望练习内容</div>
                           <div className="flex gap-2 flex-wrap mb-2">
                             {currentMatch.practicePreferences?.technicalInterview && (
-                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm" style={{backgroundColor: '#eef4ff', color: '#3b82f6'}}>
+                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-blue-50 text-blue-500">
                                 🥊 技术面
                               </span>
                             )}
                             {currentMatch.practicePreferences?.behavioralInterview && (
-                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm" style={{backgroundColor: '#eef4ff', color: '#3b82f6'}}>
+                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-blue-50 text-blue-500">
                                 🧑‍🤝‍🧑 行为面
                               </span>
                             )}
                             {currentMatch.practicePreferences?.caseAnalysis && (
-                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm" style={{backgroundColor: '#eef4ff', color: '#3b82f6'}}>
+                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-blue-50 text-blue-500">
                                 🧩 案例分析
                               </span>
                             )}
                           </div>
                         </div>
                         <div>
-                          <div className="font-semibold flex items-center gap-1 text-base" style={{color: '#3b82f6'}}>经验水平</div>
+                          <div className="font-semibold flex items-center gap-1 text-base text-blue-500">经验水平</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.experienceLevel || '未设置'}</div>
-                          <div className="mt-4 font-semibold flex items-center gap-1 text-base" style={{color: '#3b82f6'}}>目标行业</div>
+                          <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">目标行业</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.targetIndustry || '未设置'}</div>
                         </div>
                       </div>
                       <div className="flex justify-center gap-6 mt-8">
-                        <Button 
-                          variant="outline" 
-                          size="lg" 
-                          onClick={handleDislike} 
-                          className="rounded-full px-8 py-2 text-lg font-bold bg-white shadow transition-all border-2"
-                          style={{
-                            borderColor: '#3b82f6',
-                            color: '#3b82f6'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#eef4ff';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#ffffff';
-                          }}
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          onClick={handleDislike}
+                          className="rounded-full px-8 py-2 text-lg font-bold bg-white shadow transition-all border-2 border-blue-500 text-blue-500 hover:bg-blue-50"
                         >
                           跳过
                         </Button>
-                        <Button 
-                          size="lg" 
-                          onClick={handleLike} 
-                          className="rounded-full px-8 py-2 text-lg font-bold text-white shadow transition-all"
-                          style={{
-                            background: 'linear-gradient(to right, #60a5fa, #2b6cb0)',
-                            transform: 'scale(1)'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.05)';
-                            e.currentTarget.style.background = 'linear-gradient(to right, #3b82f6, #1e40af)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.background = 'linear-gradient(to right, #60a5fa, #3B82F6)';
-                          }}
+                        <Button
+                          size="lg"
+                          onClick={handleLike}
+                          className="rounded-full px-8 py-2 text-lg font-bold text-white shadow transition-all bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 hover:scale-105"
                         >
                           匹配
                         </Button>
                       </div>
                     </Card>
                   ) : (
-                    <Card className="w-full max-w-xl mx-auto rounded-[2.5rem] shadow-2xl border-0 p-10 flex flex-col items-center mt-4" style={{background: 'linear-gradient(135deg, #dbeafe 0%, #ffffff 50%, #dbeafe 100%)'}}>
+                    <Card className="w-full max-w-xl mx-auto rounded-[2.5rem] shadow-2xl border-0 p-10 flex flex-col items-center mt-4 bg-gradient-to-r from-blue-100 via-white to-blue-100">
                       <div className="text-6xl mb-4">🦉</div>
-                      <p className="text-2xl font-extrabold mb-1 tracking-wide" style={{color: '#3b82f6'}}>今日推荐已用完！</p>
-                      <p className="text-lg mb-8" style={{color: 'rgba(59, 130, 246, 0.8)'}}>明天再来发现新伙伴吧～<br/>或者刷新看看有没有新机会！</p>
+                      <p className="text-2xl font-extrabold mb-1 tracking-wide text-blue-500">今日推荐已用完！</p>
+                      <p className="text-lg mb-8 text-blue-500/80">明天再来发现新伙伴吧～<br/>或者刷新看看有没有新机会！</p>
                       <Button
                         onClick={handleExpectMore}
-                        className="rounded-full px-10 py-3 text-lg font-bold text-white shadow-lg transition-all"
-                        style={{
-                          background: 'linear-gradient(to right, #60a5fa, #2b6cb0)',
-                          transform: 'scale(1)'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                          e.currentTarget.style.background = 'linear-gradient(to right, #3b82f6, #1e40af)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.background = 'linear-gradient(to right, #60a5fa, #3B82F6)';
-                        }}
+                        className="rounded-full px-10 py-3 text-lg font-bold text-white shadow-lg transition-all bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 hover:scale-105"
                       >
                         期待看到更多
                       </Button>
@@ -1353,10 +1276,10 @@ export default function MatchesPage() {
                     </div>
                   )}
                   {state.activeTab === 'matches' && (
-                    <div className="rounded-lg p-4 mb-4 border" style={{background: 'linear-gradient(to right, #eef4ff, #f3e8ff)', borderColor: '#3B82F6'}}>
+                    <div className="rounded-lg p-4 mb-4 border bg-gradient-to-r from-blue-50 to-purple-50 border-blue-500">
                       <div className="flex items-center">
                         <span className="text-xl mr-3">🏆</span>
-                        <div className="text-sm" style={{color: 'rgba(59, 130, 246, 0.9)'}}>
+                        <div className="text-sm text-blue-500/90">
                           <p className="font-semibold mb-2">成就等级系统</p>
                           <p className="leading-relaxed">
                             完成面试获得经验，提升等级！🌱<span className="font-medium">新用户</span>(0次) → ⭐<span className="font-medium">面试新手</span>(1-4次) → 🌟<span className="font-medium">面试新星</span>(5-9次) → 🌙<span className="font-medium">面试达人</span>(10-14次) → 👑<span className="font-medium">面试导师</span>(15次+)
@@ -1390,7 +1313,7 @@ export default function MatchesPage() {
                                       <span className="text-sm">{achievement.icon}</span>
                                       <span className="text-xs font-medium text-gray-600">{achievement.level}</span>
                                       {achievement.showMoon && (
-                                        <span className="text-xs" style={{color: '#3B82F6'}}>🌙</span>
+                                        <span className="text-xs text-blue-500">🌙</span>
                                       )}
                                     </>
                                   );
@@ -1592,7 +1515,7 @@ export default function MatchesPage() {
                                        <span className="text-sm">{achievement.icon}</span>
                                        <span className="text-xs font-medium text-gray-600">{achievement.level}</span>
                                        {achievement.showMoon && (
-                                         <span className="text-xs" style={{color: '#60a5fa'}}>🌙</span>
+                                         <span className="text-xs text-blue-400">🌙</span>
                                        )}
                                      </>
                                    );
@@ -1707,7 +1630,7 @@ export default function MatchesPage() {
                   {/* 第一步：寻找匹配 */}
                   <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2" style={{color: '#3B82F6'}}>
+                      <CardTitle className="flex items-center gap-2 text-blue-500">
                         🎯 寻找匹配
                       </CardTitle>
                     </CardHeader>
@@ -1784,30 +1707,16 @@ export default function MatchesPage() {
                 {/* 底部行动按钮 */}
                 <div className="mt-6 text-center">
                   <div className="flex justify-center space-x-4">
-                    <Button 
+                    <Button
                       onClick={() => dispatch({ type: "SET_TAB", payload: "browse" })}
-                      className="text-white"
-                      style={{backgroundColor: '#2563EB'}}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#1d4ed8';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = '#2563EB';
-                      }}
+                      className="text-white bg-blue-600 hover:bg-blue-700"
                     >
                       开始寻找匹配
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => dispatch({ type: "SET_TAB", payload: "matches" })}
                       variant="outline"
-                      className="border-2"
-                      style={{borderColor: '#3B82F6', color: '#3B82F6'}}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#eef4ff';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
+                      className="border-2 border-blue-500 text-blue-500 hover:bg-blue-50"
                     >
                       查看成功匹配
                     </Button>
