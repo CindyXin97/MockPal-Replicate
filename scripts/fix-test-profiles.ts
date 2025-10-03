@@ -48,12 +48,11 @@ async function fixTestProfiles() {
         // 更新现有profile
         await db
           .update(userProfiles)
-          .set({ 
-            name: testUser.name,
+          .set({
             email: testUser.email  // 确保联系方式不为空
           })
           .where(eq(userProfiles.userId, user.id));
-        
+
         console.log(`✅ 更新用户profile: ${testUser.email} -> ${testUser.name}`);
       } else {
         console.log(`⚠️  用户 ${testUser.email} 没有profile记录`);

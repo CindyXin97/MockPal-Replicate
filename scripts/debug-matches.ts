@@ -42,7 +42,6 @@ async function debugMatches() {
     
     const profile = profiles[0];
     console.log('✅ 找到用户profile:');
-    console.log(`   - 姓名: ${profile.name}`);
     console.log(`   - 职位: ${profile.jobType}`);
     console.log(`   - 经验: ${profile.experienceLevel}`);
     console.log(`   - 目标公司: ${profile.targetCompany}`);
@@ -50,21 +49,21 @@ async function debugMatches() {
     
     // 检查profile完整性
     const isComplete = !!(
-      profile.name && 
-      profile.jobType && 
-      profile.experienceLevel && 
-      profile.targetCompany && 
+      testUser.name &&
+      profile.jobType &&
+      profile.experienceLevel &&
+      profile.targetCompany &&
       profile.targetIndustry &&
       (profile.technicalInterview || profile.behavioralInterview || profile.caseAnalysis) &&
       (profile.email || profile.wechat || profile.linkedin)
     );
-    
+
     console.log(`   - Profile完整性: ${isComplete ? '✅ 完整' : '❌ 不完整'}`);
-    
+
     if (!isComplete) {
       console.log('💡 Profile不完整可能导致页面一直加载');
       console.log('💡 请确保以下字段都有值:');
-      if (!profile.name) console.log('   - 姓名');
+      if (!testUser.name) console.log('   - 姓名');
       if (!profile.jobType) console.log('   - 职位类型');
       if (!profile.experienceLevel) console.log('   - 经验水平');
       if (!profile.targetCompany) console.log('   - 目标公司');

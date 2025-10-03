@@ -42,7 +42,6 @@ async function checkUserMatches(email: string) {
     
     console.log('\n📋 用户Profile信息:');
     const userProfile = profile[0];
-    console.log(`   - 姓名: ${userProfile.name || '未设置'}`);
     console.log(`   - 职位: ${userProfile.jobType || '未设置'}`);
     console.log(`   - 经验: ${userProfile.experienceLevel || '未设置'}`);
     console.log(`   - 目标公司: ${userProfile.targetCompany || '未设置'}`);
