@@ -50,7 +50,7 @@ export const userProfiles = pgTable('user_profiles', {
   linkedin: varchar('linkedin', { length: 255 }),
 
   bio: varchar('bio', { length: 255 }),
-  school: varchar('school', { length: 255 }), // 学校信息（可选）
+  school: varchar('school', { length: 255 }).notNull(), // 学校信息（必填）
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

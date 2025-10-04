@@ -30,7 +30,7 @@ export type ProfileFormData = {
   wechat?: string;
   linkedin?: string;
   bio?: string;
-  school?: string; // 学校信息
+  school: string; // 学校信息（必填）
 };
 
 type GetProfileResult =
@@ -78,7 +78,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       if (profileData.wechat !== undefined) updateData.wechat = profileData.wechat || null;
       if (profileData.linkedin !== undefined) updateData.linkedin = profileData.linkedin || null;
       if (profileData.bio !== undefined) updateData.bio = profileData.bio || null;
-      if (profileData.school !== undefined) updateData.school = profileData.school || null;
+      if (profileData.school !== undefined) updateData.school = profileData.school;
 
       await db
         .update(userProfiles)
@@ -87,8 +87,8 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       return { success: true };
     } else {
       // Create new profile - 验证必需字段
-      if (!profileData.jobType || !profileData.experienceLevel) {
-        return { success: false, message: '创建资料时需要提供职位类型和经验水平' };
+      if (!profileData.jobType || !profileData.experienceLevel || !profileData.school) {
+        return { success: false, message: '创建资料时需要提供职位类型、经验水平和学校信息' };
       }
 
       await db.insert(userProfiles).values({
@@ -106,7 +106,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
         wechat: profileData.wechat || null,
         linkedin: profileData.linkedin || null,
         bio: profileData.bio || null,
-        school: profileData.school || null,
+        school: profileData.school,
       });
 
       return { success: true };
@@ -135,7 +135,7 @@ export async function createProfile(userId: number, profileData: ProfileFormData
       wechat: profileData.wechat || null,
       linkedin: profileData.linkedin || null,
       bio: profileData.bio || null,
-      school: profileData.school || null,
+      school: profileData.school,
     });
     return { success: true };
   } catch (error) {

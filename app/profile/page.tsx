@@ -37,6 +37,7 @@ function ProfilePageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [showOtherCompanyInput, setShowOtherCompanyInput] = useState(false);
   const [otherCompanyName, setOtherCompanyName] = useState('');
+  const [customSchoolName, setCustomSchoolName] = useState('');
   
   const [formData, setFormData] = useState<ProfileFormData & {name: string}>({
     name: '',
@@ -146,6 +147,11 @@ function ProfilePageContent() {
       return;
     }
 
+    if (!formData.school?.trim()) {
+      toast.error('请选择学校');
+      return;
+    }
+
     // 验证至少选择一种练习内容
     if (!formData.technicalInterview && !formData.behavioralInterview && !formData.caseAnalysis && !formData.statsQuestions) {
       toast.error('请至少选择一种期望练习内容');
@@ -172,7 +178,8 @@ function ProfilePageContent() {
         targetCompany: formData.targetCompany || undefined,
         targetIndustry: formData.targetIndustry || undefined,
         experienceLevel: formData.experienceLevel || undefined,
-        otherCompanyName: formData.targetCompany === 'other' ? otherCompanyName : undefined
+        otherCompanyName: formData.targetCompany === 'other' ? otherCompanyName : undefined,
+        school: (formData.school === 'custom' || formData.school === 'other') ? customSchoolName : formData.school
       };
       
       const result = await updateProfile(submitData);
@@ -202,8 +209,8 @@ function ProfilePageContent() {
   return (
     <AuthLayout>
       <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-white to-gray-50 -z-10" aria-hidden="true"></div>
-      <div className="flex min-h-screen items-center justify-center w-full">
-        <Card className="w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10">
+      <div className="flex min-h-screen items-start justify-center w-full pt-8">
+        <Card className="w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10 mt-8">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-extrabold text-center tracking-tight text-gray-900 mb-1">个人资料</CardTitle>
             <p className="text-sm text-gray-500 text-center font-medium">完善资料，获得更精准的匹配推荐</p>
@@ -223,14 +230,121 @@ function ProfilePageContent() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="school">学校</Label>
-                <Input
-                  id="school"
-                  value={formData.school}
-                  onChange={(e) => handleInputChange('school', e.target.value)}
-                  placeholder="请输入学校名称（可选）"
-                  className="h-10"
-                />
+                <Label htmlFor="school">学校 <span className="text-red-500 ml-1">*</span></Label>
+                <Select value={formData.school} onValueChange={(value) => handleInputChange('school', value)}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="请选择学校" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="custom">自定义填写</SelectItem>
+                    <SelectItem value="stanford">Stanford University</SelectItem>
+                    <SelectItem value="mit">MIT</SelectItem>
+                    <SelectItem value="harvard">Harvard University</SelectItem>
+                    <SelectItem value="cmu">Carnegie Mellon University</SelectItem>
+                    <SelectItem value="berkeley">UC Berkeley</SelectItem>
+                    <SelectItem value="caltech">Caltech</SelectItem>
+                    <SelectItem value="princeton">Princeton University</SelectItem>
+                    <SelectItem value="yale">Yale University</SelectItem>
+                    <SelectItem value="columbia">Columbia University</SelectItem>
+                    <SelectItem value="upenn">University of Pennsylvania</SelectItem>
+                    <SelectItem value="cornell">Cornell University</SelectItem>
+                    <SelectItem value="brown">Brown University</SelectItem>
+                    <SelectItem value="dartmouth">Dartmouth College</SelectItem>
+                    <SelectItem value="duke">Duke University</SelectItem>
+                    <SelectItem value="northwestern">Northwestern University</SelectItem>
+                    <SelectItem value="jhu">Johns Hopkins University</SelectItem>
+                    <SelectItem value="rice">Rice University</SelectItem>
+                    <SelectItem value="vanderbilt">Vanderbilt University</SelectItem>
+                    <SelectItem value="washu">Washington University in St. Louis</SelectItem>
+                    <SelectItem value="emory">Emory University</SelectItem>
+                    <SelectItem value="georgetown">Georgetown University</SelectItem>
+                    <SelectItem value="nyu">New York University</SelectItem>
+                    <SelectItem value="usc">University of Southern California</SelectItem>
+                    <SelectItem value="ucla">UCLA</SelectItem>
+                    <SelectItem value="ucsd">UC San Diego</SelectItem>
+                    <SelectItem value="uci">UC Irvine</SelectItem>
+                    <SelectItem value="ucsb">UC Santa Barbara</SelectItem>
+                    <SelectItem value="ucdavis">UC Davis</SelectItem>
+                    <SelectItem value="ucsc">UC Santa Cruz</SelectItem>
+                    <SelectItem value="ucriverside">UC Riverside</SelectItem>
+                    <SelectItem value="ucmerced">UC Merced</SelectItem>
+                    <SelectItem value="gatech">Georgia Institute of Technology</SelectItem>
+                    <SelectItem value="uiuc">University of Illinois Urbana-Champaign</SelectItem>
+                    <SelectItem value="umich">University of Michigan</SelectItem>
+                    <SelectItem value="uwmadison">University of Wisconsin-Madison</SelectItem>
+                    <SelectItem value="purdue">Purdue University</SelectItem>
+                    <SelectItem value="osu_ohio">Ohio State University</SelectItem>
+                    <SelectItem value="psu">Penn State University</SelectItem>
+                    <SelectItem value="rutgers">Rutgers University</SelectItem>
+                    <SelectItem value="buffalo">SUNY Buffalo</SelectItem>
+                    <SelectItem value="stonybrook">SUNY Stony Brook</SelectItem>
+                    <SelectItem value="binghamton">SUNY Binghamton</SelectItem>
+                    <SelectItem value="albany">SUNY Albany</SelectItem>
+                    <SelectItem value="arizona">University of Arizona</SelectItem>
+                    <SelectItem value="asu">Arizona State University</SelectItem>
+                    <SelectItem value="ut">University of Texas at Austin</SelectItem>
+                    <SelectItem value="tamu">Texas A&M University</SelectItem>
+                    <SelectItem value="baylor">Baylor University</SelectItem>
+                    <SelectItem value="tcu">Texas Christian University</SelectItem>
+                    <SelectItem value="smu">Southern Methodist University</SelectItem>
+                    <SelectItem value="utd">University of Texas at Dallas</SelectItem>
+                    <SelectItem value="utah">University of Utah</SelectItem>
+                    <SelectItem value="byu">Brigham Young University</SelectItem>
+                    <SelectItem value="colorado">University of Colorado Boulder</SelectItem>
+                    <SelectItem value="colorado_state">Colorado State University</SelectItem>
+                    <SelectItem value="denver">University of Denver</SelectItem>
+                    <SelectItem value="oregon">University of Oregon</SelectItem>
+                    <SelectItem value="osu_oregon">Oregon State University</SelectItem>
+                    <SelectItem value="washington">University of Washington</SelectItem>
+                    <SelectItem value="wsu">Washington State University</SelectItem>
+                    <SelectItem value="alaska">University of Alaska</SelectItem>
+                    <SelectItem value="hawaii">University of Hawaii</SelectItem>
+                    <SelectItem value="minnesota">University of Minnesota</SelectItem>
+                    <SelectItem value="iowa">University of Iowa</SelectItem>
+                    <SelectItem value="iowa_state">Iowa State University</SelectItem>
+                    <SelectItem value="nebraska">University of Nebraska</SelectItem>
+                    <SelectItem value="kansas">University of Kansas</SelectItem>
+                    <SelectItem value="kansas_state">Kansas State University</SelectItem>
+                    <SelectItem value="missouri">University of Missouri</SelectItem>
+                    <SelectItem value="arkansas">University of Arkansas</SelectItem>
+                    <SelectItem value="oklahoma">University of Oklahoma</SelectItem>
+                    <SelectItem value="oklahoma_state">Oklahoma State University</SelectItem>
+                    <SelectItem value="lsu">Louisiana State University</SelectItem>
+                    <SelectItem value="tulane">Tulane University</SelectItem>
+                    <SelectItem value="ole_miss">University of Mississippi</SelectItem>
+                    <SelectItem value="mississippi_state">Mississippi State University</SelectItem>
+                    <SelectItem value="alabama">University of Alabama</SelectItem>
+                    <SelectItem value="auburn">Auburn University</SelectItem>
+                    <SelectItem value="uab">University of Alabama at Birmingham</SelectItem>
+                    <SelectItem value="uga">University of Georgia</SelectItem>
+                    <SelectItem value="georgia_tech">Georgia Institute of Technology</SelectItem>
+                    <SelectItem value="fsu">Florida State University</SelectItem>
+                    <SelectItem value="uf">University of Florida</SelectItem>
+                    <SelectItem value="umiami">University of Miami</SelectItem>
+                    <SelectItem value="usf">University of South Florida</SelectItem>
+                    <SelectItem value="ucf">University of Central Florida</SelectItem>
+                    <SelectItem value="fau">Florida Atlantic University</SelectItem>
+                    <SelectItem value="fiu">Florida International University</SelectItem>
+                    <SelectItem value="nova">Nova Southeastern University</SelectItem>
+                    <SelectItem value="other">其他美国大学</SelectItem>
+                  </SelectContent>
+                </Select>
+                {formData.school === 'custom' && (
+                  <Input
+                    placeholder="请输入学校名称"
+                    value={customSchoolName}
+                    onChange={(e) => setCustomSchoolName(e.target.value)}
+                    className="mt-2 h-10"
+                  />
+                )}
+                {formData.school === 'other' && (
+                  <Input
+                    placeholder="请输入其他美国大学名称"
+                    value={customSchoolName}
+                    onChange={(e) => setCustomSchoolName(e.target.value)}
+                    className="mt-2 h-10"
+                  />
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -401,6 +515,7 @@ function ProfilePageContent() {
                   placeholder="如：三年打工人，在美东时区，希望找到小姐妹一起练case～"
                   className="h-10"
                 />
+                <p className="text-sm text-gray-500">✍️ 写好您的介绍可以增加匹配成功率哦！</p>
               </div>
 
               <Button type="submit" className="w-full px-8 py-2 text-base font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600" disabled={isLoading}>
