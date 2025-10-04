@@ -146,6 +146,7 @@ export const authConfig: NextAuthOptions = {
               wechat: '',
               linkedin: '',
               bio: '',
+              school: '未填写',
             });
             console.log('Profile created for user:', user.id);
           } catch (error) {

@@ -137,6 +137,7 @@ export async function setPassword(email: string, token: string, password: string
       wechat: '',
       linkedin: '',
       bio: '',
+      school: '未填写',
     });
 
     return { success: true, message: '密码设置成功，请登录' };
