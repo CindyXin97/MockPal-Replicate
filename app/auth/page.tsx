@@ -128,7 +128,8 @@ function AuthPageContent() {
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     try {
-      const callbackUrl = authMode === 'register' ? '/profile' : '/matches';
+      // Google登录/注册都跳转到个人资料页面，确保用户填写完整信息
+      const callbackUrl = '/profile';
       await signIn('google', { callbackUrl });
     } catch (error) {
       console.error('Google auth error:', error);

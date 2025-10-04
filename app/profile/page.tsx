@@ -66,6 +66,24 @@ function ProfilePageContent() {
 
   useEffect(() => {
     if (profile) {
+      // 检查用户资料是否已经填写完整
+      const isProfileComplete = profile.name && 
+        profile.jobType && 
+        profile.experienceLevel && 
+        profile.targetCompany && 
+        profile.targetIndustry && 
+        profile.school && 
+        profile.bio && 
+        (profile.email || profile.wechat || profile.linkedin) &&
+        (profile.technicalInterview || profile.behavioralInterview || profile.caseAnalysis || profile.statsQuestions);
+
+      // 如果资料已经完整且不是从匹配页面跳转过来的，直接跳转到匹配页面
+      if (isProfileComplete && !fromMatches) {
+        toast.info('您的资料已经完整，正在跳转到匹配页面...');
+        router.push('/matches');
+        return;
+      }
+
       const newFormData = {
         name: profile.name || session?.user?.name || '',
         jobType: profile.jobType || 'DA',
@@ -94,7 +112,7 @@ function ProfilePageContent() {
         name: session.user.name || '',
       }));
     }
-  }, [profile, session?.user?.name]);
+  }, [profile, session?.user?.name, fromMatches, router]);
 
   const handleInputChange = (field: string, value: any) => {
     if (['experienceLevel', 'targetCompany', 'targetIndustry'].includes(field) && 
