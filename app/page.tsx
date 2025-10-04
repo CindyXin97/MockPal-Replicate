@@ -6,11 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Header } from '@/components/header';
 import { AdvantageComparison } from '@/components/advantage-comparison';
 import { FAQSection } from '@/components/faq-section';
+import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 
 export default function Home() {
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
   const user = session?.user;
+
+  // 滚动动画hooks - 为4个步骤卡片分别创建
+  const step1 = useScrollAnimation({ threshold: 0.3 });
+  const step2 = useScrollAnimation({ threshold: 0.3 });
+  const step3 = useScrollAnimation({ threshold: 0.3 });
+  const step4 = useScrollAnimation({ threshold: 0.3 });
 
   return (
     <div className="min-h-screen w-full">
@@ -28,21 +35,28 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           {/* 增加顶部间距，让标题往下移 */}
           <div className="pt-6 sm:pt-8 lg:pt-10">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-5 lg:mb-6" style={{ color: '#2b6cb0' }}>
+            <h1
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-5 lg:mb-6 animate-fadeInDown"
+              style={{ color: '#2b6cb0', animationDelay: '0ms' }}
+            >
               找到你的面试伙伴
             </h1>
-            <p className="text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 lg:mb-10 text-gray-600 max-w-3xl mx-auto">
+            <p
+              className="text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 lg:mb-10 text-gray-600 max-w-3xl mx-auto animate-fadeInDown"
+              style={{ animationDelay: '150ms' }}
+            >
               专为数据岗位（DA/DS/DE）求职者设计的模拟面试匹配平台
             </p>
           </div>
 
           {/* 三个功能卡片 - 完全响应式，增加宽度和下移 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 mt-6 sm:mt-8 lg:mt-10 max-w-6xl mx-auto">
-            <div 
-              className="bg-white rounded-xl p-5 sm:p-6 lg:p-7 text-center transition-all hover:-translate-y-1 hover:shadow-xl"
+            <div
+              className="bg-white rounded-xl p-5 sm:p-6 lg:p-7 text-center transition-all hover:-translate-y-1 hover:shadow-xl hover:scale-[1.02] animate-fadeInUp"
               style={{
                 border: '1px solid rgba(0, 0, 0, 0.05)',
-                boxShadow: '0 6px 12px rgba(0, 0, 0, 0.05)'
+                boxShadow: '0 6px 12px rgba(0, 0, 0, 0.05)',
+                animationDelay: '300ms'
               }}
             >
               <div 
@@ -62,11 +76,12 @@ export default function Home() {
               </p>
             </div>
 
-            <div 
-              className="bg-white rounded-xl p-5 sm:p-6 lg:p-7 text-center transition-all hover:-translate-y-1 hover:shadow-xl"
+            <div
+              className="bg-white rounded-xl p-5 sm:p-6 lg:p-7 text-center transition-all hover:-translate-y-1 hover:shadow-xl hover:scale-[1.02] animate-fadeInUp"
               style={{
                 border: '1px solid rgba(0, 0, 0, 0.05)',
-                boxShadow: '0 6px 12px rgba(0, 0, 0, 0.05)'
+                boxShadow: '0 6px 12px rgba(0, 0, 0, 0.05)',
+                animationDelay: '450ms'
               }}
             >
               <div 
@@ -86,11 +101,12 @@ export default function Home() {
               </p>
             </div>
 
-            <div 
-              className="bg-white rounded-xl p-5 sm:p-6 lg:p-7 text-center transition-all hover:-translate-y-1 hover:shadow-xl md:col-span-2 lg:col-span-1"
+            <div
+              className="bg-white rounded-xl p-5 sm:p-6 lg:p-7 text-center transition-all hover:-translate-y-1 hover:shadow-xl hover:scale-[1.02] md:col-span-2 lg:col-span-1 animate-fadeInUp"
               style={{
                 border: '1px solid rgba(0, 0, 0, 0.05)',
-                boxShadow: '0 6px 12px rgba(0, 0, 0, 0.05)'
+                boxShadow: '0 6px 12px rgba(0, 0, 0, 0.05)',
+                animationDelay: '600ms'
               }}
             >
               <div 
@@ -159,8 +175,11 @@ export default function Home() {
       <section className="w-full py-16 sm:py-20 lg:py-24" style={{ backgroundColor: '#f5f7fa' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 步骤 1: 填写个人资料 */}
-          <div 
-            className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 p-6 sm:p-8 lg:p-10 rounded-2xl mb-10 sm:mb-12 lg:mb-16 shadow-lg"
+          <div
+            ref={step1.elementRef}
+            className={`grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 p-6 sm:p-8 lg:p-10 rounded-2xl mb-10 sm:mb-12 lg:mb-16 shadow-lg transition-all ${
+              step1.isVisible ? 'animate-slideInLeft' : 'opacity-0'
+            }`}
             style={{ backgroundColor: '#ffffff', minHeight: '320px' }}
           >
             <div className="lg:col-span-2 flex justify-center lg:justify-start">
@@ -191,8 +210,11 @@ export default function Home() {
           </div>
 
           {/* 步骤 2: 浏览匹配候选人 */}
-          <div 
-            className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 p-6 sm:p-8 lg:p-10 rounded-2xl mb-10 sm:mb-12 lg:mb-16 shadow-lg"
+          <div
+            ref={step2.elementRef}
+            className={`grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 p-6 sm:p-8 lg:p-10 rounded-2xl mb-10 sm:mb-12 lg:mb-16 shadow-lg transition-all ${
+              step2.isVisible ? 'animate-slideInRight' : 'opacity-0'
+            }`}
             style={{ backgroundColor: '#eef4ff', minHeight: '320px' }}
           >
             <div className="lg:col-span-3 flex flex-col justify-center">
@@ -223,8 +245,11 @@ export default function Home() {
           </div>
 
           {/* 步骤 3: 查看匹配名单 */}
-          <div 
-            className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 p-6 sm:p-8 lg:p-10 rounded-2xl mb-10 sm:mb-12 lg:mb-16 shadow-lg"
+          <div
+            ref={step3.elementRef}
+            className={`grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 p-6 sm:p-8 lg:p-10 rounded-2xl mb-10 sm:mb-12 lg:mb-16 shadow-lg transition-all ${
+              step3.isVisible ? 'animate-slideInLeft' : 'opacity-0'
+            }`}
             style={{ backgroundColor: '#ffffff', minHeight: '320px' }}
           >
             <div className="lg:col-span-2 flex justify-center lg:justify-start">
@@ -255,8 +280,11 @@ export default function Home() {
           </div>
 
           {/* 步骤 4: 练习精选题目 */}
-          <div 
-            className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 p-6 sm:p-8 lg:p-10 rounded-2xl shadow-lg"
+          <div
+            ref={step4.elementRef}
+            className={`grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 p-6 sm:p-8 lg:p-10 rounded-2xl shadow-lg transition-all ${
+              step4.isVisible ? 'animate-slideInRight' : 'opacity-0'
+            }`}
             style={{ backgroundColor: '#eef4ff', minHeight: '320px' }}
           >
             <div className="lg:col-span-3 flex flex-col justify-center">

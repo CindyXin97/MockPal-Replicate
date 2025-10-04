@@ -162,3 +162,81 @@ section {
     @apply bg-background text-foreground;
   }
 }
+
+/* 自定义动画 - Tailwind 4 方式 */
+@keyframes fadeInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 动画工具类 */
+.animate-fadeInDown {
+  animation: fadeInDown 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* 支持用户偏好设置 */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeInDown,
+  .animate-fadeInUp,
+  .animate-slideInLeft,
+  .animate-slideInRight {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
