@@ -24,7 +24,8 @@ const testUserTemplates = [
       email: 'test1@gmail.com',
       wechat: 'test1_wechat',
       linkedin: 'https://linkedin.com/in/test1',
-      bio: '刚毕业的软件工程师，正在寻找第一份工作。对前端开发很感兴趣，希望找到志同道合的练习伙伴。'
+      bio: '刚毕业的软件工程师，正在寻找第一份工作。对前端开发很感兴趣，希望找到志同道合的练习伙伴。',
+      school: 'Stanford University'
     }
   },
   {
@@ -42,7 +43,8 @@ const testUserTemplates = [
       email: 'test2@gmail.com',
       wechat: 'test2_wechat',
       linkedin: 'https://linkedin.com/in/test2',
-      bio: '有3年数据科学经验，正在准备跳槽到更大的公司。擅长机器学习和数据分析。'
+      bio: '有3年数据科学经验，正在准备跳槽到更大的公司。擅长机器学习和数据分析。',
+      school: 'MIT'
     }
   },
   {
@@ -60,7 +62,8 @@ const testUserTemplates = [
       email: 'test3@gmail.com',
       wechat: 'test3_wechat',
       linkedin: 'https://linkedin.com/in/test3',
-      bio: '资深产品经理，有丰富的产品设计和团队管理经验。正在寻找新的职业机会。'
+      bio: '资深产品经理，有丰富的产品设计和团队管理经验。正在寻找新的职业机会。',
+      school: 'Harvard University'
     }
   },
   {
@@ -78,7 +81,8 @@ const testUserTemplates = [
       email: 'test4@gmail.com',
       wechat: 'test4_wechat',
       linkedin: 'https://linkedin.com/in/test4',
-      bio: '用户体验设计师，专注于移动应用和网页设计。希望找到设计思维练习伙伴。'
+      bio: '用户体验设计师，专注于移动应用和网页设计。希望找到设计思维练习伙伴。',
+      school: 'UC Berkeley'
     }
   },
   {
@@ -96,7 +100,8 @@ const testUserTemplates = [
       email: 'test5@gmail.com',
       wechat: 'test5_wechat',
       linkedin: 'https://linkedin.com/in/test5',
-      bio: 'DevOps专家，精通AWS、Docker和Kubernetes。正在准备系统设计面试。'
+      bio: 'DevOps专家，精通AWS、Docker和Kubernetes。正在准备系统设计面试。',
+      school: 'Carnegie Mellon University'
     }
   }
 ];
