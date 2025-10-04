@@ -39,7 +39,28 @@ export default function Home() {
               className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-5 lg:mb-6 animate-fadeInDown"
               style={{ color: '#2b6cb0', animationDelay: '0ms' }}
             >
-              找到你的面试伙伴
+              找到你的<span className="relative inline-block px-1">
+                <span className="relative" style={{ color: '#157ff1' }}>面试伙伴</span>
+                {/* <svg
+                  className="absolute -bottom-2"
+                  viewBox="0 0 100 8"
+                  preserveAspectRatio="none"
+                  style={{
+                    height: '8px',
+                    width: '100%',
+                    left: '-2px',
+                    right: '-2px'
+                  }}
+                >
+                  <path
+                    d="M 0,6 Q 10,3 20,5 T 40,4 T 60,5 T 80,4 T 100,6"
+                    stroke="#fbbf24"
+                    strokeWidth="3"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                </svg> */}
+              </span>
             </h1>
             <p
               className="text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 lg:mb-10 text-gray-600 max-w-3xl mx-auto animate-fadeInDown"

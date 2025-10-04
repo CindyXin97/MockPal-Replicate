@@ -30,6 +30,7 @@ export type ProfileFormData = {
   wechat?: string;
   linkedin?: string;
   bio?: string;
+  school?: string; // 学校信息
 };
 
 type GetProfileResult =
@@ -77,6 +78,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       if (profileData.wechat !== undefined) updateData.wechat = profileData.wechat || null;
       if (profileData.linkedin !== undefined) updateData.linkedin = profileData.linkedin || null;
       if (profileData.bio !== undefined) updateData.bio = profileData.bio || null;
+      if (profileData.school !== undefined) updateData.school = profileData.school || null;
 
       await db
         .update(userProfiles)
@@ -104,6 +106,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
         wechat: profileData.wechat || null,
         linkedin: profileData.linkedin || null,
         bio: profileData.bio || null,
+        school: profileData.school || null,
       });
 
       return { success: true };
@@ -132,6 +135,7 @@ export async function createProfile(userId: number, profileData: ProfileFormData
       wechat: profileData.wechat || null,
       linkedin: profileData.linkedin || null,
       bio: profileData.bio || null,
+      school: profileData.school || null,
     });
     return { success: true };
   } catch (error) {

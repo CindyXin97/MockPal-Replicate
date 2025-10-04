@@ -24,6 +24,7 @@ export type UserProfile = {
   wechat?: string;
   linkedin?: string;
   bio?: string;
+  school?: string; // 学校信息
   createdAt?: Date;
   updatedAt?: Date;
 };

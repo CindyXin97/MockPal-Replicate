@@ -58,10 +58,12 @@ async function main() {
         technical_interview BOOLEAN DEFAULT false,
         behavioral_interview BOOLEAN DEFAULT false,
         case_analysis BOOLEAN DEFAULT false,
+        stats_questions BOOLEAN DEFAULT false,
         email VARCHAR(255),
         wechat VARCHAR(255),
         linkedin VARCHAR(255),
         bio VARCHAR(255),
+        school VARCHAR(255),
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
@@ -88,6 +90,13 @@ async function main() {
       console.log('Added bio column');
     } catch (error) {
       console.log('bio column already exists or error:', error);
+    }
+
+    try {
+      await sql`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS school VARCHAR(255)`;
+      console.log('Added school column');
+    } catch (error) {
+      console.log('school column already exists or error:', error);
     }
 
     // Create matches table

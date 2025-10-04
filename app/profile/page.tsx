@@ -52,6 +52,7 @@ function ProfilePageContent() {
     wechat: '',
     linkedin: '',
     bio: '',
+    school: '',
   });
 
   useEffect(() => {
@@ -78,6 +79,7 @@ function ProfilePageContent() {
         wechat: profile.wechat || '',
         linkedin: profile.linkedin || '',
         bio: profile.bio || '',
+        school: profile.school || '',
       };
       setFormData(newFormData);
       
@@ -219,7 +221,18 @@ function ProfilePageContent() {
                 />
                 <p className="text-sm text-gray-500">这是其他用户看到的您的名称</p>
               </div>
-            
+
+              <div className="space-y-1">
+                <Label htmlFor="school">学校</Label>
+                <Input
+                  id="school"
+                  value={formData.school}
+                  onChange={(e) => handleInputChange('school', e.target.value)}
+                  placeholder="请输入学校名称（可选）"
+                  className="h-10"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="jobType">岗位类型 <span className="text-red-500 ml-1">*</span></Label>
