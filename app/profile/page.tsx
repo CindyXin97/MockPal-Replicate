@@ -64,8 +64,9 @@ function ProfilePageContent() {
     }
   }, [status, router]);
 
+  // 检查资料完整性的独立useEffect
   useEffect(() => {
-    if (profile) {
+    if (profile && !fromMatches) {
       // 检查用户资料是否已经填写完整
       const isProfileComplete = profile.name && 
         profile.jobType && 
@@ -77,13 +78,17 @@ function ProfilePageContent() {
         (profile.email || profile.wechat || profile.linkedin) &&
         (profile.technicalInterview || profile.behavioralInterview || profile.caseAnalysis || profile.statsQuestions);
 
-      // 如果资料已经完整且不是从匹配页面跳转过来的，直接跳转到匹配页面
-      if (isProfileComplete && !fromMatches) {
+      // 如果资料已经完整，跳转到匹配页面
+      if (isProfileComplete) {
         toast.info('您的资料已经完整，正在跳转到匹配页面...');
         router.push('/matches');
-        return;
       }
+    }
+  }, [profile, fromMatches, router]);
 
+  // 处理表单数据更新的独立useEffect
+  useEffect(() => {
+    if (profile) {
       const newFormData = {
         name: profile.name || session?.user?.name || '',
         jobType: profile.jobType || 'DA',
@@ -112,7 +117,7 @@ function ProfilePageContent() {
         name: session.user.name || '',
       }));
     }
-  }, [profile, session?.user?.name, fromMatches, router]);
+  }, [profile, session?.user?.name]);
 
   const handleInputChange = (field: string, value: any) => {
     if (['experienceLevel', 'targetCompany', 'targetIndustry'].includes(field) && 
@@ -356,7 +361,7 @@ function ProfilePageContent() {
                   />
                 )}
                 {formData.school === 'other' && (
-                  <Input
+                <Input
                     placeholder="请输入其他美国大学名称"
                     value={customSchoolName}
                     onChange={(e) => setCustomSchoolName(e.target.value)}
