@@ -104,6 +104,7 @@ function getProfileByEmail(email: string) {
       wechat: 'test_wechat_123',
       linkedin: '',
       bio: '这是第一个测试用户账号，用于开发环境测试。',
+      school: 'Stanford University',
     },
     '456@gmail.com': {
       jobType: 'DS',
@@ -117,6 +118,7 @@ function getProfileByEmail(email: string) {
       wechat: 'test_wechat_456',
       linkedin: 'linkedin.com/in/test456',
       bio: '这是第二个测试用户账号，数据科学家背景，有1-3年工作经验。',
+      school: 'MIT',
     }
   };
 
@@ -132,6 +134,7 @@ function getProfileByEmail(email: string) {
     wechat: 'test_wechat',
     linkedin: '',
     bio: '这是一个测试用户账号，用于开发环境测试。',
+    school: 'UC Berkeley',
   };
 }
 
