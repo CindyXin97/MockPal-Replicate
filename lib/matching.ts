@@ -26,7 +26,7 @@ export async function getPotentialMatches(userId: number) {
         eq(userDailyViews.date, today)
       ),
     });
-    if (todayViews.length >= 5) {
+    if (todayViews.length >= 4) {
       return { success: true, matches: [] };
     }
     const viewedTodayIds = todayViews.map(v => v.viewedUserId);

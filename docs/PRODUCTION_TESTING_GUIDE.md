@@ -68,7 +68,7 @@ npm run clear-prod-data -- --confirm-production --clear-test-users
 - [ ] **推荐算法**
   - 创建不同类型的测试账户
   - 验证匹配推荐的准确性
-  - 测试每日5人浏览限制
+  - 测试每日4人浏览限制
 
 - [ ] **匹配操作**
   - 测试喜欢/跳过功能

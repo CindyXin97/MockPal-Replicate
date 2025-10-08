@@ -114,7 +114,7 @@ async function showTestUserStatus() {
       
       Object.entries(viewCounts).forEach(([userId, count]) => {
         const user = testUsers.find(u => u.id === parseInt(userId));
-        console.log(`  - ${user?.email || userId}: ${count}/5 次浏览`);
+        console.log(`  - ${user?.email || userId}: ${count}/4 次浏览`);
       });
     }
     
