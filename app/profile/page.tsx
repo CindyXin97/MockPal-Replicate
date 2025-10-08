@@ -64,27 +64,28 @@ function ProfilePageContent() {
     }
   }, [status, router]);
 
-  // 检查资料完整性的独立useEffect
-  useEffect(() => {
-    if (profile && !fromMatches) {
-      // 检查用户资料是否已经填写完整
-      const isProfileComplete = profile.name && 
-        profile.jobType && 
-        profile.experienceLevel && 
-        profile.targetCompany && 
-        profile.targetIndustry && 
-        profile.school && 
-        profile.bio && 
-        (profile.email || profile.wechat || profile.linkedin) &&
-        (profile.technicalInterview || profile.behavioralInterview || profile.caseAnalysis || profile.statsQuestions);
+  // 检查资料完整性的独立useEffect（仅用于Google登录的新用户）
+  // 注释掉自动跳转逻辑，允许用户随时查看和编辑个人资料
+  // useEffect(() => {
+  //   if (profile && !fromMatches) {
+  //     // 检查用户资料是否已经填写完整
+  //     const isProfileComplete = profile.name && 
+  //       profile.jobType && 
+  //       profile.experienceLevel && 
+  //       profile.targetCompany && 
+  //       profile.targetIndustry && 
+  //       profile.school && 
+  //       profile.bio && 
+  //       (profile.email || profile.wechat || profile.linkedin) &&
+  //       (profile.technicalInterview || profile.behavioralInterview || profile.caseAnalysis || profile.statsQuestions);
 
-      // 如果资料已经完整，跳转到匹配页面
-      if (isProfileComplete) {
-        toast.info('您的资料已经完整，正在跳转到匹配页面...');
-        router.push('/matches');
-      }
-    }
-  }, [profile, fromMatches, router]);
+  //     // 如果资料已经完整，跳转到匹配页面
+  //     if (isProfileComplete) {
+  //       toast.info('您的资料已经完整，正在跳转到匹配页面...');
+  //       router.push('/matches');
+  //     }
+  //   }
+  // }, [profile, fromMatches, router]);
 
   // 处理表单数据更新的独立useEffect
   useEffect(() => {
