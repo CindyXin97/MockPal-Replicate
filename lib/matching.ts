@@ -140,7 +140,7 @@ export async function getPotentialMatches(userId: number) {
         otherList.push(user);
       }
     }
-    const finalList = [...invitedOverlapList, ...overlapList, ...jobExpList, ...otherList].slice(0, 5);
+    const finalList = [...invitedOverlapList, ...overlapList, ...jobExpList, ...otherList].slice(0, 4);
     return {
       success: true,
       matches: finalList.map(user => ({
