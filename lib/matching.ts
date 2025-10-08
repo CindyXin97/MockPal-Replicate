@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { users, userProfiles, matches, feedbacks, userDailyViews } from '@/lib/db/schema';
 import { eq, and, or, not, desc, exists, inArray } from 'drizzle-orm';
 import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import { matchBetweenUsers, matchesForUser, errorResponse, successResponse } from '@/lib/matching-utils';
 import { updateUserAchievement } from './achievements';
 
@@ -17,8 +18,11 @@ export async function getPotentialMatches(userId: number) {
       return { success: false, message: '请先完成个人资料' };
     }
 
-    // 获取今天日期
-    const today = format(new Date(), 'yyyy-MM-dd');
+    // 获取今天日期（使用美东时区）
+    const ET_TIMEZONE = 'America/New_York';
+    const now = new Date();
+    const etDate = toZonedTime(now, ET_TIMEZONE);
+    const today = format(etDate, 'yyyy-MM-dd');
     // 查询今天已浏览的用户ID和操作次数
     const todayViews = await db.query.userDailyViews.findMany({
       where: and(

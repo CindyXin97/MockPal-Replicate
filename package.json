@@ -19,8 +19,6 @@
     "fix-test-profiles": "dotenv -e .env.local -- tsx scripts/fix-test-profiles.ts",
     "check-user-matches": "dotenv -e .env.local -- tsx scripts/check-user-matches.ts",
     "test-matching-api": "dotenv -e .env.local -- tsx scripts/test-matching-api.ts",
-
-
     "migrate": "tsx scripts/migrate.ts",
     "setup-prod-db": "tsx scripts/setup-production-db.ts",
     "seed-questions": "tsx scripts/seed-original-41-questions.ts",
@@ -48,6 +46,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
     "jotai": "^2.7.1",
