@@ -41,6 +41,7 @@ export type Match = {
     technicalInterview?: boolean | null;
     behavioralInterview?: boolean | null;
     caseAnalysis?: boolean | null;
+    statsQuestions?: boolean | null;
   };
   contactInfo?: {
     email?: string | null;

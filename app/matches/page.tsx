@@ -1190,6 +1190,11 @@ export default function MatchesPage() {
                                 🧩 案例分析
                               </span>
                             )}
+                            {currentMatch.practicePreferences?.statsQuestions && (
+                              <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-blue-50 text-blue-500">
+                                📊 统计题目
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div>
@@ -1349,6 +1354,9 @@ export default function MatchesPage() {
                               )}
                               {match.practicePreferences?.caseAnalysis && (
                                 <span className="tag">案例分析</span>
+                              )}
+                              {match.practicePreferences?.statsQuestions && (
+                                <span className="tag">统计题目</span>
                               )}
                             </div>
                             
@@ -1539,6 +1547,9 @@ export default function MatchesPage() {
                               )}
                               {match.practicePreferences?.caseAnalysis && (
                                 <span className="tag">案例分析</span>
+                              )}
+                              {match.practicePreferences?.statsQuestions && (
+                                <span className="tag">统计题目</span>
                               )}
                             </div>
                             {match.contactInfo && (

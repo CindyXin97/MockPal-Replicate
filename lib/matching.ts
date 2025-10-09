@@ -36,16 +36,11 @@ export async function getPotentialMatches(userId: number) {
     const viewedTodayIds = todayViews.map(v => v.viewedUserId);
 
     // Get users who haven't been matched with the current user yet
+    // 排除所有已有记录的用户：accepted、rejected、pending
     const existingMatches = await db.query.matches.findMany({
-      where: and(
-        or(
-          eq(matches.user1Id, userId),
-          eq(matches.user2Id, userId)
-        ),
-        or(
-          eq(matches.status, 'accepted'),
-          eq(matches.status, 'rejected')
-        )
+      where: or(
+        eq(matches.user1Id, userId),
+        eq(matches.user2Id, userId)
       ),
     });
 
@@ -83,7 +78,8 @@ export async function getPotentialMatches(userId: number) {
       const hasPracticeContent = (
         user.profile?.technicalInterview ||
         user.profile?.behavioralInterview ||
-        user.profile?.caseAnalysis
+        user.profile?.caseAnalysis ||
+        user.profile?.statsQuestions
       );
       // 检查是否有联系方式
       const hasContactInfo = (
@@ -123,7 +119,8 @@ export async function getPotentialMatches(userId: number) {
       const overlap =
         (user.profile?.technicalInterview && userProfile.technicalInterview) ||
         (user.profile?.behavioralInterview && userProfile.behavioralInterview) ||
-        (user.profile?.caseAnalysis && userProfile.caseAnalysis);
+        (user.profile?.caseAnalysis && userProfile.caseAnalysis) ||
+        (user.profile?.statsQuestions && userProfile.statsQuestions);
       const jobMatch = user.profile?.jobType === userProfile.jobType;
       const expMatch = user.profile?.experienceLevel === userProfile.experienceLevel;
       
@@ -154,6 +151,7 @@ export async function getPotentialMatches(userId: number) {
           technicalInterview: user.profile?.technicalInterview,
           behavioralInterview: user.profile?.behavioralInterview,
           caseAnalysis: user.profile?.caseAnalysis,
+          statsQuestions: user.profile?.statsQuestions,
         },
         bio: user.profile?.bio,
       }))
@@ -167,8 +165,11 @@ export async function getPotentialMatches(userId: number) {
 // Create match (like a user) - 移除事务，改为顺序执行
 export async function createMatch(userId: number, targetUserId: number) {
   try {
-    // 记录今日浏览
-    const today = format(new Date(), 'yyyy-MM-dd');
+    // 记录今日浏览（使用美东时区）
+    const ET_TIMEZONE = 'America/New_York';
+    const now = new Date();
+    const etDate = toZonedTime(now, ET_TIMEZONE);
+    const today = format(etDate, 'yyyy-MM-dd');
     await db.insert(userDailyViews).values({
       userId,
       viewedUserId: targetUserId,
@@ -194,12 +195,8 @@ export async function createMatch(userId: number, targetUserId: number) {
 
       // 自己已发出邀请，等待对方回应
       if (existingMatch.user1Id === userId && existingMatch.status === 'pending') {
-        await db
-          .update(matches)
-          .set({ status: 'accepted', updatedAt: new Date() })
-          .where(eq(matches.id, existingMatch.id));
-
-        return successResponse({ match: true }, '匹配成功！');
+        // 已经发送过邀请，不需要再次操作，直接返回等待状态
+        return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
       }
 
       // 已经匹配成功
@@ -234,8 +231,11 @@ export async function createMatch(userId: number, targetUserId: number) {
 // Reject match (dislike a user) - 移除事务，改为顺序执行
 export async function rejectMatch(userId: number, targetUserId: number) {
   try {
-    // 记录今日浏览
-    const today = format(new Date(), 'yyyy-MM-dd');
+    // 记录今日浏览（使用美东时区）
+    const ET_TIMEZONE = 'America/New_York';
+    const now = new Date();
+    const etDate = toZonedTime(now, ET_TIMEZONE);
+    const today = format(etDate, 'yyyy-MM-dd');
     await db.insert(userDailyViews).values({
       userId,
       viewedUserId: targetUserId,
@@ -331,6 +331,7 @@ export async function getSuccessfulMatches(userId: number) {
             technicalInterview: user.profile.technicalInterview,
             behavioralInterview: user.profile.behavioralInterview,
             caseAnalysis: user.profile.caseAnalysis,
+            statsQuestions: user.profile.statsQuestions,
           },
           contactInfo: {
             email: user.profile.email,

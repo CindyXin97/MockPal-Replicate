@@ -135,13 +135,17 @@ function ProfilePageContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('📝 开始提交个人资料...', formData);
+    
     if (!user) {
+      console.error('❌ 用户未登录');
       toast.error('用户未登录');
       return;
     }
 
     // 验证必填字段
     if (!formData.name.trim()) {
+      console.error('❌ 缺少显示名称');
       toast.error('请输入显示名称');
       return;
     }
@@ -206,10 +210,15 @@ function ProfilePageContent() {
         school: (formData.school === 'custom' || formData.school === 'other') ? customSchoolName : formData.school
       };
       
+      console.log('🚀 准备调用updateProfile...');
       const result = await updateProfile(submitData);
+      console.log('📊 updateProfile结果:', result);
 
       if (result.success) {
+        console.log('✅ 资料保存成功');
+        
         if (formData.name && formData.name !== session?.user?.name) {
+          console.log('🔄 更新session名称...');
           await update({ name: formData.name });
         }
         
@@ -218,8 +227,12 @@ function ProfilePageContent() {
         } else {
           toast.success('资料保存成功，系统会为你推荐新的匹配对象');
         }
+        
+        console.log('🎯 准备跳转到匹配页面...');
         router.push('/matches');
+        console.log('✅ 跳转命令已执行');
       } else {
+        console.error('❌ 保存失败:', result.message);
         toast.error(result.message || '保存失败');
       }
     } catch (error) {
