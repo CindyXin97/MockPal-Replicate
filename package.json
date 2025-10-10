@@ -26,7 +26,9 @@
     "clear-prod-data": "tsx scripts/clear-production-test-data.ts",
     "safe-truncate-users": "tsx scripts/safe-truncate-users.ts",
     "emergency-restore": "tsx scripts/emergency-restore-questions.ts",
-    "analyze-clicks": "tsx scripts/analyze-expect-more-clicks.ts"
+    "analyze-clicks": "tsx scripts/analyze-expect-more-clicks.ts",
+    "test-privacy-fix": "dotenv -e .env.local -- tsx scripts/test-match-privacy-fix.ts",
+    "cleanup-test-users": "dotenv -e .env.local -- tsx scripts/cleanup-test-users.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",
