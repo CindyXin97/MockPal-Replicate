@@ -35,8 +35,26 @@ export async function getPotentialMatches(userId: number) {
     }
     const viewedTodayIds = todayViews.map(v => v.viewedUserId);
 
-    // Get users who haven't been matched with the current user yet
-    // 排除所有已有记录的用户：accepted、rejected、pending
+    // 查询所有历史浏览记录（判断是否浏览完所有人）
+    const allViews = await db.query.userDailyViews.findMany({
+      where: eq(userDailyViews.userId, userId),
+    });
+    const allViewedUserIds = [...new Set(allViews.map(v => v.viewedUserId))];
+
+    // 查询总用户数（有完整资料的）
+    const allUsersWithProfiles = await db.query.users.findMany({
+      where: exists(
+        db.select()
+          .from(userProfiles)
+          .where(eq(userProfiles.userId, users.id))
+      ),
+    });
+    const totalUsersCount = allUsersWithProfiles.length;
+
+    // 判断是否浏览完所有人（第一轮 vs 第二轮）
+    const hasViewedAll = allViewedUserIds.length >= totalUsersCount - 1;
+
+    // 获取所有match记录
     const existingMatches = await db.query.matches.findMany({
       where: or(
         eq(matches.user1Id, userId),
@@ -44,13 +62,29 @@ export async function getPotentialMatches(userId: number) {
       ),
     });
 
-    // Extract IDs of users already in matches
-    const matchedUserIds = existingMatches.map(match => 
-      match.user1Id === userId ? match.user2Id : match.user1Id
-    );
+    // 构建排除列表
+    let excludedIds: number[] = [userId]; // 永远排除自己
 
-    // Add current user's ID和今日已浏览ID到排除列表
-    const excludedIds = [...matchedUserIds, userId, ...viewedTodayIds];
+    if (hasViewedAll) {
+      // 第二轮：只排除 accepted 用户
+      const acceptedUserIds = existingMatches
+        .filter(m => m.status === 'accepted')
+        .map(m => m.user1Id === userId ? m.user2Id : m.user1Id);
+      
+      excludedIds = [...excludedIds, ...acceptedUserIds, ...viewedTodayIds];
+    } else {
+      // 第一轮：排除所有有view记录的用户（除了对方发起的pending）
+      // 先排除所有浏览过的
+      excludedIds = [...excludedIds, ...allViewedUserIds, ...viewedTodayIds];
+      
+      // 但对方发起的pending邀请不排除（优先展示）
+      const pendingInvitationsToMe = existingMatches
+        .filter(m => m.user2Id === userId && m.status === 'pending')
+        .map(m => m.user1Id);
+      
+      // 从排除列表中移除对方的pending邀请
+      excludedIds = excludedIds.filter(id => !pendingInvitationsToMe.includes(id));
+    }
 
     // Find potential matches based on compatible tags
     const potentialMatches = await db.query.users.findMany({
@@ -162,20 +196,65 @@ export async function getPotentialMatches(userId: number) {
   }
 }
 
-// Create match (like a user) - 移除事务，改为顺序执行
-export async function createMatch(userId: number, targetUserId: number) {
+/**
+ * 记录用户今日浏览，带每日限制检查和防重复
+ * @returns { success: true } 或 { success: false, message: string }
+ */
+async function recordDailyView(userId: number, targetUserId: number): Promise<{ success: boolean, message?: string }> {
+  const ET_TIMEZONE = 'America/New_York';
+  const now = new Date();
+  const etDate = toZonedTime(now, ET_TIMEZONE);
+  const today = format(etDate, 'yyyy-MM-dd');
+
+  // 1. 检查是否已经记录过这个用户（避免重复）
+  const existingView = await db.query.userDailyViews.findFirst({
+    where: and(
+      eq(userDailyViews.userId, userId),
+      eq(userDailyViews.viewedUserId, targetUserId),
+      eq(userDailyViews.date, today)
+    ),
+  });
+
+  if (existingView) {
+    return { success: true }; // 已记录，直接返回成功
+  }
+
+  // 2. 检查今日浏览次数是否已达到限制（严格检查）
+  const todayViews = await db.query.userDailyViews.findMany({
+    where: and(
+      eq(userDailyViews.userId, userId),
+      eq(userDailyViews.date, today)
+    ),
+  });
+
+  if (todayViews.length >= 4) {
+    return { success: false, message: '今日浏览次数已达上限（4次），请明天再来' };
+  }
+
+  // 3. 插入新记录
   try {
-    // 记录今日浏览（使用美东时区）
-    const ET_TIMEZONE = 'America/New_York';
-    const now = new Date();
-    const etDate = toZonedTime(now, ET_TIMEZONE);
-    const today = format(etDate, 'yyyy-MM-dd');
     await db.insert(userDailyViews).values({
       userId,
       viewedUserId: targetUserId,
       date: today,
       createdAt: new Date(),
     });
+    return { success: true };
+  } catch (error) {
+    // 如果是唯一性约束冲突（并发情况），也算成功
+    console.error('Record daily view error:', error);
+    return { success: true };
+  }
+}
+
+// Create match (like a user) - 移除事务，改为顺序执行
+export async function createMatch(userId: number, targetUserId: number) {
+  try {
+    // 记录今日浏览，带限制检查
+    const viewResult = await recordDailyView(userId, targetUserId);
+    if (!viewResult.success) {
+      return { success: false, message: viewResult.message };
+    }
 
     // 使用通用函数查询现有匹配
     const existingMatch = await db.query.matches.findFirst({
@@ -195,7 +274,7 @@ export async function createMatch(userId: number, targetUserId: number) {
 
       // 自己已发出邀请，等待对方回应
       if (existingMatch.user1Id === userId && existingMatch.status === 'pending') {
-        // 已经发送过邀请，不需要再次操作，直接返回等待状态
+        // 不应该改变状态！只是重复点击而已
         return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
       }
 
@@ -206,12 +285,30 @@ export async function createMatch(userId: number, targetUserId: number) {
 
       // 之前被拒绝，重新发起
       if (existingMatch.status === 'rejected') {
-        await db
-          .update(matches)
-          .set({ status: 'pending', updatedAt: new Date() })
-          .where(eq(matches.id, existingMatch.id));
-
-        return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
+        // 需要检查是谁拒绝的
+        if (existingMatch.user1Id === userId) {
+          // 情况1：自己之前发起并拒绝了对方（或被对方拒绝）
+          // 现在想重新匹配，更新为pending
+          await db
+            .update(matches)
+            .set({ 
+              status: 'pending',
+              user1Id: userId,  // 确保方向正确
+              user2Id: targetUserId,
+              updatedAt: new Date() 
+            })
+            .where(eq(matches.id, existingMatch.id));
+          return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
+        } else {
+          // 情况2：对方之前发起并拒绝了自己（对方→自己 rejected）
+          // 现在自己想匹配对方，需要创建新的pending（自己→对方）
+          await db.insert(matches).values({
+            user1Id: userId,
+            user2Id: targetUserId,
+            status: 'pending',
+          });
+          return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
+        }
       }
     }
 
@@ -231,17 +328,11 @@ export async function createMatch(userId: number, targetUserId: number) {
 // Reject match (dislike a user) - 移除事务，改为顺序执行
 export async function rejectMatch(userId: number, targetUserId: number) {
   try {
-    // 记录今日浏览（使用美东时区）
-    const ET_TIMEZONE = 'America/New_York';
-    const now = new Date();
-    const etDate = toZonedTime(now, ET_TIMEZONE);
-    const today = format(etDate, 'yyyy-MM-dd');
-    await db.insert(userDailyViews).values({
-      userId,
-      viewedUserId: targetUserId,
-      date: today,
-      createdAt: new Date(),
-    });
+    // 记录今日浏览，带限制检查
+    const viewResult = await recordDailyView(userId, targetUserId);
+    if (!viewResult.success) {
+      return { success: false, message: viewResult.message };
+    }
 
     // 使用通用函数查询现有匹配
     const existingMatch = await db.query.matches.findFirst({
@@ -249,13 +340,31 @@ export async function rejectMatch(userId: number, targetUserId: number) {
     });
 
     if (existingMatch) {
-      // 更新状态为拒绝
-      await db
-        .update(matches)
-        .set({ status: 'rejected', updatedAt: new Date() })
-        .where(eq(matches.id, existingMatch.id));
+      // 检查当前用户的身份
+      if (existingMatch.user1Id === userId) {
+        // 情况1：当前用户是发起方（user1Id）
+        // 场景：用户A之前向用户B发送了pending邀请，现在想取消/拒绝
+        // 正确做法：不应该改成rejected，而是删除这条pending记录
+        if (existingMatch.status === 'pending') {
+          await db.delete(matches).where(eq(matches.id, existingMatch.id));
+          return successResponse({}, '已取消对该用户的邀请');
+        } else {
+          // 如果状态已经是accepted或rejected，说明对方已经回应了
+          // 不允许再次操作
+          return { success: false, message: '该匹配已完成，无法修改' };
+        }
+      } else if (existingMatch.user2Id === userId) {
+        // 情况2：当前用户是接收方（user2Id）
+        // 场景：用户B收到用户A的pending邀请，选择拒绝
+        // 正确做法：更新为rejected
+        await db
+          .update(matches)
+          .set({ status: 'rejected', updatedAt: new Date() })
+          .where(eq(matches.id, existingMatch.id));
+        return successResponse({}, '已拒绝该匹配');
+      }
     } else {
-      // 创建新的拒绝记录
+      // 创建新的拒绝记录（第一次看到这个用户就拒绝）
       await db.insert(matches).values({
         user1Id: userId,
         user2Id: targetUserId,
