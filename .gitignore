@@ -39,3 +39,29 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# temporary bug fix documentation and testing files
+BUG_FIX_COMPLETE.md
+DATABASE_DESIGN_ANALYSIS.md
+DEBUG_PROFILE.md
+FINAL_REPORT.md
+GIT_CHANGES_SUMMARY.md
+LOCAL_TESTING_GUIDE.md
+MATCH_LIMIT_EXPLANATION.md
+README_BUG_FIX.md
+
+# temporary testing and debugging scripts
+scripts/analyze-*.ts
+scripts/check-*.ts
+scripts/debug-*.ts
+scripts/explain-*.ts
+scripts/fix-*.ts
+scripts/investigate-*.ts
+scripts/reset-*.ts
+scripts/restore-*.ts
+scripts/test-*.ts
+scripts/verify-*.ts
+scripts/cleanup-test-users.ts
+
+# temporary utility files
+lib/timezone-utils.ts
