@@ -65,27 +65,18 @@ MockPal 是专为数据专业人士（DA/DS/DE/BA）设计的模拟面试匹配�
 
 3. **环境配置**
    
-   复制环境变量模板:
+   复制环境变量模板并配置:
    ```bash
    cp .env.example .env.local
    ```
    
-   配置必需的环境变量:
-   ```env
-   # 数据库连接
-   DATABASE_URL="your-neon-postgresql-url"
+   然后编辑 `.env.local` 文件，填写所有必需的环境变量。
    
-   # NextAuth配置
-   NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="your-secret-key"
-   
-   # Google OAuth
-   GOOGLE_CLIENT_ID="your-google-client-id"
-   GOOGLE_CLIENT_SECRET="your-google-client-secret"
-   
-   # 邮件服务
-   RESEND_API_KEY="re_xxxxxxxxxxxxx"
-   ```
+   详细配置说明请参考 `.env.example` 文件中的注释，包括：
+   - 数据库连接 (DATABASE_URL)
+   - NextAuth 认证配置 (NEXTAUTH_URL, NEXTAUTH_SECRET)
+   - Google OAuth 配置（可选）
+   - Resend 邮件服务 (RESEND_API_KEY)
 
 4. **数据库初始化**
    ```bash
