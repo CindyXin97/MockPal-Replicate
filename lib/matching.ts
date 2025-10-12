@@ -143,7 +143,7 @@ export async function getPotentialMatches(userId: number) {
     // 构建Set用于O(1)查找
     const invitationSet = new Set(pendingInvitations.map(inv => inv.user1Id));
     
-    // 优先级排序：对方已发出邀请且内容重叠 > 内容重叠 > 岗位和经验都相同 > 其他
+    // 优先级排序：对方已发出邀请且内容重叠 > 岗位和经验都相同 > 内容重叠 > 其他
     const invitedOverlapList: typeof filteredMatches = [];
     const overlapList: typeof filteredMatches = [];
     const jobExpList: typeof filteredMatches = [];
@@ -163,15 +163,15 @@ export async function getPotentialMatches(userId: number) {
       
       if (hasInvited && overlap) {
         invitedOverlapList.push(user);
-      } else if (overlap) {
-        overlapList.push(user);
       } else if (jobMatch && expMatch) {
         jobExpList.push(user);
+      } else if (overlap) {
+        overlapList.push(user);
       } else {
         otherList.push(user);
       }
     }
-    const finalList = [...invitedOverlapList, ...overlapList, ...jobExpList, ...otherList].slice(0, 4);
+    const finalList = [...invitedOverlapList, ...jobExpList, ...overlapList, ...otherList].slice(0, 4);
     return {
       success: true,
       matches: finalList.map(user => ({
