@@ -57,6 +57,69 @@ class EmailService {
       </html>
     `;
   }
+
+  //匹配成功邮件模板
+  public async sendMatchSuccessEmail(to: string, opts: { partnerName: string; matchesUrl: string }) {
+    console.log('🔵 [EmailService] 准备发送匹配成功通知');
+    console.log('📧 收件人:', to);
+    console.log('👤 对方昵称:', opts.partnerName);
+    console.log('🔗 跳转链接:', opts.matchesUrl);
+  
+    // 开发环境：直接打印，不真正发信
+    if (process.env.NODE_ENV === 'development') {
+      console.log('\n🚀 [开发环境] 匹配成功通知：');
+      console.log(`🎉 你与 ${opts.partnerName} 匹配成功！前往查看：${opts.matchesUrl}\n`);
+      return { data: { id: 'dev-mode-skip' }, error: null };
+    }
+  
+    const isProduction = process.env.NODE_ENV === 'production';
+    const fromEmail = isProduction 
+      ? 'MockPal <noreply@mockpals.com>'
+      : 'MockPal <onboarding@resend.dev>';
+  
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { text-align: center; margin-bottom: 24px; }
+            .button { display: inline-block; padding: 12px 20px; background: #3B82F6; color: white; text-decoration: none; border-radius: 8px; margin: 16px 0; }
+            .tip { color: #6b7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="color: #1f2937;">匹配成功啦！🎉</h1>
+            </div>
+            <p style="color: #374151;">你与 <strong>${opts.partnerName}</strong> 已成功匹配，可以开始联系约面了～</p>
+            <div style="text-align: center;">
+              <a href="${opts.matchesUrl}" class="button">前往查看匹配详情</a>
+            </div>
+            <p class="tip">如果按钮无法点击，请复制以下链接到浏览器：</p>
+            <p style="color: #3b82f6; word-break: break-all; font-size: 14px;">${opts.matchesUrl}</p>
+          </div>
+        </body>
+      </html>
+    `;
+  
+    try {
+      const result = await this.resend.emails.send({
+        from: fromEmail,
+        to,
+        subject: 'MockPal - 匹配成功通知',
+        html,
+      });
+      console.log('✅ [EmailService] 匹配成功通知已发送');
+      return result;
+    } catch (error) {
+      console.error('❌ [EmailService] 匹配成功通知发送失败:', error);
+      throw error;
+    }
+  }
   
   // 统一的邮件发送方法
   public async sendVerificationEmail(email: string, url: string) {

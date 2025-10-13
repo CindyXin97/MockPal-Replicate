@@ -28,7 +28,8 @@
     "emergency-restore": "tsx scripts/emergency-restore-questions.ts",
     "analyze-clicks": "tsx scripts/analyze-expect-more-clicks.ts",
     "test-privacy-fix": "dotenv -e .env.local -- tsx scripts/test-match-privacy-fix.ts",
-    "cleanup-test-users": "dotenv -e .env.local -- tsx scripts/cleanup-test-users.ts"
+    "cleanup-test-users": "dotenv -e .env.local -- tsx scripts/cleanup-test-users.ts",
+    "send-match-success-email": "dotenv -e .env.local -- tsx scripts/send-match-success-email.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.10.0",

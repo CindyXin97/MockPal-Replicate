@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { matchBetweenUsers, matchesForUser, errorResponse, successResponse } from '@/lib/matching-utils';
 import { updateUserAchievement } from './achievements';
+import { emailService } from '@/lib/email-service';
 
 // Get potential matches for a user
 export async function getPotentialMatches(userId: number) {
@@ -311,6 +312,30 @@ export async function createMatch(userId: number, targetUserId: number) {
         status: 'accepted',
       });
       
+      //
+      const baseUrl = process.env.NEXTAUTH_URL || 'https://mockpals.com';
+      const matchesUrl = `${baseUrl}/matches`;
+      
+      // 查询双方用户信息
+      const me = await db.query.users.findFirst({ where: eq(users.id, userId) });
+      const partner = await db.query.users.findFirst({ where: eq(users.id, targetUserId) });
+      
+      // 并行尝试发送邮件（有邮箱再发，失败不影响主流程）
+      try {
+        await Promise.all([
+          me?.email ? emailService.sendMatchSuccessEmail(me.email, {
+            partnerName: partner?.name || '对方',
+            matchesUrl,
+          }) : Promise.resolve(),
+          partner?.email ? emailService.sendMatchSuccessEmail(partner.email, {
+            partnerName: me?.name || '对方',
+            matchesUrl,
+          }) : Promise.resolve(),
+        ]);
+      } catch (e) {
+        console.warn('发送匹配成功通知失败（忽略不中断）:', e);
+      }
+
       return successResponse({ match: true }, '匹配成功！');
     }
 
