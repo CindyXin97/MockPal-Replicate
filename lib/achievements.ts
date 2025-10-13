@@ -1,6 +1,6 @@
 import { db } from './db';
 import { userAchievements, feedbacks } from './db/schema';
-import { eq, count } from 'drizzle-orm';
+import { eq, count, and } from 'drizzle-orm';
 
 // 成就等级定义
 export const ACHIEVEMENT_LEVELS = {
@@ -38,7 +38,10 @@ export async function getUserAchievement(userId: number) {
     const interviewCount = await db
       .select({ count: count() })
       .from(feedbacks)
-      .where(eq(feedbacks.userId, userId))
+      .where(and(
+        eq(feedbacks.userId, userId),
+        eq(feedbacks.interviewStatus, 'yes')
+      ))
       .then(result => result[0]?.count || 0);
 
     const experiencePoints = interviewCount;
@@ -89,7 +92,10 @@ export async function updateUserAchievement(userId: number) {
     const successfulInterviewsResult = await db
       .select({ count: count() })
       .from(feedbacks)
-      .where(eq(feedbacks.userId, userId));
+      .where(and(
+        eq(feedbacks.userId, userId),
+        eq(feedbacks.interviewStatus, 'yes')
+      ));
     
     const totalInterviews = successfulInterviewsResult[0]?.count || 0;
     const experiencePoints = totalInterviews;
