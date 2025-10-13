@@ -54,33 +54,55 @@ export async function getPotentialMatches(userId: number) {
     // 判断是否浏览完所有人（第一轮 vs 第二轮）
     const hasViewedAll = allViewedUserIds.length >= totalUsersCount - 1;
 
-    // 获取所有match记录
-    const existingMatches = await db.query.matches.findMany({
-      where: or(
+    // 获取所有match记录（按时间倒序，用于找最新状态）
+    const existingMatches = await db.select()
+      .from(matches)
+      .where(or(
         eq(matches.user1Id, userId),
         eq(matches.user2Id, userId)
-      ),
-    });
+      ))
+      .orderBy(desc(matches.createdAt));
+
+    // 按用户对分组，找到每个用户的最新状态
+    const latestStatusByUser = new Map<number, typeof existingMatches[0]>();
+    
+    for (const match of existingMatches) {
+      const partnerId = match.user1Id === userId ? match.user2Id : match.user1Id;
+      
+      // 只保留最新的记录（已按时间倒序）
+      if (!latestStatusByUser.has(partnerId)) {
+        latestStatusByUser.set(partnerId, match);
+      }
+    }
 
     // 构建排除列表
     let excludedIds: number[] = [userId]; // 永远排除自己
 
     if (hasViewedAll) {
       // 第二轮：只排除 accepted 用户
-      const acceptedUserIds = existingMatches
-        .filter(m => m.status === 'accepted')
-        .map(m => m.user1Id === userId ? m.user2Id : m.user1Id);
+      for (const [partnerId, latestMatch] of latestStatusByUser.entries()) {
+        if (latestMatch.status === 'accepted') {
+          excludedIds.push(partnerId);
+        }
+      }
       
-      excludedIds = [...excludedIds, ...acceptedUserIds, ...viewedTodayIds];
+      excludedIds = [...excludedIds, ...viewedTodayIds];
     } else {
-      // 第一轮：排除所有有view记录的用户（除了对方发起的pending）
-      // 先排除所有浏览过的
+      // 第一轮：排除所有有view记录的用户（除了对方最新是 like 的）
       excludedIds = [...excludedIds, ...allViewedUserIds, ...viewedTodayIds];
       
-      // 但对方发起的pending邀请不排除（优先展示）
-      const pendingInvitationsToMe = existingMatches
-        .filter(m => m.user2Id === userId && m.status === 'pending')
-        .map(m => m.user1Id);
+      // 但对方最新操作是 like（发出邀请）的不排除（优先展示）
+      const pendingInvitationsToMe: number[] = [];
+      
+      for (const [partnerId, latestMatch] of latestStatusByUser.entries()) {
+        // 对方最新操作是 like，且是对方→我的方向
+        if (latestMatch.user1Id === partnerId && 
+            latestMatch.user2Id === userId && 
+            latestMatch.actionType === 'like' &&
+            latestMatch.status !== 'accepted') {
+          pendingInvitationsToMe.push(partnerId);
+        }
+      }
       
       // 从排除列表中移除对方的pending邀请
       excludedIds = excludedIds.filter(id => !pendingInvitationsToMe.includes(id));
@@ -125,23 +147,24 @@ export async function getPotentialMatches(userId: number) {
       return isNotExcluded && hasBasicInfo && hasPracticeContent && hasContactInfo;
     });
 
-    // 批量查询所有候选用户的pending邀请（解决N+1查询问题）
+    // 批量查询所有候选用户的邀请（解决N+1查询问题）
+    // 在历史记录模式下，需要找到每个用户对我的最新操作
     const candidateUserIds = filteredMatches.map(u => u.id);
-    let pendingInvitations: typeof matches.$inferSelect[] = [];
+    const invitationSet = new Set<number>();
     
-    // 只有存在候选用户时才查询
-    if (candidateUserIds.length > 0) {
-      pendingInvitations = await db.query.matches.findMany({
-        where: and(
-          eq(matches.user2Id, userId),
-          eq(matches.status, 'pending'),
-          inArray(matches.user1Id, candidateUserIds)
-        ),
-      });
+    // 从 latestStatusByUser 中找出对我发出 like 的用户
+    for (const [partnerId, latestMatch] of latestStatusByUser.entries()) {
+      // 检查是否在候选列表中
+      if (candidateUserIds.includes(partnerId)) {
+        // 对方→我的方向，且最新操作是 like
+        if (latestMatch.user1Id === partnerId && 
+            latestMatch.user2Id === userId && 
+            latestMatch.actionType === 'like' &&
+            latestMatch.status !== 'accepted') {
+          invitationSet.add(partnerId);
+        }
+      }
     }
-    
-    // 构建Set用于O(1)查找
-    const invitationSet = new Set(pendingInvitations.map(inv => inv.user1Id));
     
     // 优先级排序：对方已发出邀请且内容重叠 > 内容重叠 > 经验相同 > 岗位相同 > 其他
     const invitedOverlapList: typeof filteredMatches = [];
@@ -250,7 +273,7 @@ async function recordDailyView(userId: number, targetUserId: number): Promise<{ 
   }
 }
 
-// Create match (like a user) - 移除事务，改为顺序执行
+// Create match (like a user) - 历史记录模式：始终插入新记录
 export async function createMatch(userId: number, targetUserId: number) {
   try {
     // 记录今日浏览，带限制检查
@@ -259,66 +282,49 @@ export async function createMatch(userId: number, targetUserId: number) {
       return { success: false, message: viewResult.message };
     }
 
-    // 使用通用函数查询现有匹配
-    const existingMatch = await db.query.matches.findFirst({
-      where: matchBetweenUsers(userId, targetUserId),
-    });
+    // 查询所有历史记录（双向查询，按时间倒序）
+    const allRecords = await db.select()
+      .from(matches)
+      .where(matchBetweenUsers(userId, targetUserId))
+      .orderBy(desc(matches.createdAt));
 
-    if (existingMatch) {
-      // 对方已发出邀请，双向匹配成功
-      if (existingMatch.user1Id === targetUserId && existingMatch.status === 'pending') {
-        await db
-          .update(matches)
-          .set({ status: 'accepted', updatedAt: new Date() })
-          .where(eq(matches.id, existingMatch.id));
+    // 按方向分类，找到最新记录
+    const myRecords = allRecords.filter(m => m.user1Id === userId);
+    const partnerRecords = allRecords.filter(m => m.user1Id === targetUserId);
+    
+    const myLatest = myRecords[0]; // 最新的记录（因为已按时间倒序）
+    const partnerLatest = partnerRecords[0];
 
-        return successResponse({ match: true }, '匹配成功！');
-      }
-
-      // 自己已发出邀请，等待对方回应
-      if (existingMatch.user1Id === userId && existingMatch.status === 'pending') {
-        // 不应该改变状态！只是重复点击而已
-        return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
-      }
-
-      // 已经匹配成功
-      if (existingMatch.status === 'accepted') {
-        return successResponse({ match: true }, '已经匹配成功！');
-      }
-
-      // 之前被拒绝，重新发起
-      if (existingMatch.status === 'rejected') {
-        // 需要检查是谁拒绝的
-        if (existingMatch.user1Id === userId) {
-          // 情况1：自己之前发起并拒绝了对方（或被对方拒绝）
-          // 现在想重新匹配，更新为pending
-          await db
-            .update(matches)
-            .set({ 
-              status: 'pending',
-              user1Id: userId,  // 确保方向正确
-              user2Id: targetUserId,
-              updatedAt: new Date() 
-            })
-            .where(eq(matches.id, existingMatch.id));
-          return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
-        } else {
-          // 情况2：对方之前发起并拒绝了自己（对方→自己 rejected）
-          // 现在自己想匹配对方，需要创建新的pending（自己→对方）
-          await db.insert(matches).values({
-            user1Id: userId,
-            user2Id: targetUserId,
-            status: 'pending',
-          });
-          return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
-        }
-      }
+    // 检查是否已经有 accepted 记录
+    const hasAccepted = allRecords.some(r => r.status === 'accepted');
+    if (hasAccepted) {
+      return successResponse({ match: true }, '已经匹配成功！');
     }
 
-    // 创建新匹配
+    // 情况1：对方最新操作是 like，且还没 accepted，双方匹配成功
+    if (partnerLatest?.actionType === 'like' && partnerLatest.status !== 'accepted') {
+      // 创建新的 accepted 记录（不修改旧记录）
+      await db.insert(matches).values({
+        user1Id: userId,
+        user2Id: targetUserId,
+        actionType: 'like',
+        status: 'accepted',
+      });
+      
+      return successResponse({ match: true }, '匹配成功！');
+    }
+
+    // 情况2：自己最新操作已经是 like，避免重复记录
+    if (myLatest?.actionType === 'like') {
+      return successResponse({ match: false }, '已收到你的喜欢！等待对方回应。');
+    }
+
+    // 情况3：创建新的 like 记录
+    // （包括第一次 like，或者之前 dislike 现在改变主意）
     await db.insert(matches).values({
       user1Id: userId,
       user2Id: targetUserId,
+      actionType: 'like',
       status: 'pending',
     });
 
@@ -328,7 +334,7 @@ export async function createMatch(userId: number, targetUserId: number) {
   }
 }
 
-// Reject match (dislike a user) - 移除事务，改为顺序执行
+// Reject match (dislike a user) - 历史记录模式：始终插入新记录
 export async function rejectMatch(userId: number, targetUserId: number) {
   try {
     // 记录今日浏览，带限制检查
@@ -337,45 +343,53 @@ export async function rejectMatch(userId: number, targetUserId: number) {
       return { success: false, message: viewResult.message };
     }
 
-    // 使用通用函数查询现有匹配
-    const existingMatch = await db.query.matches.findFirst({
-      where: matchBetweenUsers(userId, targetUserId),
-    });
+    // 查询所有历史记录（双向查询，按时间倒序）
+    const allRecords = await db.select()
+      .from(matches)
+      .where(matchBetweenUsers(userId, targetUserId))
+      .orderBy(desc(matches.createdAt));
 
-    if (existingMatch) {
-      // 检查当前用户的身份
-      if (existingMatch.user1Id === userId) {
-        // 情况1：当前用户是发起方（user1Id）
-        // 场景：用户A之前向用户B发送了pending邀请，现在想取消/拒绝
-        // 正确做法：不应该改成rejected，而是删除这条pending记录
-        if (existingMatch.status === 'pending') {
-          await db.delete(matches).where(eq(matches.id, existingMatch.id));
-          return successResponse({}, '已取消对该用户的邀请');
-        } else {
-          // 如果状态已经是accepted或rejected，说明对方已经回应了
-          // 不允许再次操作
-          return { success: false, message: '该匹配已完成，无法修改' };
-        }
-      } else if (existingMatch.user2Id === userId) {
-        // 情况2：当前用户是接收方（user2Id）
-        // 场景：用户B收到用户A的pending邀请，选择拒绝
-        // 正确做法：更新为rejected
-        await db
-          .update(matches)
-          .set({ status: 'rejected', updatedAt: new Date() })
-          .where(eq(matches.id, existingMatch.id));
-        return successResponse({}, '已拒绝该匹配');
-      }
-    } else {
-      // 创建新的拒绝记录（第一次看到这个用户就拒绝）
+    // 按方向分类，找到最新记录
+    const myRecords = allRecords.filter(m => m.user1Id === userId);
+    const partnerRecords = allRecords.filter(m => m.user1Id === targetUserId);
+    
+    const myLatest = myRecords[0];
+    const partnerLatest = partnerRecords[0];
+
+    // 检查是否已经有 accepted 记录
+    const hasAccepted = allRecords.some(r => r.status === 'accepted');
+    if (hasAccepted) {
+      return { success: false, message: '该匹配已完成，无法修改' };
+    }
+
+    // 情况1：自己最新操作是 like，现在点击 dislike = 取消
+    if (myLatest?.actionType === 'like') {
+      // 创建 cancel 记录
       await db.insert(matches).values({
         user1Id: userId,
         user2Id: targetUserId,
+        actionType: 'cancel',
         status: 'rejected',
       });
+      return successResponse({}, '已取消对该用户的邀请');
     }
 
-    return successResponse();
+    // 情况2：自己最新操作已经是 dislike，避免重复记录
+    if (myLatest?.actionType === 'dislike') {
+      return successResponse({}, '操作成功');
+    }
+
+    // 情况3：对方最新操作是 like（对我发出邀请），我现在拒绝
+    // 或者第一次操作，或者之前 like 过现在改变主意
+    // 创建新的 dislike 记录
+    await db.insert(matches).values({
+      user1Id: userId,
+      user2Id: targetUserId,
+      actionType: 'dislike',
+      status: 'rejected',
+    });
+
+    return successResponse({}, '操作成功');
   } catch (error) {
     return errorResponse('操作失败，请稍后再试', error);
   }

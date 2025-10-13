@@ -61,9 +61,14 @@ export const matches = pgTable('matches', {
   id: serial('id').primaryKey(),
   user1Id: integer('user1_id').references(() => users.id).notNull(),
   user2Id: integer('user2_id').references(() => users.id).notNull(),
-  status: varchar('status', { length: 50 }).notNull().default('pending'), // pending, accepted, rejected
   
-  // 新增：联系和面试状态跟踪
+  // 用户的实际操作：like(喜欢), dislike(不喜欢), cancel(取消)
+  actionType: varchar('action_type', { length: 20 }),
+  
+  // 匹配状态：pending(等待回应), accepted(匹配成功), rejected(已拒绝)
+  status: varchar('status', { length: 50 }).notNull().default('pending'),
+  
+  // 联系和面试状态跟踪
   contactStatus: varchar('contact_status', { length: 50 }).default('not_contacted'), // not_contacted, contacted, scheduled, completed, no_response
   contactUpdatedAt: timestamp('contact_updated_at'),
   interviewScheduledAt: timestamp('interview_scheduled_at'),
@@ -71,11 +76,6 @@ export const matches = pgTable('matches', {
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, (table) => {
-  return {
-    // Ensure unique matches between users
-    uniqMatch: unique().on(table.user1Id, table.user2Id),
-  };
 });
 
 // Feedbacks schema
