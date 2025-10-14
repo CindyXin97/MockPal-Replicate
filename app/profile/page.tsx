@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
@@ -32,7 +32,7 @@ function ProfilePageContent() {
     };
   }, [session?.user?.id, session?.user?.name, session?.user?.email]);
 
-  const { profile, isLoading: profileLoading, updateProfile } = useProfile(user?.id);
+  const { profile, isLoading: profileLoading, updateProfile, fetchProfile } = useProfile(user?.id);
   
   const [isLoading, setIsLoading] = useState(false);
   const [showOtherCompanyInput, setShowOtherCompanyInput] = useState(false);
@@ -64,6 +64,40 @@ function ProfilePageContent() {
     }
   }, [status, router]);
 
+  // 当用户ID可用时，强制刷新一次数据
+  const userIdRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    // 只在用户ID从无到有，或者用户ID发生变化时刷新
+    if (user?.id && user.id !== userIdRef.current && fetchProfile) {
+      console.log('🔄 用户ID变化或首次加载，强制刷新个人资料数据');
+      
+      // 如果用户ID变化（切换用户），清除缓存
+      if (userIdRef.current !== undefined && userIdRef.current !== user.id) {
+        console.log('⚠️ 检测到用户切换:', userIdRef.current, '->', user.id);
+        // 重置表单状态
+        setFormData({
+          name: '',
+          jobType: 'DA',
+          experienceLevel: '应届',
+          targetCompany: '',
+          targetIndustry: '',
+          technicalInterview: false,
+          behavioralInterview: false,
+          caseAnalysis: false,
+          statsQuestions: false,
+          email: '',
+          wechat: '',
+          linkedin: '',
+          bio: '',
+          school: '',
+        });
+      }
+      
+      userIdRef.current = user.id;
+      fetchProfile(true);
+    }
+  }, [user?.id, fetchProfile]);
+
   // 检查资料完整性的独立useEffect（仅用于Google登录的新用户）
   // 注释掉自动跳转逻辑，允许用户随时查看和编辑个人资料
   // useEffect(() => {
@@ -89,7 +123,38 @@ function ProfilePageContent() {
 
   // 处理表单数据更新的独立useEffect
   useEffect(() => {
+    console.log('🔍 Profile useEffect 触发:', { profile, sessionName: session?.user?.name });
+    
     if (profile) {
+      // 预设的学校选项列表
+      const predefinedSchools = [
+        'stanford', 'mit', 'harvard', 'cmu', 'berkeley', 'caltech', 'princeton', 'yale',
+        'columbia', 'upenn', 'cornell', 'brown', 'dartmouth', 'duke', 'northwestern',
+        'jhu', 'rice', 'vanderbilt', 'washu', 'emory', 'georgetown', 'nyu', 'usc',
+        'ucla', 'ucsd', 'uci', 'ucsb', 'ucdavis', 'ucsc', 'ucriverside', 'ucmerced',
+        'gatech', 'uiuc', 'umich', 'uwmadison', 'purdue', 'osu_ohio', 'psu', 'rutgers',
+        'buffalo', 'stonybrook', 'binghamton', 'albany', 'arizona', 'asu', 'ut', 'tamu',
+        'baylor', 'tcu', 'smu', 'utd', 'utah', 'byu', 'colorado', 'colorado_state',
+        'denver', 'oregon', 'osu_oregon', 'washington', 'wsu', 'alaska', 'hawaii',
+        'minnesota', 'iowa', 'iowa_state', 'nebraska', 'kansas', 'kansas_state',
+        'missouri', 'arkansas', 'oklahoma', 'oklahoma_state', 'lsu', 'tulane',
+        'ole_miss', 'mississippi_state', 'alabama', 'auburn', 'uab', 'uga',
+        'georgia_tech', 'fsu', 'uf', 'umiami', 'usf', 'ucf', 'fau', 'fiu', 'nova'
+      ];
+
+      // 检查学校是否在预设列表中
+      let schoolValue = profile.school || '';
+      let customSchool = '';
+      
+      console.log('📚 原始学校值:', schoolValue);
+      
+      if (schoolValue && !predefinedSchools.includes(schoolValue) && schoolValue !== 'custom' && schoolValue !== 'other') {
+        // 如果学校不在预设列表中，说明是自定义输入的
+        customSchool = schoolValue;
+        schoolValue = 'custom';
+        console.log('📝 识别为自定义学校:', customSchool);
+      }
+
       const newFormData = {
         name: profile.name || session?.user?.name || '',
         jobType: profile.jobType || 'DA',
@@ -104,15 +169,28 @@ function ProfilePageContent() {
         wechat: profile.wechat || '',
         linkedin: profile.linkedin || '',
         bio: profile.bio || '',
-        school: profile.school || '',
+        school: schoolValue,
       };
+      
+      console.log('📋 设置表单数据:', { 
+        school: newFormData.school,
+        jobType: newFormData.jobType,
+        targetCompany: newFormData.targetCompany 
+      });
+      
       setFormData(newFormData);
+      
+      // 设置自定义学校名称
+      if (customSchool) {
+        setCustomSchoolName(customSchool);
+      }
       
       if (profile.targetCompany === 'other') {
         setShowOtherCompanyInput(true);
         setOtherCompanyName(profile.otherCompanyName || '');
       }
     } else if (session?.user?.name) {
+      console.log('👤 只有session名称，设置name字段');
       setFormData(prev => ({
         ...prev,
         name: session.user.name || '',
@@ -268,12 +346,13 @@ function ProfilePageContent() {
 
               <div className="space-y-1">
                 <Label htmlFor="school">学校 <span className="text-red-500 ml-1">*</span></Label>
-                <Select value={formData.school} onValueChange={(value) => handleInputChange('school', value)}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="请选择学校" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="custom">自定义填写</SelectItem>
+                {!profileLoading ? (
+                  <Select key={`school-${profile?.school || 'default'}`} value={formData.school} onValueChange={(value) => handleInputChange('school', value)}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="请选择学校" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="custom">自定义填写</SelectItem>
                     <SelectItem value="stanford">Stanford University</SelectItem>
                     <SelectItem value="mit">MIT</SelectItem>
                     <SelectItem value="harvard">Harvard University</SelectItem>
@@ -366,6 +445,11 @@ function ProfilePageContent() {
                     <SelectItem value="other">其他美国大学</SelectItem>
                   </SelectContent>
                 </Select>
+                ) : (
+                  <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
+                    加载中...
+                  </div>
+                )}
                 {formData.school === 'custom' && (
                   <Input
                     placeholder="请输入学校名称"
@@ -387,8 +471,8 @@ function ProfilePageContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="jobType">岗位类型 <span className="text-red-500 ml-1">*</span></Label>
-                  {profile ? (
-                    <Select key="jobType" value={formData.jobType} onValueChange={(value) => handleInputChange('jobType', value)}>
+                  {!profileLoading ? (
+                    <Select key={`jobType-${profile?.jobType || 'default'}`} value={formData.jobType} onValueChange={(value) => handleInputChange('jobType', value)}>
                       <SelectTrigger className="h-10">
                         <SelectValue placeholder="请选择岗位类型" />
                       </SelectTrigger>
@@ -400,7 +484,9 @@ function ProfilePageContent() {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="h-10 bg-gray-100 animate-pulse rounded-md"></div>
+                    <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
+                      加载中...
+                    </div>
                   )}
                 </div>
                 <div className="space-y-1">

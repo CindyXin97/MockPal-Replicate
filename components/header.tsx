@@ -18,6 +18,13 @@ export function Header() {
   const pathname = usePathname();
 
   const handleLogout = async () => {
+    // 清除所有本地存储的用户数据
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('userProfile');
+      localStorage.removeItem('user');
+      localStorage.removeItem('isAuthenticated');
+      console.log('🧹 已清除本地缓存数据');
+    }
     await signOut({ callbackUrl: '/' });
   };
 

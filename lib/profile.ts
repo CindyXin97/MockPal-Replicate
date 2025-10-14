@@ -40,6 +40,9 @@ type GetProfileResult =
 // Create or update user profile
 export async function saveUserProfile(userId: number, profileData: Partial<ProfileFormData>) {
   try {
+    console.log('💾 开始保存 Profile，userId:', userId);
+    console.log('📦 接收到的 profileData:', JSON.stringify(profileData, null, 2));
+    
     // 首先验证用户是否存在
     const userExists = await verifyUser(userId);
     if (!userExists) {
@@ -48,6 +51,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
 
     // Update user name if provided
     if (profileData.name) {
+      console.log('✏️ 更新用户名称:', profileData.name);
       await db
         .update(users)
         .set({
@@ -61,6 +65,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
     const existingProfile = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
 
     if (existingProfile.length > 0) {
+      console.log('🔄 更新现有 Profile');
       // 更新资料 - 只更新提供的字段
       const updateData: any = { updatedAt: new Date() };
       
@@ -80,12 +85,17 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       if (profileData.bio !== undefined) updateData.bio = profileData.bio || null;
       if (profileData.school !== undefined) updateData.school = profileData.school;
 
+      console.log('📝 准备更新的数据:', JSON.stringify(updateData, null, 2));
+
       await db
         .update(userProfiles)
         .set(updateData)
         .where(eq(userProfiles.userId, userId));
+      
+      console.log('✅ Profile 更新成功');
       return { success: true };
     } else {
+      console.log('🆕 创建新 Profile');
       // Create new profile - 验证必需字段
       if (!profileData.jobType || !profileData.experienceLevel || !profileData.school) {
         return { success: false, message: '创建资料时需要提供职位类型、经验水平和学校信息' };
@@ -147,19 +157,26 @@ export async function createProfile(userId: number, profileData: ProfileFormData
 // Get user profile
 export async function getUserProfile(userId: number): Promise<GetProfileResult> {
   try {
+    console.log('📖 开始加载 Profile，userId:', userId);
+    
     // 先获取用户的name
     const userInfo = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     const userName = userInfo.length > 0 ? userInfo[0].name : null;
+    console.log('👤 用户名称:', userName);
     
     const profile = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+    console.log('📊 从数据库查询到的 profile:', profile.length > 0 ? profile[0] : '未找到');
+    
     if (profile.length > 0) {
       // 将name字段合并到profile中
       const profileWithName = {
         ...profile[0],
         name: userName
       };
+      console.log('✅ 返回的完整 profile:', JSON.stringify(profileWithName, null, 2));
       return { success: true, profile: profileWithName };
     } else {
+      console.log('❌ 未找到用户资料');
       return { success: false, message: '未找到资料' };
     }
   } catch (error) {
