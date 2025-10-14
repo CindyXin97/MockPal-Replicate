@@ -1,4 +1,5 @@
 export const TARGET_COMPANIES = [
+  // === 传统科技巨头 ===
   { value: "google", label: "Google" },
   { value: "microsoft", label: "Microsoft" },
   { value: "amazon", label: "Amazon" },
@@ -28,6 +29,129 @@ export const TARGET_COMPANIES = [
   { value: "splunk", label: "Splunk" },
   { value: "tableau", label: "Tableau" },
   { value: "alteryx", label: "Alteryx" },
+
+  // === AI/机器学习公司 ===
+  { value: "openai", label: "OpenAI" },
+  { value: "anthropic", label: "Anthropic" },
+  { value: "hugging_face", label: "Hugging Face" },
+  { value: "scale_ai", label: "Scale AI" },
+  { value: "weights_biases", label: "Weights & Biases" },
+  { value: "mlflow", label: "MLflow" },
+  { value: "h2o_ai", label: "H2O.ai" },
+  { value: "dataiku", label: "Dataiku" },
+  { value: "domino_data", label: "Domino Data Lab" },
+
+  // === 金融科技公司 ===
+  { value: "stripe", label: "Stripe" },
+  { value: "square", label: "Square (Block)" },
+  { value: "paypal", label: "PayPal" },
+  { value: "robinhood", label: "Robinhood" },
+  { value: "coinbase", label: "Coinbase" },
+  { value: "venmo", label: "Venmo" },
+  { value: "chime", label: "Chime" },
+  { value: "affirm", label: "Affirm" },
+  { value: "klarna", label: "Klarna" },
+  { value: "revolut", label: "Revolut" },
+  { value: "wise", label: "Wise (TransferWise)" },
+
+  // === 电商/零售科技 ===
+  { value: "shopify", label: "Shopify" },
+  { value: "etsy", label: "Etsy" },
+  { value: "wayfair", label: "Wayfair" },
+  { value: "chewy", label: "Chewy" },
+  { value: "mercado_libre", label: "MercadoLibre" },
+  { value: "wish", label: "Wish" },
+  { value: "pinterest", label: "Pinterest" },
+
+  // === 企业软件/SaaS ===
+  { value: "atlassian", label: "Atlassian" },
+  { value: "servicenow", label: "ServiceNow" },
+  { value: "workday", label: "Workday" },
+  { value: "okta", label: "Okta" },
+  { value: "crowdstrike", label: "CrowdStrike" },
+  { value: "zendesk", label: "Zendesk" },
+  { value: "hubspot", label: "HubSpot" },
+  { value: "mailchimp", label: "Mailchimp" },
+  { value: "canva", label: "Canva" },
+  { value: "notion", label: "Notion" },
+  { value: "figma", label: "Figma" },
+  { value: "linear", label: "Linear" },
+
+  // === 健康科技/生物科技 ===
+  { value: "verily", label: "Verily (Google)" },
+  { value: "tempus", label: "Tempus" },
+  { value: "flatiron_health", label: "Flatiron Health" },
+  { value: "guardant_health", label: "Guardant Health" },
+  { value: "illumina", label: "Illumina" },
+  { value: "moderna", label: "Moderna" },
+  { value: "pfizer", label: "Pfizer" },
+
+  // === 汽车/出行科技 ===
+  { value: "tesla", label: "Tesla" },
+  { value: "waymo", label: "Waymo (Google)" },
+  { value: "cruise", label: "Cruise (GM)" },
+  { value: "lyft", label: "Lyft" },
+  { value: "doordash", label: "DoorDash" },
+  { value: "grubhub", label: "Grubhub" },
+  { value: "instacart", label: "Instacart" },
+
+  // === 游戏/娱乐科技 ===
+  { value: "roblox", label: "Roblox" },
+  { value: "unity", label: "Unity" },
+  { value: "epic_games", label: "Epic Games" },
+  { value: "riot_games", label: "Riot Games" },
+  { value: "blizzard", label: "Blizzard Entertainment" },
+  { value: "valve", label: "Valve Corporation" },
+
+  // === 云服务/基础设施 ===
+  { value: "cloudflare", label: "Cloudflare" },
+  { value: "digital_ocean", label: "DigitalOcean" },
+  { value: "twilio", label: "Twilio" },
+  { value: "sendgrid", label: "SendGrid" },
+  { value: "auth0", label: "Auth0" },
+  { value: "vercel", label: "Vercel" },
+  { value: "netlify", label: "Netlify" },
+
+  // === 咨询/专业服务 ===
+  { value: "mckinsey", label: "McKinsey & Company" },
+  { value: "bain", label: "Bain & Company" },
+  { value: "bcg", label: "Boston Consulting Group" },
+  { value: "deloitte", label: "Deloitte" },
+  { value: "pwc", label: "PwC" },
+  { value: "ey", label: "EY" },
+  { value: "kpmg", label: "KPMG" },
+  { value: "accenture", label: "Accenture" },
+
+  // === 传统行业数字化 ===
+  { value: "ge", label: "General Electric" },
+  { value: "boeing", label: "Boeing" },
+  { value: "lockheed_martin", label: "Lockheed Martin" },
+  { value: "johnson_johnson", label: "Johnson & Johnson" },
+  { value: "procter_gamble", label: "Procter & Gamble" },
+  { value: "coca_cola", label: "Coca-Cola" },
+  { value: "pepsi", label: "PepsiCo" },
+  { value: "walmart", label: "Walmart" },
+  { value: "target", label: "Target" },
+  { value: "home_depot", label: "Home Depot" },
+
+  // === 新兴独角兽公司 ===
+  { value: "discord", label: "Discord" },
+  { value: "airtable", label: "Airtable" },
+  { value: "retool", label: "Retool" },
+  { value: "webflow", label: "Webflow" },
+  { value: "bubble", label: "Bubble" },
+
+  // === 中国科技公司 ===
+  { value: "alibaba", label: "Alibaba" },
+  { value: "tencent", label: "Tencent" },
+  { value: "bytedance", label: "ByteDance (TikTok)" },
+  { value: "baidu", label: "Baidu" },
+  { value: "jd", label: "JD.com" },
+  { value: "meituan", label: "Meituan" },
+  { value: "xiaomi", label: "Xiaomi" },
+  { value: "huawei", label: "Huawei" },
+
+  // === 其他选项 ===
   { value: "other", label: "其他" }
 ];
 
