@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { userProfiles, users } from '@/lib/db/schema';
+import { userProfiles, users, userProfileHistory } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 // 验证用户是否存在
@@ -18,7 +18,7 @@ export async function verifyUser(userId: number): Promise<boolean> {
 export type ProfileFormData = {
   name?: string; // 用户显示名称
   jobType: 'DA' | 'DS' | 'DE' | 'BA';
-  experienceLevel: '应届' | '1-3年' | '3-5年' | '5年以上';
+  experienceLevel: '实习' | '应届' | '1-3年' | '3-5年' | '5年以上';
   targetCompany?: string;
   targetIndustry?: string;
   otherCompanyName?: string; // 用户自定义的公司名称
@@ -36,6 +36,60 @@ export type ProfileFormData = {
 type GetProfileResult =
   | { success: true; profile: any }
   | { success: false; message: string };
+
+// 保存资料历史记录
+async function saveProfileHistory(
+  userId: number, 
+  profileId: number | undefined,
+  profileData: Partial<ProfileFormData>, 
+  changeType: 'create' | 'update',
+  changedFields?: string[]
+) {
+  try {
+    await db.insert(userProfileHistory).values({
+      userId,
+      profileId: profileId || null,
+      jobType: profileData.jobType || null,
+      experienceLevel: profileData.experienceLevel || null,
+      targetCompany: profileData.targetCompany || null,
+      targetIndustry: profileData.targetIndustry || null,
+      otherCompanyName: profileData.otherCompanyName || null,
+      technicalInterview: profileData.technicalInterview || false,
+      behavioralInterview: profileData.behavioralInterview || false,
+      caseAnalysis: profileData.caseAnalysis || false,
+      statsQuestions: profileData.statsQuestions || false,
+      email: profileData.email || null,
+      wechat: profileData.wechat || null,
+      linkedin: profileData.linkedin || null,
+      bio: profileData.bio || null,
+      school: profileData.school || null,
+      changeType,
+      changedFields: changedFields || null,
+    });
+    console.log('📜 历史记录已保存');
+  } catch (error) {
+    console.error('⚠️  保存历史记录失败:', error);
+    // 不抛出错误，历史记录失败不应该影响主流程
+  }
+}
+
+// 比较两个对象，找出变化的字段
+function getChangedFields(oldProfile: any, newData: Partial<ProfileFormData>): string[] {
+  const changed: string[] = [];
+  const fieldsToCheck: (keyof ProfileFormData)[] = [
+    'jobType', 'experienceLevel', 'targetCompany', 'targetIndustry',
+    'technicalInterview', 'behavioralInterview', 'caseAnalysis', 'statsQuestions',
+    'email', 'wechat', 'linkedin', 'bio', 'school'
+  ];
+
+  for (const field of fieldsToCheck) {
+    if (newData[field] !== undefined && oldProfile[field] !== newData[field]) {
+      changed.push(field);
+    }
+  }
+  
+  return changed;
+}
 
 // Create or update user profile
 export async function saveUserProfile(userId: number, profileData: Partial<ProfileFormData>) {
@@ -66,6 +120,18 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
 
     if (existingProfile.length > 0) {
       console.log('🔄 更新现有 Profile');
+      const oldProfile = existingProfile[0];
+      
+      // 找出变化的字段
+      const changedFields = getChangedFields(oldProfile, profileData);
+      
+      if (changedFields.length === 0) {
+        console.log('⏭️  没有字段变化，跳过更新');
+        return { success: true };
+      }
+      
+      console.log('📝 变化的字段:', changedFields);
+      
       // 更新资料 - 只更新提供的字段
       const updateData: any = { updatedAt: new Date() };
       
@@ -92,6 +158,9 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
         .set(updateData)
         .where(eq(userProfiles.userId, userId));
       
+      // 保存历史记录
+      await saveProfileHistory(userId, oldProfile.id, profileData, 'update', changedFields);
+      
       console.log('✅ Profile 更新成功');
       return { success: true };
     } else {
@@ -101,7 +170,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
         return { success: false, message: '创建资料时需要提供职位类型、经验水平和学校信息' };
       }
 
-      await db.insert(userProfiles).values({
+      const newProfileResult = await db.insert(userProfiles).values({
         userId,
         jobType: profileData.jobType,
         experienceLevel: profileData.experienceLevel,
@@ -117,7 +186,11 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
         linkedin: profileData.linkedin || null,
         bio: profileData.bio || null,
         school: profileData.school,
-      });
+      }).returning({ id: userProfiles.id });
+
+      // 保存创建历史记录
+      const newProfileId = newProfileResult[0]?.id;
+      await saveProfileHistory(userId, newProfileId, profileData, 'create');
 
       return { success: true };
     }

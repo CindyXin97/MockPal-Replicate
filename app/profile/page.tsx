@@ -303,7 +303,9 @@ function ProfilePageContent() {
         <Card className="w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10 mt-8">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-extrabold text-center tracking-tight text-gray-900 mb-1">个人资料</CardTitle>
-            <p className="text-sm text-gray-500 text-center font-medium">完善资料，获得更精准的匹配推荐</p>
+            <p className="text-sm text-gray-500 text-center font-medium">
+              请选择自己目前<span className="font-bold">最符合</span>的岗位，获得更精准的匹配推荐
+            </p>
           </CardHeader>
           <CardContent className="pt-0 pb-6">
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -364,6 +366,7 @@ function ProfilePageContent() {
                         <SelectValue placeholder="请选择经验水平" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="实习">实习</SelectItem>
                         <SelectItem value="应届">应届</SelectItem>
                         <SelectItem value="1-3年">1-3年</SelectItem>
                         <SelectItem value="3-5年">3-5年</SelectItem>

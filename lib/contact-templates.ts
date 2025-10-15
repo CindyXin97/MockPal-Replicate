@@ -53,6 +53,7 @@ export function generateLinkedInTemplate(match: Match, currentUser: { username: 
   };
   
   const experienceMap: { [key: string]: string } = {
+    '实习': 'Intern',
     '应届': 'New Graduate',
     '1-3年': '1-3 years',
     '3-5年': '3-5 years',
@@ -158,6 +159,7 @@ export function generateEmailTemplate(match: Match, currentUser: { username: str
   };
   
   const experienceMap: { [key: string]: string } = {
+    '实习': 'Intern',
     '应届': 'New Graduate',
     '1-3年': '1-3 years',
     '3-5年': '3-5 years',

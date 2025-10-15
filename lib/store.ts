@@ -12,7 +12,7 @@ export type UserProfile = {
   userId: number;
   name?: string;
   jobType?: 'DA' | 'DS' | 'DE' | 'BA';
-  experienceLevel?: '应届' | '1-3年' | '3-5年' | '5年以上';
+  experienceLevel?: '实习' | '应届' | '1-3年' | '3-5年' | '5年以上';
   targetCompany?: string;
   targetIndustry?: string;
   otherCompanyName?: string;

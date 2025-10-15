@@ -27,7 +27,7 @@ export const users = pgTable('users', {
 // User profiles schema with tags
 export const userProfiles = pgTable('user_profiles', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull().unique(),
   
   // Required tags
   jobType: varchar('job_type', { length: 50 }).notNull(), // DA/DS/DE
@@ -54,6 +54,35 @@ export const userProfiles = pgTable('user_profiles', {
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// User profile history schema - 保存所有修改历史
+export const userProfileHistory = pgTable('user_profile_history', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  profileId: integer('profile_id').references(() => userProfiles.id),
+  
+  // 完整的资料快照
+  jobType: varchar('job_type', { length: 50 }),
+  experienceLevel: varchar('experience_level', { length: 50 }),
+  targetCompany: varchar('target_company', { length: 255 }),
+  targetIndustry: varchar('target_industry', { length: 255 }),
+  otherCompanyName: varchar('other_company_name', { length: 255 }),
+  technicalInterview: boolean('technical_interview'),
+  behavioralInterview: boolean('behavioral_interview'),
+  caseAnalysis: boolean('case_analysis'),
+  statsQuestions: boolean('stats_questions'),
+  email: varchar('email', { length: 255 }),
+  wechat: varchar('wechat', { length: 255 }),
+  linkedin: varchar('linkedin', { length: 255 }),
+  bio: varchar('bio', { length: 255 }),
+  school: varchar('school', { length: 255 }),
+  
+  // 变更元数据
+  changeType: varchar('change_type', { length: 20 }).default('update'), // create, update, delete
+  changedFields: text('changed_fields').array(), // 记录修改的字段
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // Matches schema
@@ -206,6 +235,7 @@ export const verificationTokens = pgTable('verification_tokens', {
 
 export type User = InferModel<typeof users>;
 export type UserProfile = InferModel<typeof userProfiles>;
+export type UserProfileHistory = InferModel<typeof userProfileHistory>;
 export type Match = InferModel<typeof matches>;
 export type Feedback = InferModel<typeof feedbacks>;
 export type UserAchievement = InferModel<typeof userAchievements>;
