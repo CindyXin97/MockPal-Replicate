@@ -304,7 +304,7 @@ function ProfilePageContent() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-extrabold text-center tracking-tight text-gray-900 mb-1">个人资料</CardTitle>
             <p className="text-sm text-gray-500 text-center font-medium">
-              请选择自己目前<span className="font-bold">最符合</span>的岗位，获得更精准的匹配推荐
+              请选择你现在最想练习的岗位，系统将为你匹配相同目标的练习伙伴
             </p>
           </CardHeader>
           <CardContent className="pt-0 pb-6">
