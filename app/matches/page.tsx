@@ -1196,6 +1196,19 @@ export default function MatchesPage() {
                               </span>
                             )}
                           </div>
+                          {/* 技能展示 */}
+                          {currentMatch.skills && currentMatch.skills.length > 0 && (
+                            <>
+                              <div className="mt-4 font-semibold text-base mb-1 text-blue-500">技能</div>
+                              <div className="flex gap-2 flex-wrap">
+                                {currentMatch.skills.map((skill: string, index: number) => (
+                                  <span key={index} className="rounded-full px-3 py-0.5 flex items-center gap-1 text-sm font-semibold shadow-sm bg-green-50 text-green-600">
+                                    💡 {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
                         <div>
                           <div className="font-semibold flex items-center gap-1 text-base text-blue-500">经验水平</div>
@@ -1359,6 +1372,20 @@ export default function MatchesPage() {
                                 <span className="tag">统计题目</span>
                               )}
                             </div>
+                            
+                            {/* 技能展示 */}
+                            {match.skills && match.skills.length > 0 && (
+                              <div className="mt-3">
+                                <div className="text-sm font-medium text-gray-700 mb-2">技能：</div>
+                                <div className="flex gap-2 flex-wrap">
+                                  {match.skills.map((skill: string, index: number) => (
+                                    <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                      💡 {skill}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                             
                             {/* 2. 联系方式参考格式 */}
                             <div className="contact">

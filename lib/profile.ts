@@ -31,6 +31,7 @@ export type ProfileFormData = {
   linkedin?: string;
   bio?: string;
   school: string; // 学校信息（必填）
+  skills?: string[]; // 技能列表，最多3个，每个不超过10个字符
 };
 
 type GetProfileResult =
@@ -63,6 +64,7 @@ async function saveProfileHistory(
       linkedin: profileData.linkedin || null,
       bio: profileData.bio || null,
       school: profileData.school || null,
+      skills: profileData.skills ? JSON.stringify(profileData.skills) : null,
       changeType,
       changedFields: changedFields || null,
     });
@@ -79,7 +81,7 @@ function getChangedFields(oldProfile: any, newData: Partial<ProfileFormData>): s
   const fieldsToCheck: (keyof ProfileFormData)[] = [
     'jobType', 'experienceLevel', 'targetCompany', 'targetIndustry',
     'technicalInterview', 'behavioralInterview', 'caseAnalysis', 'statsQuestions',
-    'email', 'wechat', 'linkedin', 'bio', 'school'
+    'email', 'wechat', 'linkedin', 'bio', 'school', 'skills'
   ];
 
   for (const field of fieldsToCheck) {
@@ -150,6 +152,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       if (profileData.linkedin !== undefined) updateData.linkedin = profileData.linkedin || null;
       if (profileData.bio !== undefined) updateData.bio = profileData.bio || null;
       if (profileData.school !== undefined) updateData.school = profileData.school;
+      if (profileData.skills !== undefined) updateData.skills = profileData.skills ? JSON.stringify(profileData.skills) : null;
 
       console.log('📝 准备更新的数据:', JSON.stringify(updateData, null, 2));
 
@@ -186,6 +189,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
         linkedin: profileData.linkedin || null,
         bio: profileData.bio || null,
         school: profileData.school,
+        skills: profileData.skills ? JSON.stringify(profileData.skills) : null,
       }).returning({ id: userProfiles.id });
 
       // 保存创建历史记录
@@ -219,6 +223,7 @@ export async function createProfile(userId: number, profileData: ProfileFormData
       linkedin: profileData.linkedin || null,
       bio: profileData.bio || null,
       school: profileData.school,
+      skills: profileData.skills ? JSON.stringify(profileData.skills) : null,
     });
     return { success: true };
   } catch (error) {
@@ -241,10 +246,11 @@ export async function getUserProfile(userId: number): Promise<GetProfileResult> 
     console.log('📊 从数据库查询到的 profile:', profile.length > 0 ? profile[0] : '未找到');
     
     if (profile.length > 0) {
-      // 将name字段合并到profile中
+      // 将name字段合并到profile中，并解析skills字段
       const profileWithName = {
         ...profile[0],
-        name: userName
+        name: userName,
+        skills: profile[0].skills ? JSON.parse(profile[0].skills) : []
       };
       console.log('✅ 返回的完整 profile:', JSON.stringify(profileWithName, null, 2));
       return { success: true, profile: profileWithName };

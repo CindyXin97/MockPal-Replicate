@@ -25,6 +25,7 @@ export type UserProfile = {
   linkedin?: string;
   bio?: string;
   school?: string; // 学校信息
+  skills?: string[]; // 技能列表
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -49,6 +50,7 @@ export type Match = {
     linkedin?: string | null;
   };
   bio?: string | null;
+  skills?: string[] | null; // 技能列表
   // 新增状态跟踪字段
   contactStatus?: string | null;
   contactUpdatedAt?: string | null;

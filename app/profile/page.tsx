@@ -53,6 +53,7 @@ function ProfilePageContent() {
     linkedin: '',
     bio: '',
     school: '',
+    skills: [],
   });
 
   useEffect(() => {
@@ -89,6 +90,7 @@ function ProfilePageContent() {
           linkedin: '',
           bio: '',
           school: '',
+          skills: [],
         });
       }
       
@@ -161,6 +163,7 @@ function ProfilePageContent() {
         linkedin: profile.linkedin || '',
         bio: profile.bio || '',
         school: schoolValue,
+        skills: profile.skills || [],
       };
       
       console.log('📋 设置表单数据:', { 
@@ -190,6 +193,63 @@ function ProfilePageContent() {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleSkillChange = (index: number, value: string) => {
+    if (value.length > 10) return; // 限制每个技能不超过10个字符
+    
+    setFormData(prev => {
+      const newSkills = [...(prev.skills || [])];
+      newSkills[index] = value;
+      return {
+        ...prev,
+        skills: newSkills
+      };
+    });
+  };
+
+  const addSkill = () => {
+    if ((formData.skills || []).length < 3) {
+      // 检查是否有空的技能输入框
+      const hasEmptySkill = (formData.skills || []).some(skill => !skill.trim());
+      if (hasEmptySkill) {
+        toast.error('请先填写当前技能再添加新的');
+        return;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        skills: [...(prev.skills || []), '']
+      }));
+    }
+  };
+
+  const removeSkill = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: (prev.skills || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  // 计算文本实际宽度，考虑中文字符
+  const getTextWidth = (text: string) => {
+    if (!text) return 16; // 最小宽度
+    
+    let width = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      // 中文字符、全角字符等使用16px宽度
+      if (/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(char)) {
+        width += 16;
+      } else {
+        // 英文字符使用8px宽度
+        width += 10;
+      }
+    }
+    
+    // 为placeholder预留空间
+    const placeholderWidth = 32; // "技能 1"的宽度
+    return Math.max(width, placeholderWidth);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -252,6 +312,16 @@ function ProfilePageContent() {
       return;
     }
 
+    // 验证技能输入：如果有技能输入框，必须全部填写
+    const skills = formData.skills || [];
+    if (skills.length > 0) {
+      const hasEmptySkill = skills.some(skill => !skill.trim());
+      if (hasEmptySkill) {
+        toast.error('请填写完整的技能信息或删除空技能');
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
@@ -260,7 +330,10 @@ function ProfilePageContent() {
         targetCompany: formData.targetCompany || undefined,
         targetIndustry: formData.targetIndustry || undefined,
         experienceLevel: formData.experienceLevel || undefined,
-        school: formData.school
+        school: formData.school,
+        skills: (formData.skills || []).filter(skill => skill.trim()).length > 0 
+          ? (formData.skills || []).filter(skill => skill.trim()) 
+          : undefined
       };
       
       console.log('🚀 准备调用updateProfile...');
@@ -480,6 +553,48 @@ function ProfilePageContent() {
                     className="h-10"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>我的技能</Label>
+                <div className="flex flex-wrap gap-2 items-center">
+                  {(formData.skills || []).map((skill, index) => (
+                    <div key={index} className="relative inline-block">
+                      <Input
+                        value={skill}
+                        onChange={(e) => handleSkillChange(index, e.target.value)}
+                        placeholder={`技能 ${index + 1}`}
+                        className="h-10 pr-8"
+                        style={{ width: `${Math.max(80, Math.min(160, getTextWidth(skill) + 40))}px` }}
+                        maxLength={10}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeSkill(index)}
+                        className="absolute right-1 top-1/2 transform -translate-y-1/2 w-6 h-6 p-0 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-600 transition-all duration-200"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </Button>
+                    </div>
+                  ))}
+                  {(formData.skills || []).length < 3 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={addSkill}
+                      className="w-10 h-10 p-0 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 text-blue-500 hover:text-blue-600 transition-all duration-200 shadow-sm hover:shadow-md border-2 border-dashed border-blue-200 hover:border-blue-300 flex-shrink-0"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </Button>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">💡 最多可添加3个技能，每个技能不超过10个字符</p>
               </div>
 
               <div className="space-y-1">

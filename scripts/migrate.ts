@@ -99,6 +99,13 @@ async function main() {
       console.log('school column already exists or error:', error);
     }
 
+    try {
+      await sql`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS skills TEXT`;
+      console.log('Added skills column');
+    } catch (error) {
+      console.log('skills column already exists or error:', error);
+    }
+
     // Create matches table
     await sql`
       CREATE TABLE IF NOT EXISTS matches (
