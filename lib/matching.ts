@@ -428,10 +428,10 @@ export async function getSuccessfulMatches(userId: number) {
       where: matchesForUser(userId, 'accepted'),
     });
 
-    // 提取所有匹配用户的ID
-    const matchedUserIds = successfulMatches.map(match => 
+    // 提取所有匹配用户的ID（去重）
+    const matchedUserIds = [...new Set(successfulMatches.map(match => 
       match.user1Id === userId ? match.user2Id : match.user1Id
-    );
+    ))];
 
     // 批量查询所有用户信息（单次查询替代N次查询）
     if (matchedUserIds.length === 0) {
@@ -460,8 +460,19 @@ export async function getSuccessfulMatches(userId: number) {
     // 构建反馈Map用于快速查找
     const feedbacksMap = new Map(matchFeedbacks.map(f => [f.matchId, f]));
 
+    // 按用户去重：每个用户只保留一条记录（最新的）
+    const uniqueMatchesByUser = new Map<number, typeof successfulMatches[0]>();
+    for (const match of successfulMatches) {
+      const partnerId = match.user1Id === userId ? match.user2Id : match.user1Id;
+      const existing = uniqueMatchesByUser.get(partnerId);
+      // 如果不存在或当前记录更新，则更新
+      if (!existing || (match.createdAt && existing.createdAt && match.createdAt > existing.createdAt)) {
+        uniqueMatchesByUser.set(partnerId, match);
+      }
+    }
+
     // 组装返回数据
-    const formattedMatches = successfulMatches
+    const formattedMatches = Array.from(uniqueMatchesByUser.values())
       .map(match => {
         const partnerId = match.user1Id === userId ? match.user2Id : match.user1Id;
         const user = usersMap.get(partnerId);

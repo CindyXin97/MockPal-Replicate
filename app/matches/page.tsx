@@ -21,6 +21,7 @@ import React from 'react';
 import '@/styles/success.css';
 import { FeedbackModal } from '@/components/feedback-modal';
 import { MatchStatusCard } from '@/components/match-status-card';
+import { FirstMatchModal } from '@/components/first-match-modal';
 
 
 // 面试真题类型定义
@@ -615,6 +616,8 @@ export default function MatchesPage() {
     }
   }, [user?.id, status, isComplete]);
 
+  // 移除成功匹配页面的弹窗触发 - 只在匹配瞬间弹出
+
   // 移除硬绑定反馈检查 - 现在使用渐进式反馈系统
   // const checkPendingFeedback = async () => { ... };
 
@@ -735,8 +738,19 @@ export default function MatchesPage() {
       
       if (result.success) {
         if ('match' in result && result.match) {
-          // 匹配成功：显示toast并更新成功匹配列表
-          toast.success('匹配成功！🎉 请到成功匹配页面查看');
+          // 匹配成功：检查是否是首次匹配
+          const hasShownFirstMatch = localStorage.getItem('mockpal_first_match_shown');
+          
+          if (!hasShownFirstMatch) {
+            // 首次匹配：显示弹窗
+            setFirstMatchPartner(targetUser.username || '新伙伴');
+            setShowFirstMatchModal(true);
+            localStorage.setItem('mockpal_first_match_shown', 'true');
+          } else {
+            // 非首次匹配：显示toast
+            toast.success('匹配成功！🎉 请到成功匹配页面查看');
+          }
+          
           const successfulResult = await fetchSuccessfulMatches(user.id);
           // 只更新成功匹配列表，不影响当前索引
           if (successfulResult.success && 'matches' in successfulResult && Array.isArray(successfulResult.matches)) {
@@ -894,6 +908,10 @@ export default function MatchesPage() {
 
   // 用户成就数据状态
   const [userAchievements, setUserAchievements] = useState<{ [userId: number]: any }>({});
+  
+  // 首次匹配弹窗状态
+  const [showFirstMatchModal, setShowFirstMatchModal] = useState(false);
+  const [firstMatchPartner, setFirstMatchPartner] = useState<string>('');
 
   // 获取用户成就数据
   const getUserAchievementData = (userId: number) => {
@@ -1298,7 +1316,7 @@ export default function MatchesPage() {
                       {state.successfulMatches.map((match) => {
                         const matchId = match.matchId || match.id; // 统一使用matchId进行状态管理
                         return (
-                        <div key={match.id} className="card">
+                        <div key={matchId} className="card">
                           <div className="card-header">
                             <div className="avatar">
                               <img
@@ -1452,35 +1470,55 @@ export default function MatchesPage() {
                                 <div className="feedback-section">
                                   {state.submitted?.[matchId] ? (
                                     // 已提交的反馈 - 折叠显示
-                                    <div className="bg-green-50 border border-green-200 rounded-md p-3">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-green-600">✅</span>
-                                        <span className="text-sm font-medium text-green-800">面试反馈已提交</span>
-                                      </div>
-                                      {state.feedbacks?.[matchId] && (
-                                        <div className="text-sm text-gray-700 bg-white p-2 rounded border">
-                                          <strong>你的反馈：</strong>
-                                          <p className="mt-1">{state.feedbacks[matchId]}</p>
+                                    <>
+                                      <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <span className="text-green-600">✅</span>
+                                          <span className="text-sm font-medium text-green-800">面试反馈已提交</span>
                                         </div>
-                                      )}
-                                    </div>
+                                        {state.feedbacks?.[matchId] && (
+                                          <div className="text-sm text-gray-700 bg-white p-2 rounded border">
+                                            <strong>你的反馈：</strong>
+                                            <p className="mt-1">{state.feedbacks[matchId]}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                      {/* 提交成功后的激励提示 */}
+                                      <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-md">
+                                        <div className="flex items-center gap-2 text-xs text-blue-700">
+                                          <span>🎉</span>
+                                          <span className="font-medium">太棒了！你获得了经验值，等级提升中...</span>
+                                        </div>
+                                      </div>
+                                    </>
                                   ) : (
                                     // 未提交的反馈 - 展开表单
                                     <>
+                                      {/* 填写前的激励提示 */}
+                                      <div className="mb-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+                                        <div className="flex items-start gap-2">
+                                          <span className="text-lg">💎</span>
+                                          <div className="flex-1 text-xs text-gray-700">
+                                            <p className="font-semibold text-orange-700 mb-1">完成反馈可升级！</p>
+                                            <p className="text-gray-600">提交面试反馈可获得经验值，等级越高越容易被优先推荐～你的反馈仅后台可见，放心填写真实感受！</p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
                                       <label className="block text-sm font-medium text-gray-700 mb-1">✍️ 请填写你的面试反馈：</label>
                                       <textarea
-                                        className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                        className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         rows={3}
                                         value={state.feedbacks?.[matchId] || ''}
                                         onChange={e => handleFeedbackChange(matchId, e.target.value)}
-                                        placeholder="请描述你的面试体验、收获或建议"
+                                        placeholder="分享你的面试体验、收获或建议吧..."
                                       />
                                       <button
-                                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:bg-gray-400"
+                                        className="mt-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-md text-sm font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                         onClick={() => handleFeedbackSubmit(matchId)}
                                         disabled={!state.feedbacks?.[matchId]}
                                       >
-                                        提交反馈
+                                        提交反馈 🚀
                                       </button>
                                     </>
                                   )}
@@ -1507,7 +1545,7 @@ export default function MatchesPage() {
                   {false && state.successfulMatches.length > 0 && (
                     <div className="cards-container">
                       {state.successfulMatches.map((match) => (
-                        <div key={match.id} className="card">
+                        <div key={match.matchId || match.id} className="card">
                           <div className="card-header">
                             <div className="avatar">
                               {(match.username || '?').charAt(0).toUpperCase()}
@@ -1758,6 +1796,20 @@ export default function MatchesPage() {
       
       {/* 移除硬绑定反馈弹窗 - 现在使用渐进式反馈系统 */}
       {/* <FeedbackModal ... /> */}
+      
+      {/* 首次匹配成功弹窗 */}
+      <FirstMatchModal
+        isOpen={showFirstMatchModal}
+        partnerName={firstMatchPartner}
+        onClose={() => setShowFirstMatchModal(false)}
+        onStartContact={() => {
+          // 关闭弹窗，如果不在成功匹配页面则切换过去
+          setShowFirstMatchModal(false);
+          if (state.activeTab !== 'matches') {
+            dispatch({ type: 'SET_TAB', payload: 'matches' });
+          }
+        }}
+      />
     </AuthLayout>
   );
 }

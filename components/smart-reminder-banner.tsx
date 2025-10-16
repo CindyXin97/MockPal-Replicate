@@ -33,43 +33,53 @@ export const SmartReminderBanner: React.FC<SmartReminderBannerProps> = ({
   const oldestMatch = pendingMatches[0]; // 假设已经按时间排序
 
   return (
-    <Card className="mb-4 border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 max-w-4xl mx-auto">
-      <CardContent className="px-8 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3 flex-1">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Heart size={16} className="text-blue-600" />
-            </div>
-            
-            <div className="flex-1">
-              <h3 className="font-medium text-gray-900 text-sm">
-                有 {pendingMatches.length} 个匹配需要更新状态
-              </h3>
-              <p className="text-xs text-gray-600">
-                最早: <span className="font-medium text-blue-600">{oldestMatch.partnerName}</span> ({oldestMatch.daysAgo}天前)
-              </p>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Button
-                onClick={() => onUpdateStatus?.(oldestMatch.id)}
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-1"
+    <div className="mb-4 max-w-4xl mx-auto animate-slide-down">
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-[2px] rounded-xl overflow-hidden">
+        <div className="bg-white rounded-xl">
+          <CardContent className="px-6 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center space-x-3 flex-1">
+                {/* 动画图标 */}
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center animate-pulse">
+                    <Heart size={20} className="text-white" fill="white" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold animate-bounce">
+                    {pendingMatches.length}
+                  </div>
+                </div>
+                
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 text-base mb-1 flex items-center gap-2">
+                    <span>✨ 别忘了更新匹配状态哦！</span>
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    你和 <span className="font-semibold text-blue-600">{oldestMatch.partnerName}</span> 已匹配 <span className="font-medium text-purple-600">{oldestMatch.daysAgo}天</span>，记得打勾升级～
+                  </p>
+                </div>
+                
+                <div className="flex items-center space-x-2 flex-shrink-0">
+                  <Button
+                    onClick={() => onUpdateStatus?.(oldestMatch.id)}
+                    size="sm"
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold px-4 py-2 shadow-md hover:shadow-lg transition-all"
+                  >
+                    <Clock size={14} className="mr-1" />
+                    去更新
+                  </Button>
+                </div>
+              </div>
+              
+              <button
+                onClick={handleDismiss}
+                className="text-gray-400 hover:text-gray-600 p-1 flex-shrink-0 transition-colors"
               >
-                <Clock size={12} className="mr-1" />
-                更新
-              </Button>
+                <X size={18} />
+              </button>
             </div>
-          </div>
-          
-          <button
-            onClick={handleDismiss}
-            className="text-gray-400 hover:text-gray-600 p-1 flex-shrink-0"
-          >
-            <X size={16} />
-          </button>
+          </CardContent>
         </div>
-      </CardContent>
-    </Card>
+      </Card>
+    </div>
   );
 }; 
