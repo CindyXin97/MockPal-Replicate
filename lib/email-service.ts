@@ -1,4 +1,7 @@
 import { Resend } from 'resend';
+import { db } from '@/lib/db';
+import { emailSendLogs } from '@/lib/db/schema';
+import { eq, gte, and, count } from 'drizzle-orm';
 
 // 单例模式：确保整个应用只有一个 Resend 实例
 class EmailService {
@@ -14,6 +17,71 @@ class EmailService {
       EmailService.instance = new EmailService();
     }
     return EmailService.instance;
+  }
+  
+  /**
+   * 检查邮件发送频率限制
+   * 每个用户每周最多收到 2 封邮件
+   */
+  private async checkEmailRateLimit(email: string, emailType: string): Promise<{ allowed: boolean; message?: string; sentCount?: number }> {
+    try {
+      // 计算7天前的时间戳
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      // 查询过去7天内发送给该邮箱的邮件数量
+      const result = await db
+        .select({ count: count() })
+        .from(emailSendLogs)
+        .where(
+          and(
+            eq(emailSendLogs.recipientEmail, email),
+            gte(emailSendLogs.sentAt, sevenDaysAgo),
+            eq(emailSendLogs.status, 'sent') // 只计算成功发送的
+          )
+        );
+      
+      const sentCount = result[0]?.count || 0;
+      
+      if (sentCount >= 2) {
+        return {
+          allowed: false,
+          message: `该邮箱在过去7天内已收到 ${sentCount} 封邮件，已达到每周限制（2封）`,
+          sentCount,
+        };
+      }
+      
+      return { allowed: true, sentCount };
+    } catch (error) {
+      console.error('[EmailService] 检查发送频率失败:', error);
+      // 如果检查失败，默认允许发送（避免影响正常业务）
+      return { allowed: true };
+    }
+  }
+  
+  /**
+   * 记录邮件发送
+   */
+  private async logEmailSend(
+    email: string,
+    emailType: string,
+    subject: string,
+    status: 'sent' | 'failed' | 'skipped',
+    errorMessage?: string
+  ): Promise<void> {
+    try {
+      await db.insert(emailSendLogs).values({
+        recipientEmail: email,
+        emailType,
+        subject,
+        status,
+        errorMessage: errorMessage || null,
+        sentAt: new Date(),
+      });
+    } catch (error) {
+      console.error('[EmailService] 记录邮件发送失败:', error);
+      // 记录失败不影响主流程
+    }
   }
   
   // 统一的邮件模板
@@ -71,6 +139,19 @@ class EmailService {
       console.log(`🎉 你与 ${opts.partnerName} 匹配成功！前往查看：${opts.matchesUrl}\n`);
       return { data: { id: 'dev-mode-skip' }, error: null };
     }
+    
+    // 检查发送频率限制
+    const rateLimitCheck = await this.checkEmailRateLimit(to, 'match_success');
+    if (!rateLimitCheck.allowed) {
+      console.log(`⚠️ [EmailService] ${rateLimitCheck.message}`);
+      await this.logEmailSend(to, 'match_success', 'MockPal - 匹配成功通知', 'skipped', rateLimitCheck.message);
+      return { 
+        data: { id: 'rate-limit-skip' }, 
+        error: null,
+        skipped: true,
+        reason: 'rate_limit'
+      };
+    }
   
     const isProduction = process.env.NODE_ENV === 'production';
     const fromEmail = isProduction 
@@ -124,9 +205,23 @@ class EmailService {
         html,
       });
       console.log('✅ [EmailService] 匹配成功通知已发送');
+      
+      // 记录发送成功
+      await this.logEmailSend(to, 'match_success', 'MockPal - 匹配成功通知', 'sent');
+      
       return result;
     } catch (error) {
       console.error('❌ [EmailService] 匹配成功通知发送失败:', error);
+      
+      // 记录发送失败
+      await this.logEmailSend(
+        to, 
+        'match_success', 
+        'MockPal - 匹配成功通知', 
+        'failed', 
+        error instanceof Error ? error.message : String(error)
+      );
+      
       throw error;
     }
   }
@@ -144,6 +239,15 @@ class EmailService {
       console.log(url);
       console.log('💡 提示：点击上面的链接即可直接登录，无需检查邮箱\n');
       return { data: { id: 'dev-mode-skip' }, error: null };
+    }
+    
+    // 检查发送频率限制
+    const rateLimitCheck = await this.checkEmailRateLimit(email, 'login');
+    if (!rateLimitCheck.allowed) {
+      console.log(`⚠️ [EmailService] ${rateLimitCheck.message}`);
+      await this.logEmailSend(email, 'login', 'MockPal - 登录验证', 'skipped', rateLimitCheck.message);
+      // 对于登录邮件，如果超限，抛出错误让用户知道
+      throw new Error(`邮件发送已达到限制：${rateLimitCheck.message}`);
     }
     
     // ⚠️ 测试环境配置 - 推送到生产前需要修改回 noreply@mockpals.com
@@ -177,6 +281,9 @@ class EmailService {
       console.log('📬 邮件ID:', result.data?.id);
       console.log('⏰ 发送时间:', new Date().toISOString());
       
+      // 记录发送成功
+      await this.logEmailSend(email, 'login', 'MockPal - 登录验证', 'sent');
+      
       return result;
     } catch (error) {
       console.error('❌ [EmailService] 邮件发送失败!');
@@ -185,6 +292,16 @@ class EmailService {
         console.error('🔍 错误消息:', error.message);
         console.error('📋 错误堆栈:', error.stack);
       }
+      
+      // 记录发送失败
+      await this.logEmailSend(
+        email, 
+        'login', 
+        'MockPal - 登录验证', 
+        'failed', 
+        error instanceof Error ? error.message : String(error)
+      );
+      
       throw error;
     }
   }
@@ -202,6 +319,15 @@ class EmailService {
       console.log(url);
       console.log('💡 提示：点击上面的链接即可直接设置密码，无需检查邮箱\n');
       return { data: { id: 'dev-mode-skip' }, error: null };
+    }
+    
+    // 检查发送频率限制
+    const rateLimitCheck = await this.checkEmailRateLimit(email, 'password_setup');
+    if (!rateLimitCheck.allowed) {
+      console.log(`⚠️ [EmailService] ${rateLimitCheck.message}`);
+      await this.logEmailSend(email, 'password_setup', 'MockPal - 设置密码', 'skipped', rateLimitCheck.message);
+      // 对于设置密码邮件，如果超限，抛出错误让用户知道
+      throw new Error(`邮件发送已达到限制：${rateLimitCheck.message}`);
     }
     
     // ⚠️ 测试环境配置 - 推送到生产前需要修改回 noreply@mockpals.com
@@ -233,10 +359,23 @@ class EmailService {
       console.log('✅ [EmailService] 设置密码邮件发送成功!');
       console.log('📬 邮件ID:', result.data?.id);
       
+      // 记录发送成功
+      await this.logEmailSend(email, 'password_setup', 'MockPal - 设置密码', 'sent');
+      
       return result;
     } catch (error) {
       console.error('❌ [EmailService] 设置密码邮件发送失败!');
       console.error('🚫 错误详情:', error);
+      
+      // 记录发送失败
+      await this.logEmailSend(
+        email, 
+        'password_setup', 
+        'MockPal - 设置密码', 
+        'failed', 
+        error instanceof Error ? error.message : String(error)
+      );
+      
       throw error;
     }
   }

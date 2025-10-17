@@ -141,6 +141,17 @@ export const userDailyViews = pgTable('user_daily_views', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// 邮件发送记录表 - 用于限流和审计
+export const emailSendLogs = pgTable('email_send_logs', {
+  id: serial('id').primaryKey(),
+  recipientEmail: varchar('recipient_email', { length: 255 }).notNull(), // 收件人邮箱
+  emailType: varchar('email_type', { length: 50 }).notNull(), // 邮件类型: login, password_setup, match_success
+  subject: varchar('subject', { length: 255 }), // 邮件主题
+  status: varchar('status', { length: 20 }).notNull().default('sent'), // sent, failed, skipped
+  errorMessage: text('error_message'), // 如果失败，记录错误信息
+  sentAt: timestamp('sent_at').defaultNow().notNull(), // 发送时间
+});
+
 // 面试真题表
 export const interviewQuestions = pgTable('interview_questions', {
   id: serial('id').primaryKey(),
