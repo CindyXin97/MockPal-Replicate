@@ -85,17 +85,27 @@ class EmailService {
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .logo { text-align: center; background: #F3F4F6; padding: 24px 20px; margin: -20px -20px 20px -20px; }
+            .logo img { max-width: 200px; height: auto; }
             .header { text-align: center; margin-bottom: 24px; }
             .button { display: inline-block; padding: 12px 20px; background: #3B82F6; color: white; text-decoration: none; border-radius: 8px; margin: 16px 0; }
             .tip { color: #6b7280; font-size: 14px; }
+            .highlight-box { background: #F0F9FF; border-left: 4px solid #3B82F6; padding: 16px; margin: 20px 0; border-radius: 4px; }
+            .highlight-text { color: #1E40AF; font-size: 15px; margin: 0; line-height: 1.6; }
           </style>
         </head>
         <body>
           <div class="container">
+            <div class="logo">
+              <img src="https://mockpals.com/logo.png" alt="MockPal Logo" />
+            </div>
             <div class="header">
               <h1 style="color: #1f2937;">匹配成功啦！🎉</h1>
             </div>
-            <p style="color: #374151;">你与 <strong>${opts.partnerName}</strong> 已成功匹配，可以开始联系约面了～</p>
+            <p style="color: #374151; font-size: 17px; text-align: center; line-height: 1.6;">你与 <strong>${opts.partnerName}</strong> 已成功匹配，可以开始联系约面了～</p>
+            <div class="highlight-box">
+              <p class="highlight-text">💡 如果成功联系上对方，记得回来填写<strong>面试反馈</strong>，会获得<strong>优先推荐</strong>的机会哦！</p>
+            </div>
             <div style="text-align: center;">
               <a href="${opts.matchesUrl}" class="button">前往查看匹配详情</a>
             </div>
