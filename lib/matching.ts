@@ -4,7 +4,7 @@ import { eq, and, or, not, desc, exists, inArray } from 'drizzle-orm';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { matchBetweenUsers, matchesForUser, errorResponse, successResponse } from '@/lib/matching-utils';
-import { updateUserAchievement } from './achievements';
+import { updateUserAchievement, getBatchUserAchievements } from './achievements';
 import { emailService } from '@/lib/email-service';
 
 // Get potential matches for a user
@@ -167,6 +167,10 @@ export async function getPotentialMatches(userId: number) {
       }
     }
     
+    // 批量获取所有候选用户的成就数据
+    const achievementsData = await getBatchUserAchievements(candidateUserIds);
+    const achievementsMap = new Map(achievementsData.map(a => [a.userId, a]));
+    
     // 优先级排序：对方已发出邀请且内容重叠 > 内容重叠 > 经验相同 > 岗位相同 > 其他
     const invitedOverlapList: typeof filteredMatches = [];
     const overlapList: typeof filteredMatches = [];
@@ -198,6 +202,23 @@ export async function getPotentialMatches(userId: number) {
         otherList.push(user);
       }
     }
+    
+    // 对每个优先级组内部按成就等级（经验值）降序排序
+    // 经验值高的用户优先推荐，相同经验值则保持注册时间倒序（新用户优先）
+    const sortByAchievement = (a: typeof filteredMatches[0], b: typeof filteredMatches[0]) => {
+      const aExp = achievementsMap.get(a.id)?.experiencePoints || 0;
+      const bExp = achievementsMap.get(b.id)?.experiencePoints || 0;
+      if (bExp !== aExp) return bExp - aExp; // 经验值降序
+      // 经验值相同，按创建时间降序（新用户优先）
+      return (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0);
+    };
+    
+    invitedOverlapList.sort(sortByAchievement);
+    overlapList.sort(sortByAchievement);
+    expList.sort(sortByAchievement);
+    jobList.sort(sortByAchievement);
+    otherList.sort(sortByAchievement);
+    
     const finalList = [...invitedOverlapList, ...overlapList, ...expList, ...jobList, ...otherList].slice(0, 4);
     return {
       success: true,
