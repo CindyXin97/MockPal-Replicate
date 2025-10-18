@@ -421,3 +421,4 @@ WHERE sent_at < NOW() - INTERVAL '90 days';
 - `lib/db/schema.ts` - 数据库Schema
 - `migrations/0014_add_email_send_logs.sql` - 数据库迁移
 
+

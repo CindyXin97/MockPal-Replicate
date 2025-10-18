@@ -22,3 +22,4 @@ COMMENT ON COLUMN email_send_logs.status IS '发送状态：sent(成功), failed
 COMMENT ON COLUMN email_send_logs.error_message IS '错误信息（如果发送失败）';
 COMMENT ON COLUMN email_send_logs.sent_at IS '发送时间';
 
+
