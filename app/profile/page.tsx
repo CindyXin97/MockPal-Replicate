@@ -37,6 +37,7 @@ function ProfilePageContent() {
   const { profile, isLoading: profileLoading, updateProfile, fetchProfile } = useProfile(user?.id);
   
   const [isLoading, setIsLoading] = useState(false);
+  const [userAchievement, setUserAchievement] = useState<any>(null);
   
   const [formData, setFormData] = useState<ProfileFormData & {name: string}>({
     name: '',
@@ -63,6 +64,22 @@ function ProfilePageContent() {
       return;
     }
   }, [status, router]);
+
+  // 获取用户成就数据
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`/api/achievements?userId=${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setUserAchievement(data.achievement);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading user achievement:', error);
+        });
+    }
+  }, [user?.id]);
 
   // 当用户ID可用时，强制刷新一次数据
   const userIdRef = useRef<number | undefined>(undefined);
@@ -231,6 +248,27 @@ function ProfilePageContent() {
     }));
   };
 
+  // 获取用户等级信息
+  const getUserLevelInfo = () => {
+    if (!userAchievement) {
+      return { icon: '🌱', level: '新用户' };
+    }
+
+    const levelMap: Record<string, { icon: string }> = {
+      '新用户': { icon: '🌱' },
+      '面试新手': { icon: '⭐' },
+      '面试新星': { icon: '🌟' },
+      '面试达人': { icon: '🌙' },
+      '面试导师': { icon: '👑' },
+    };
+
+    const levelInfo = levelMap[userAchievement.currentLevel] || levelMap['新用户'];
+    return {
+      ...levelInfo,
+      level: userAchievement.currentLevel,
+    };
+  };
+
   // 计算文本实际宽度，考虑中文字符
   const getTextWidth = (text: string) => {
     if (!text) return 16; // 最小宽度
@@ -375,7 +413,17 @@ function ProfilePageContent() {
       <div className="flex min-h-screen items-start justify-center w-full pt-8">
         <Card className="w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10 mt-8">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl font-extrabold text-center tracking-tight text-gray-900 mb-1">个人资料</CardTitle>
+            {/* 响应式布局：移动端纵向，桌面端横向 */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 mb-1">
+              <CardTitle className="text-xl font-extrabold text-center tracking-tight text-gray-900">个人资料</CardTitle>
+              {/* 显示用户等级徽章 */}
+              {userAchievement && (
+                <div className="flex items-center justify-center sm:justify-start gap-1 px-2 py-0.5 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full border border-blue-200 shadow-sm mx-auto sm:mx-0 w-fit">
+                  <span className="text-sm">{getUserLevelInfo().icon}</span>
+                  <span className="text-[10px] font-semibold text-blue-700">{getUserLevelInfo().level}</span>
+                </div>
+              )}
+            </div>
             <p className="text-sm text-gray-500 text-center font-medium">
               请选择你现在最想练习的岗位，系统将为你匹配相同目标的练习伙伴
             </p>
