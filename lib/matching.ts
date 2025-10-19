@@ -240,6 +240,7 @@ export async function getPotentialMatches(userId: number) {
             statsQuestions: profile?.statsQuestions,
           },
           bio: profile?.bio,
+          skills: profile?.skills ? JSON.parse(profile.skills) : [],
         };
       })
     };
@@ -529,6 +530,7 @@ export async function getSuccessfulMatches(userId: number) {
             linkedin: profile.linkedin,
           },
           bio: profile.bio,
+          skills: profile.skills ? JSON.parse(profile.skills) : [],
           // 添加匹配相关信息
           contactStatus: match.contactStatus,
           createdAt: match.createdAt?.toISOString(),

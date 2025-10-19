@@ -51,7 +51,7 @@ export const userProfiles = pgTable('user_profiles', {
 
   bio: varchar('bio', { length: 255 }),
   school: varchar('school', { length: 255 }).notNull(), // 学校信息（必填）
-  skills: text('skills'), // 技能信息，JSON格式存储，最多3个技能，每个不超过10个字符
+  skills: text('skills'), // 技能信息，JSON格式存储，最多3个技能，每个不超过12个字符
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

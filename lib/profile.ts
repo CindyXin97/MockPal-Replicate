@@ -31,7 +31,7 @@ export type ProfileFormData = {
   linkedin?: string;
   bio?: string;
   school: string; // 学校信息（必填）
-  skills?: string[]; // 技能列表，最多3个，每个不超过10个字符
+  skills?: string[]; // 技能列表，最多3个，每个不超过12个字符
 };
 
 type GetProfileResult =

@@ -196,7 +196,7 @@ function ProfilePageContent() {
   };
 
   const handleSkillChange = (index: number, value: string) => {
-    if (value.length > 10) return; // 限制每个技能不超过10个字符
+    if (value.length > 12) return; // 限制每个技能不超过12个字符
     
     setFormData(prev => {
       const newSkills = [...(prev.skills || [])];
@@ -242,7 +242,7 @@ function ProfilePageContent() {
       if (/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(char)) {
         width += 16;
       } else {
-        // 英文字符使用8px宽度
+        // 英文字符使用10px宽度
         width += 10;
       }
     }
@@ -594,7 +594,7 @@ function ProfilePageContent() {
                     </Button>
                   )}
                 </div>
-                <p className="text-sm text-gray-500">💡 最多可添加3个技能，每个技能不超过10个字符</p>
+                <p className="text-sm text-gray-500">💡 最多可添加3个技能，例如: A/B Testing, ML, Product..</p>
               </div>
 
               <div className="space-y-1">
