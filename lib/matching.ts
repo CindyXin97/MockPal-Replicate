@@ -224,21 +224,24 @@ export async function getPotentialMatches(userId: number) {
     const finalList = [...invitedOverlapList, ...overlapList, ...expList, ...jobList, ...otherList].slice(0, 4);
     return {
       success: true,
-      matches: finalList.map(user => ({
-        id: user.id,
-        username: user.name,
-        jobType: user.profile?.jobType,
-        experienceLevel: user.profile?.experienceLevel,
-        targetCompany: user.profile?.targetCompany,
-        targetIndustry: user.profile?.targetIndustry,
-        practicePreferences: {
-          technicalInterview: user.profile?.technicalInterview,
-          behavioralInterview: user.profile?.behavioralInterview,
-          caseAnalysis: user.profile?.caseAnalysis,
-          statsQuestions: user.profile?.statsQuestions,
-        },
-        bio: user.profile?.bio,
-      }))
+      matches: finalList.map(user => {
+        const profile = user.profile as any;
+        return {
+          id: user.id,
+          username: user.name,
+          jobType: profile?.jobType,
+          experienceLevel: profile?.experienceLevel,
+          targetCompany: profile?.targetCompany,
+          targetIndustry: profile?.targetIndustry,
+          practicePreferences: {
+            technicalInterview: profile?.technicalInterview,
+            behavioralInterview: profile?.behavioralInterview,
+            caseAnalysis: profile?.caseAnalysis,
+            statsQuestions: profile?.statsQuestions,
+          },
+          bio: profile?.bio,
+        };
+      })
     };
   } catch (error) {
     console.error('Get potential matches error:', error);
