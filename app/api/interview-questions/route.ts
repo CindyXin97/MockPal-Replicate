@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
               isOwnPost: true,
             }));
           
-          userPosts = allUserPosts
+          const otherUserPosts = allUserPosts
             .filter((post) => post.userId !== currentUserId)
             .map((post) => ({
               ...post,
@@ -138,6 +138,68 @@ export async function GET(request: NextRequest) {
               year: new Date(post.interviewDate).getFullYear(),
               isOwnPost: false,
             }));
+          
+          // 对其他用户的帖子按热度排序
+          const userPostsWithStats = await Promise.all(
+            otherUserPosts.map(async (post) => {
+              const postType = 'user';
+              const postId = post.id;
+
+              // 获取投票统计
+              const upvotesResult = await db
+                .select({ count: sql<number>`count(*)` })
+                .from(interviewVotes)
+                .where(
+                  and(
+                    eq(interviewVotes.postType, postType),
+                    eq(interviewVotes.postId, postId),
+                    eq(interviewVotes.voteType, 'up')
+                  )
+                );
+
+              const downvotesResult = await db
+                .select({ count: sql<number>`count(*)` })
+                .from(interviewVotes)
+                .where(
+                  and(
+                    eq(interviewVotes.postType, postType),
+                    eq(interviewVotes.postId, postId),
+                    eq(interviewVotes.voteType, 'down')
+                  )
+                );
+
+              // 获取评论数
+              const commentsResult = await db
+                .select({ count: sql<number>`count(*)` })
+                .from(interviewComments)
+                .where(
+                  and(
+                    eq(interviewComments.postType, postType),
+                    eq(interviewComments.postId, postId)
+                  )
+                );
+
+              const upvotes = upvotesResult[0]?.count || 0;
+              const downvotes = downvotesResult[0]?.count || 0;
+              const comments = commentsResult[0]?.count || 0;
+              const score = upvotes - downvotes;
+              
+              // 热度计算：score * 2 + comments（点赞权重更高）
+              const hotness = score * 2 + comments;
+
+              return {
+                ...post,
+                tempStats: { upvotes, downvotes, comments, score, hotness }
+              };
+            })
+          );
+
+          // 按热度排序用户帖子（热度高的在前）
+          userPosts = userPostsWithStats.sort((a, b) => {
+            return (b.tempStats?.hotness || 0) - (a.tempStats?.hotness || 0);
+          });
+
+          console.log('📊 其他用户发布的题目已按热度排序');
         } else {
           userPosts = allUserPosts.map((post) => ({
             ...post,
