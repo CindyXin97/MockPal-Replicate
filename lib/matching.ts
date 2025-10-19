@@ -180,13 +180,14 @@ export async function getPotentialMatches(userId: number) {
     const otherList: typeof filteredMatches = [];
     
     for (const user of filteredMatches) {
+      const profile = user.profile as any;
       const overlap =
-        (user.profile?.technicalInterview && userProfile.technicalInterview) ||
-        (user.profile?.behavioralInterview && userProfile.behavioralInterview) ||
-        (user.profile?.caseAnalysis && userProfile.caseAnalysis) ||
-        (user.profile?.statsQuestions && userProfile.statsQuestions);
-      const jobMatch = user.profile?.jobType === userProfile.jobType;
-      const expMatch = user.profile?.experienceLevel === userProfile.experienceLevel;
+        (profile?.technicalInterview && userProfile.technicalInterview) ||
+        (profile?.behavioralInterview && userProfile.behavioralInterview) ||
+        (profile?.caseAnalysis && userProfile.caseAnalysis) ||
+        (profile?.statsQuestions && userProfile.statsQuestions);
+      const jobMatch = profile?.jobType === userProfile.jobType;
+      const expMatch = profile?.experienceLevel === userProfile.experienceLevel;
       
       // 使用Set进行O(1)查找替代数据库查询
       const hasInvited = invitationSet.has(user.id);
