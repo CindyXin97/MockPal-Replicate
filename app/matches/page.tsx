@@ -1807,109 +1807,105 @@ export default function MatchesPage() {
             </TabsContent>
 
             <TabsContent value="guide" className="space-y-4 mt-4">
-              <div className="max-w-4xl mx-auto px-4">
+              <div className="max-w-3xl mx-auto px-4">
                 {/* 页面标题 */}
-                <div className="text-center mb-8">
-                  <h1 className="text-3xl font-bold text-gray-800 mb-2">面试流程指引 🧭</h1>
-                  <p className="text-gray-600">如何使用MockPal成功匹配并进行模拟面试</p>
+                <div className="text-center mb-8 animate-fadeInDown">
+                  <div className="text-5xl mb-3">🎯</div>
+                  <h1 className="text-3xl font-bold mb-2 text-gray-800">
+                    三步完成Mock面试
+                  </h1>
+                  <p className="text-base text-gray-600">简单、清晰、高效</p>
                 </div>
 
                 {/* 流程步骤 */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  {/* 第一步：寻找匹配 */}
-                  <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-blue-500">
-                        🎯 寻找匹配
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• 在"浏览候选人"查看推荐用户</li>
-                        <li>• 查看职位类型和经验水平</li>
-                        <li>• 点击"喜欢"表示愿意一起练习</li>
-                        <li>• 双方互相喜欢即可成功匹配</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
+                <div className="space-y-4 mb-8">
+                  {/* 步骤1 */}
+                  <div className="bg-white rounded-lg p-5 border-2 border-blue-200 animate-slideInLeft" style={{ animationDelay: '0.2s' }}>
+                    <div className="flex items-start gap-3">
+                      <span className="text-4xl">📱</span>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">
+                          联系TA，约定时间
+                        </h3>
+                        <p className="text-base text-gray-700 leading-relaxed">
+                          点击"联系TA"获取联系方式，约定<span className="font-semibold">1小时</span>左右的时间进行Mock
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-                  {/* 第二步：联系约面 */}
-                  <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-green-600">
-                        📞 联系约面
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• 点击"联系TA"获取联系方式</li>
-                        <li>• 主动联系约定面试时间 60分钟</li>
-                        <li>• 确定面试平台和会议链接</li>
-                        <li>• 每个人建议20分钟面试10分钟反馈</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
+                  {/* 步骤2 */}
+                  <div className="bg-white rounded-lg p-5 border-2 border-purple-200 animate-slideInRight" style={{ animationDelay: '0.3s' }}>
+                    <div className="flex items-start gap-3">
+                      <span className="text-4xl">📚</span>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">
+                          查看真题，开始Mock
+                        </h3>
+                        <div className="space-y-2">
+                          <p className="text-base text-gray-700">
+                            <span className="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium mr-2">
+                              20-25分钟
+                            </span>
+                            进行Mock面试
+                          </p>
+                          <p className="text-base text-gray-700">
+                            <span className="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium mr-2">
+                              10-15分钟
+                            </span>
+                            给出反馈建议
+                          </p>
+                          <p className="text-base text-gray-700 font-semibold mt-2">
+                            🔄 然后轮换角色，重复上述流程
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                  {/* 第三步：面试准备 */}
-                  <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-purple-600">
-                        📚 面试准备
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• 双方轮流扮演面试官和候选人</li>
-                        <li>• 参考网站面试题目（随时更新）</li>
-                        <li>• 根据经验水平调整题目难度</li>
-                        <li>• 准备Coding, Case, 统计，BQ</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  {/* 第四步：面试与反馈 */}
-                  <Card className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-orange-600">
-                        🎤 面试反馈
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• 按真实面试流程进行模拟</li>
-                        <li>• 面试结束后互相给出反馈</li>
-                        <li>• 在平台标记"是否完成面试"</li>
-                        <li>• 分享改进建议和学习资源</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
+                  {/* 步骤3 */}
+                  <div className="bg-white rounded-lg p-5 border-2 border-green-200 animate-slideInLeft" style={{ animationDelay: '0.4s' }}>
+                    <div className="flex items-start gap-3">
+                      <span className="text-4xl">✅</span>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">
+                          回来打勾，提交反馈
+                        </h3>
+                        <p className="text-base text-gray-700 leading-relaxed mb-3">
+                          在真题分享区讨论交流，分享题目
+                        </p>
+                        <div className="bg-green-50 rounded-lg p-2.5 border-l-4 border-green-400">
+                          <p className="text-sm text-gray-700 font-semibold">
+                            💎 完成反馈可升级，优先被推荐
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* 简化的帮助信息 */}
-                <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg text-center">
-                  <p className="text-sm text-gray-600">
-                    有问题可查看FAQ或联系客服 
-                    <span className="text-gray-500 ml-2">Royal__city</span>
-                  </p>
-                </div>
-
-                {/* 底部行动按钮 */}
-                <div className="mt-6 text-center">
-                  <div className="flex justify-center space-x-4">
+                {/* 底部按钮 */}
+                <div className="text-center animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
+                  <div className="flex flex-col sm:flex-row justify-center gap-3 mb-6">
                     <Button
                       onClick={() => dispatch({ type: "SET_TAB", payload: "browse" })}
-                      className="text-white bg-blue-600 hover:bg-blue-700"
+                      className="text-white font-medium text-base px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                      style={{ backgroundColor: '#157ff1' }}
                     >
                       开始寻找匹配
                     </Button>
                     <Button
-                      onClick={() => dispatch({ type: "SET_TAB", payload: "matches" })}
+                      onClick={() => dispatch({ type: "SET_TAB", payload: "questions" })}
                       variant="outline"
-                      className="border-2 border-blue-500 text-blue-500 hover:bg-blue-50"
+                      className="border-2 bg-white hover:bg-blue-50 font-medium text-base px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                      style={{ borderColor: '#157ff1', color: '#157ff1' }}
                     >
-                      查看成功匹配
+                      查看真题分享
                     </Button>
                   </div>
+                  <p className="text-sm text-gray-600">
+                    有问题联系客服 <span className="font-semibold">Royal__city</span>
+                  </p>
                 </div>
               </div>
             </TabsContent>
