@@ -13,6 +13,7 @@ export interface MatchesState {
   interviewStatus: { [key: number]: 'yes' | 'no' | undefined };
   feedbacks: { [key: number]: string };
   submitted: { [key: number]: boolean };
+  collapsedFeedbacks: { [key: number]: boolean }; // 已提交反馈是否折叠
   showBanner: boolean;
   showGuide: boolean;
   showContactTemplates: boolean;
@@ -32,6 +33,7 @@ export const initialMatchesState: MatchesState = {
   interviewStatus: {},
   feedbacks: {},
   submitted: {},
+  collapsedFeedbacks: {},
   showBanner: true,
   showGuide: false,
   showContactTemplates: false,
@@ -52,6 +54,7 @@ export type MatchesAction =
   | { type: 'SET_FEEDBACK'; payload: { matchId: number; feedback: string } }
   | { type: 'SUBMIT_FEEDBACK'; payload: number }
   | { type: 'REVERT_FEEDBACK_SUBMISSION'; payload: number }
+  | { type: 'TOGGLE_FEEDBACK_COLLAPSE'; payload: number }
   | { type: 'TOGGLE_BANNER' }
   | { type: 'TOGGLE_GUIDE' }
   | { type: 'SHOW_CONTACT_TEMPLATES'; payload: Match | null }
@@ -133,6 +136,10 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
           ...state.submitted,
           [action.payload]: true,
         },
+        collapsedFeedbacks: {
+          ...state.collapsedFeedbacks,
+          [action.payload]: true, // 提交后自动折叠
+        },
       };
 
     case 'REVERT_FEEDBACK_SUBMISSION':
@@ -141,6 +148,15 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
         submitted: {
           ...state.submitted,
           [action.payload]: false,
+        },
+      };
+
+    case 'TOGGLE_FEEDBACK_COLLAPSE':
+      return {
+        ...state,
+        collapsedFeedbacks: {
+          ...state.collapsedFeedbacks,
+          [action.payload]: !state.collapsedFeedbacks[action.payload],
         },
       };
 
@@ -199,6 +215,10 @@ export function matchesReducer(state: MatchesState, action: MatchesAction): Matc
           ...state.submitted,
           [action.payload.matchId]: true
         } : state.submitted,
+        collapsedFeedbacks: action.payload.feedbackContent ? {
+          ...state.collapsedFeedbacks,
+          [action.payload.matchId]: true // 已提交的反馈默认折叠
+        } : state.collapsedFeedbacks,
       };
 
     case 'RESET_MATCHES':

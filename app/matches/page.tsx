@@ -1605,27 +1605,52 @@ export default function MatchesPage() {
                               {state.contactStatus?.[matchId] === 'yes' && state.interviewStatus?.[matchId] === 'yes' && (
                                 <div className="feedback-section">
                                   {state.submitted?.[matchId] ? (
-                                    // 已提交的反馈 - 折叠显示
+                                    // 已提交的反馈 - 支持折叠/展开
                                     <>
-                                      <div className="bg-green-50 border border-green-200 rounded-md p-3">
-                                        <div className="flex items-center gap-2 mb-2">
-                                          <span className="text-green-600">✅</span>
-                                          <span className="text-sm font-medium text-green-800">面试反馈已提交</span>
-                                        </div>
-                                        {state.feedbacks?.[matchId] && (
-                                          <div className="text-sm text-gray-700 bg-white p-2 rounded border">
-                                            <strong>你的反馈：</strong>
-                                            <p className="mt-1">{state.feedbacks[matchId]}</p>
+                                      {state.collapsedFeedbacks?.[matchId] ? (
+                                        // 折叠状态 - 简洁显示
+                                        <div 
+                                          className="bg-green-50 border border-green-200 rounded-md p-3 cursor-pointer hover:bg-green-100 transition-colors"
+                                          onClick={() => dispatch({ type: 'TOGGLE_FEEDBACK_COLLAPSE', payload: matchId })}
+                                        >
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-green-600">✅</span>
+                                              <span className="text-sm font-medium text-green-800">面试反馈已提交</span>
+                                            </div>
+                                            <span className="text-xs text-green-600">点击展开 ▼</span>
                                           </div>
-                                        )}
-                                      </div>
-                                      {/* 提交成功后的激励提示 */}
-                                      <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-md">
-                                        <div className="flex items-center gap-2 text-xs text-blue-700">
-                                          <span>🎉</span>
-                                          <span className="font-medium">太棒了！你获得了经验值，等级提升中...</span>
                                         </div>
-                                      </div>
+                                      ) : (
+                                        // 展开状态 - 显示完整内容
+                                        <>
+                                          <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                                            <div 
+                                              className="flex items-center justify-between mb-2 cursor-pointer"
+                                              onClick={() => dispatch({ type: 'TOGGLE_FEEDBACK_COLLAPSE', payload: matchId })}
+                                            >
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-green-600">✅</span>
+                                                <span className="text-sm font-medium text-green-800">面试反馈已提交</span>
+                                              </div>
+                                              <span className="text-xs text-green-600 hover:text-green-700">点击收起 ▲</span>
+                                            </div>
+                                            {state.feedbacks?.[matchId] && (
+                                              <div className="text-sm text-gray-700 bg-white p-2 rounded border">
+                                                <strong>你的反馈：</strong>
+                                                <p className="mt-1">{state.feedbacks[matchId]}</p>
+                                              </div>
+                                            )}
+                                          </div>
+                                          {/* 提交成功后的激励提示 */}
+                                          <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-md">
+                                            <div className="flex items-center gap-2 text-xs text-blue-700">
+                                              <span>🎉</span>
+                                              <span className="font-medium">太棒了！你获得了经验值，等级提升中...</span>
+                                            </div>
+                                          </div>
+                                        </>
+                                      )}
                                     </>
                                   ) : (
                                     // 未提交的反馈 - 展开表单
