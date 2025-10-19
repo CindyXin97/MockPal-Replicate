@@ -75,6 +75,7 @@ async function createTestUser(email: string, password: string, name: string) {
       userId: newUser.id,
       ...profileData,
       email: email,
+      skills: null,
       createdAt: new Date(),
       updatedAt: new Date()
     });

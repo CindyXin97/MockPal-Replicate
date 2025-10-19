@@ -151,6 +151,7 @@ async function createOrUpdateUser(userData: typeof testUserTemplates[0]) {
       await db.insert(userProfiles).values({
         userId: newUser.id,
         ...userData.profile,
+        skills: null,
         createdAt: new Date(),
         updatedAt: new Date()
       });

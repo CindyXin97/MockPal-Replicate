@@ -86,6 +86,8 @@ async function setupNewMatchDemo() {
       wechat: 'candidate_wechat',
       linkedin: 'https://linkedin.com/in/candidate',
       bio: '候选用户 - 用于演示匹配瞬间弹窗',
+      school: '测试大学',
+      skills: null,
       updatedAt: new Date()
     };
     
