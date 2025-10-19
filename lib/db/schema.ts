@@ -180,6 +180,48 @@ export const interviewRequests = pgTable('interview_requests', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// 用户发布的面试题目表
+export const userInterviewPosts = pgTable('user_interview_posts', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  company: varchar('company', { length: 100 }).notNull(),
+  position: varchar('position', { length: 100 }).notNull(),
+  questionType: varchar('question_type', { length: 50 }).notNull(), // technical, behavioral, case_study, stats
+  difficulty: varchar('difficulty', { length: 20 }).notNull(), // easy, medium, hard
+  interviewDate: timestamp('interview_date').notNull(), // 面试日期
+  question: text('question').notNull(),
+  recommendedAnswer: text('recommended_answer'), // 可选的推荐答案
+  isAnonymous: boolean('is_anonymous').default(false), // 是否匿名发布
+  status: varchar('status', { length: 20 }).default('active'), // active, hidden, deleted
+  viewsCount: integer('views_count').default(0), // 浏览次数
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 评论表（支持系统题目和用户发布的题目）
+export const interviewComments = pgTable('interview_comments', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  postType: varchar('post_type', { length: 20 }).notNull(), // 'system' or 'user'
+  postId: integer('post_id').notNull(), // interview_questions.id 或 user_interview_posts.id
+  content: text('content').notNull(),
+  parentCommentId: integer('parent_comment_id').references(() => interviewComments.id, { onDelete: 'cascade' }),
+  isAnonymous: boolean('is_anonymous').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 点赞/踩表
+export const interviewVotes = pgTable('interview_votes', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  postType: varchar('post_type', { length: 20 }).notNull(), // 'system' or 'user'
+  postId: integer('post_id').notNull(),
+  voteType: varchar('vote_type', { length: 10 }).notNull(), // 'up' or 'down'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(userProfiles, {
@@ -256,4 +298,7 @@ export type Account = InferModel<typeof accounts>;
 export type Session = InferModel<typeof sessions>;
 export type VerificationToken = InferModel<typeof verificationTokens>;
 export type InterviewQuestion = InferModel<typeof interviewQuestions>;
-export type InterviewRequest = InferModel<typeof interviewRequests>; 
+export type InterviewRequest = InferModel<typeof interviewRequests>;
+export type UserInterviewPost = InferModel<typeof userInterviewPosts>;
+export type InterviewComment = InferModel<typeof interviewComments>;
+export type InterviewVote = InferModel<typeof interviewVotes>; 

@@ -24,6 +24,8 @@ import { MatchStatusCard } from '@/components/match-status-card';
 import { FirstMatchModal } from '@/components/first-match-modal';
 
 
+import { PostQuestionModal } from '@/components/post-question-modal';
+
 // 面试真题类型定义
 interface InterviewQuestion {
   id: number;
@@ -35,18 +37,34 @@ interface InterviewQuestion {
   recommendedAnswer?: string;
   source?: string;
   year: number;
+  postType: 'system' | 'user';
+  isOwnPost: boolean;
+  stats?: {
+    upvotes: number;
+    downvotes: number;
+    score: number;
+    comments: number;
+    views: number;
+  };
+  userVote?: 'up' | 'down' | null;
+  userName?: string | null;
+  userEmail?: string | null;
+  isAnonymous?: boolean;
+  interviewDate?: string;
 }
 
 // 面试真题组件
 const InterviewQuestionsTab = () => {
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPostModal, setShowPostModal] = useState(false);
   const [filters, setFilters] = useState({
     company: 'all',
     position: 'all',
     questionType: 'all',
     difficulty: 'all',
-    year: 'all'
+    year: 'all',
+    source: 'all' // 新增：来源筛选（all/system/user/mine）
   });
   const [filterOptions, setFilterOptions] = useState({
     companies: [] as string[],
@@ -61,11 +79,33 @@ const InterviewQuestionsTab = () => {
     total: 0,
     totalPages: 0
   });
-  const [expandedQuestions, setExpandedQuestions] = useState(new Set<number>());
+  const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
     fetchQuestions();
   }, [filters, pagination.page]);
+
+  // 前端筛选：根据来源过滤题目
+  const filteredQuestions = useMemo(() => {
+    if (filters.source === 'all') {
+      return questions;
+    }
+
+    return questions.filter(question => {
+      if (filters.source === 'mine') {
+        // 我的发布：只显示当前用户发布的
+        return question.isOwnPost;
+      } else if (filters.source === 'user') {
+        // 用户分享：只显示其他用户发布的（不包括自己的）
+        return question.postType === 'user' && !question.isOwnPost;
+      } else if (filters.source === 'system') {
+        // 系统精选：只显示系统题目
+        return question.postType === 'system';
+      }
+      return true;
+    });
+  }, [questions, filters.source]);
 
   const fetchQuestions = async () => {
     setLoading(true);
@@ -73,7 +113,8 @@ const InterviewQuestionsTab = () => {
       const params = new URLSearchParams({
         ...filters,
         page: pagination.page.toString(),
-        limit: pagination.limit.toString()
+        limit: pagination.limit.toString(),
+        includeUserPosts: 'true', // 启用用户发帖功能
       });
 
       const response = await fetch(`/api/interview-questions?${params}`);
@@ -96,16 +137,9 @@ const InterviewQuestionsTab = () => {
     setPagination(prev => ({ ...prev, page: 1 }));
   };
 
-  const toggleQuestion = (questionId: number) => {
-    setExpandedQuestions(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(questionId)) {
-        newSet.delete(questionId);
-      } else {
-        newSet.add(questionId);
-      }
-      return newSet;
-    });
+  const handleQuestionClick = (question: InterviewQuestion) => {
+    // 跳转到题目详情页
+    router.push(`/questions/${question.postType}/${question.id}`);
   };
 
   const getQuestionTypeLabel = (type: string) => {
@@ -138,11 +172,37 @@ const InterviewQuestionsTab = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4">
-      {/* 页面标题 */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">面试真题库 📝</h1>
-        <p className="text-lg sm:text-xl text-gray-600">收集各大公司最新面试题目和推荐答案</p>
+      {/* 页面标题和发帖按钮 */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+        <div className="text-center sm:text-left">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">真题分享 📝</h1>
+          <p className="text-base sm:text-lg text-gray-600">分享你的面试经历，看看大家有没有更好的想法吧？</p>
+        </div>
+        <Button
+          onClick={() => setShowPostModal(true)}
+          className="bg-white hover:bg-blue-50 border-2 border-blue-600 text-blue-600 font-medium px-6 py-2 flex items-center gap-2 whitespace-nowrap shadow-sm hover:shadow-md transition-all"
+        >
+          <Image
+            src="/logo-icon.png"
+            alt="MockPal"
+            width={20}
+            height={20}
+            className="rounded"
+          />
+                  分享我的面试经历
+        </Button>
       </div>
+
+      {/* 发帖弹窗 */}
+      <PostQuestionModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onSuccess={fetchQuestions}
+        filterOptions={{
+          companies: filterOptions.companies,
+          positions: filterOptions.positions,
+        }}
+      />
 
       {/* 筛选器 */}
       <Card className="mb-6">
@@ -150,7 +210,21 @@ const InterviewQuestionsTab = () => {
           <CardTitle>筛选条件</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {/* 来源筛选 - 放在第一个，最重要 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">📌 来源</label>
+              <select
+                value={filters.source}
+                onChange={(e) => handleFilterChange('source', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md text-sm font-medium"
+              >
+                <option value="all">全部来源</option>
+                <option value="system">🏆 系统精选</option>
+                <option value="user">👥 用户分享</option>
+                <option value="mine">📝 我的发布</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">公司</label>
               <select
@@ -233,15 +307,34 @@ const InterviewQuestionsTab = () => {
             </Card>
           ))}
         </div>
-      ) : questions.length > 0 ? (
+      ) : filteredQuestions.length > 0 ? (
         <>
           <div className="space-y-4">
-            {questions.map((question) => (
-              <Card key={question.id} className="hover:shadow-md transition-shadow">
+            {filteredQuestions.map((question) => (
+              <Card 
+                key={`${question.postType}-${question.id}`} 
+                className="hover:shadow-lg transition-all cursor-pointer"
+                onClick={() => handleQuestionClick(question)}
+              >
                 <CardContent className="p-6">
+                  {/* 标题栏 - 公司、岗位、年份等基本信息 */}
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-blue-500">{question.company}</span>
+                      {/* 来源标签 - 优先显示 */}
+                      {question.isOwnPost ? (
+                        <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full flex items-center gap-1">
+                          📝 我的发布
+                        </span>
+                      ) : question.postType === 'user' ? (
+                        <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full flex items-center gap-1">
+                          👥 用户分享
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full flex items-center gap-1">
+                          🏆 系统精选
+                        </span>
+                      )}
+                      <span className="font-semibold text-blue-600">{question.company}</span>
                       <span className="text-gray-400">·</span>
                       <span className="text-gray-600">{question.position}</span>
                       <span className="text-gray-400">·</span>
@@ -255,34 +348,43 @@ const InterviewQuestionsTab = () => {
                     </div>
                   </div>
                   
+                  {/* 问题内容预览 */}
                   <div className="mb-4">
-                    <h3 className="font-medium text-gray-800 mb-2">问题：</h3>
-                    <p className="text-gray-700 leading-relaxed">{question.question}</p>
+                    <h3 className="font-medium text-gray-800 mb-2">📝 问题：</h3>
+                    <p className="text-gray-700 leading-relaxed line-clamp-3">
+                      {question.question}
+                    </p>
                   </div>
 
-                  {question.recommendedAnswer && (
-                    <div className="mb-4">
-                      <button
-                        onClick={() => toggleQuestion(question.id)}
-                        className="flex items-center gap-2 text-sm font-medium text-blue-500 hover:text-blue-600"
-                      >
-                        {expandedQuestions.has(question.id) ? '🔽' : '▶️'} 查看推荐答案
-                      </button>
-                      
-                      {expandedQuestions.has(question.id) && (
-                        <div className="mt-3 p-4 rounded-lg bg-blue-50">
-                          <h4 className="font-medium text-gray-800 mb-2">推荐答案：</h4>
-                          <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                            {question.recommendedAnswer}
-                          </div>
-                        </div>
-                      )}
+                  {/* 来源信息 */}
+                  {question.source && (
+                    <div className="text-xs text-gray-500 mb-3">
+                      来源：{question.source}
                     </div>
                   )}
 
-                  {question.source && (
-                    <div className="text-xs text-gray-500">
-                      来源：{question.source}
+                  {/* 用户信息（如果是用户发布的） */}
+                  {question.postType === 'user' && !question.isAnonymous && question.userName && (
+                    <div className="text-xs text-gray-500 mb-3">
+                      分享者：{question.userName}
+                    </div>
+                  )}
+
+                  {/* 统计信息 */}
+                  {question.stats && (
+                    <div className="flex items-center gap-4 text-sm text-gray-600 pt-3 border-t">
+                      <span className="flex items-center gap-1">
+                        👍 {question.stats.upvotes}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        👎 {question.stats.downvotes}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        💬 {question.stats.comments} 条评论
+                      </span>
+                      <span className="ml-auto text-blue-500 font-medium">
+                        点击查看详情 →
+                      </span>
                     </div>
                   )}
                 </CardContent>
@@ -503,6 +605,17 @@ export default function MatchesPage() {
 
   // 使用reducer简化状态管理
   const [state, dispatch] = useReducer(matchesReducer, initialMatchesState);
+  
+  // 检查 URL 参数，支持从详情页返回到指定标签
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab === 'questions') {
+        dispatch({ type: 'SET_TAB', payload: 'questions' });
+      }
+    }
+  }, []);
   
   // 保持Jotai原子状态同步（用于全局状态共享）
   const [, setPotentialMatches] = useAtom(potentialMatchesAtom);
@@ -1098,7 +1211,7 @@ export default function MatchesPage() {
               className={state.activeTab === "questions" ? "active" : ""}
               onClick={() => dispatch({ type: "SET_TAB", payload: "questions" })}
             >
-              📝 面试真题
+              📝 真题分享
             </button>
           </div>
         </div>
