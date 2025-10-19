@@ -129,20 +129,21 @@ export async function getPotentialMatches(userId: number) {
 
     // Filter out users that are already matched and ensure they have contact info
     const filteredMatches = potentialMatches.filter(user => {
+      const profile = user.profile as any;
       // 检查基本资料是否完整
-      const hasBasicInfo = user.profile?.jobType && user.profile?.experienceLevel;
+      const hasBasicInfo = profile?.jobType && profile?.experienceLevel;
       // 检查是否选择了练习内容
       const hasPracticeContent = (
-        user.profile?.technicalInterview ||
-        user.profile?.behavioralInterview ||
-        user.profile?.caseAnalysis ||
-        user.profile?.statsQuestions
+        profile?.technicalInterview ||
+        profile?.behavioralInterview ||
+        profile?.caseAnalysis ||
+        profile?.statsQuestions
       );
       // 检查是否有联系方式
       const hasContactInfo = (
-        (user.profile?.email && user.profile.email.trim() !== '') ||
-        (user.profile?.wechat && user.profile.wechat.trim() !== '') ||
-        (user.profile?.linkedin && user.profile.linkedin.trim() !== '')
+        (profile?.email && profile.email.trim() !== '') ||
+        (profile?.wechat && profile.wechat.trim() !== '') ||
+        (profile?.linkedin && profile.linkedin.trim() !== '')
       );
       const isNotExcluded = !excludedIds.includes(user.id);
       return isNotExcluded && hasBasicInfo && hasPracticeContent && hasContactInfo;
