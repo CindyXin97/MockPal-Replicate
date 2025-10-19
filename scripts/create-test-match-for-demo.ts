@@ -94,6 +94,8 @@ async function createTestMatchForDemo() {
       wechat: 'demo_user_wechat',
       linkedin: 'https://linkedin.com/in/demo-user',
       bio: '测试账号 - 用于演示首次匹配功能',
+      school: '测试大学',
+      skills: null,
       updatedAt: new Date()
     };
     
