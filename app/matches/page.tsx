@@ -1411,29 +1411,25 @@ export default function MatchesPage() {
                 </div>
               ) : (
                 <>
-                  {state.activeTab === 'matches' && state.showBanner && (
-                    <div className="notification yellow">
-                      <div className="message">
-                        <span className="icon">🎉</span>
-                        恭喜匹配成功！记得及时填写面试反馈，这将帮助系统为你和他人匹配到更合适的练习伙伴哦～
-                      </div>
-                      <div className="action">
-                        <button onClick={() => dispatch({ type: 'TOGGLE_BANNER' })}>
-                          我知道了
-                        </button>
-                      </div>
-                    </div>
-                  )}
                   {state.activeTab === 'matches' && (
                     <div className="rounded-lg p-4 mb-4 border bg-gradient-to-r from-blue-50 to-purple-50 border-blue-500">
-                      <div className="flex items-center">
-                        <span className="text-xl mr-3">🏆</span>
-                        <div className="text-sm text-blue-500/90">
-                          <p className="font-semibold mb-2">成就等级系统</p>
-                          <p className="leading-relaxed">
-                            完成面试获得经验，提升等级！🌱<span className="font-medium">新用户</span>(0次) → ⭐<span className="font-medium">面试新手</span>(1-4次) → 🌟<span className="font-medium">面试新星</span>(5-9次) → 🌙<span className="font-medium">面试达人</span>(10-14次) → 👑<span className="font-medium">面试导师</span>(15次+)
-                          </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center flex-1">
+                          <span className="text-xl mr-3">🏆</span>
+                          <div className="text-sm text-blue-500/90">
+                            <p className="font-semibold mb-2">成就等级系统</p>
+                            <p className="leading-relaxed">
+                              完成面试获得经验，提升等级！🌱<span className="font-medium">新用户</span>(0次) → ⭐<span className="font-medium">面试新手</span>(1-4次) → 🌟<span className="font-medium">面试新星</span>(5-9次) → 🌙<span className="font-medium">面试达人</span>(10-14次) → 👑<span className="font-medium">面试导师</span>(15次+)
+                            </p>
+                          </div>
                         </div>
+                        <button 
+                          onClick={() => dispatch({ type: "SET_TAB", payload: "guide" })}
+                          className="ml-4 flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                        >
+                          <span>查看面试指南</span>
+                          <span className="text-lg">→</span>
+                        </button>
                       </div>
                     </div>
                   )}
