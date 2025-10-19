@@ -199,7 +199,7 @@ export const userInterviewPosts = pgTable('user_interview_posts', {
 });
 
 // 评论表（支持系统题目和用户发布的题目）
-export const interviewComments = pgTable('interview_comments', {
+export const interviewComments: any = pgTable('interview_comments', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
   postType: varchar('post_type', { length: 20 }).notNull(), // 'system' or 'user'
