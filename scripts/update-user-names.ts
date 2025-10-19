@@ -51,15 +51,17 @@ async function updateUserNames() {
     // 显示更新后的所有用户
     const allUsers = await db.select().from(users);
     const relevantUsers = allUsers.filter(u => 
-      u.name.includes('Sarah') || 
-      u.name.includes('Kevin') || 
-      u.name.includes('Emily') || 
-      u.name.includes('Michael') || 
-      u.name.includes('David') ||
-      u.name.includes('Data') ||
-      u.name.includes('Analytics') ||
-      u.name.includes('Stats') ||
-      u.name.includes('Code')
+      u.name && (
+        u.name.includes('Sarah') || 
+        u.name.includes('Kevin') || 
+        u.name.includes('Emily') || 
+        u.name.includes('Michael') || 
+        u.name.includes('David') ||
+        u.name.includes('Data') ||
+        u.name.includes('Analytics') ||
+        u.name.includes('Stats') ||
+        u.name.includes('Code')
+      )
     );
     
     relevantUsers.forEach(u => {
