@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth-config';
+import { authConfig } from '@/lib/auth-config';
 import { db } from '@/lib/db';
 import { interviewVotes, users } from '@/lib/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🔵 [投票API] 收到投票请求');
     
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authConfig);
     console.log('🔵 [投票API] Session:', session?.user?.email ? `用户: ${session.user.email}` : '未登录');
 
     if (!session?.user?.email) {

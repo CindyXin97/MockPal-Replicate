@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth-config';
+import { authConfig } from '@/lib/auth-config';
 import { db } from '@/lib/db';
 import { interviewQuestions, userInterviewPosts, users, interviewVotes, interviewComments } from '@/lib/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authConfig);
     const { searchParams } = new URL(request.url);
     
     const postType = searchParams.get('postType');
