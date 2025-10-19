@@ -504,6 +504,8 @@ export async function getSuccessfulMatches(userId: number) {
         const user = usersMap.get(partnerId);
         if (!user || !user.profile) return null;
 
+        const profile = user.profile as any;
+        
         // 获取该匹配的反馈信息
         const feedback = feedbacksMap.get(match.id);
         
@@ -511,22 +513,22 @@ export async function getSuccessfulMatches(userId: number) {
           id: user.id, // 用户ID，用于显示
           matchId: match.id, // 匹配记录ID，用于状态更新
           username: user.name,
-          jobType: user.profile.jobType,
-          experienceLevel: user.profile.experienceLevel,
-          targetCompany: user.profile.targetCompany,
-          targetIndustry: user.profile.targetIndustry,
+          jobType: profile.jobType,
+          experienceLevel: profile.experienceLevel,
+          targetCompany: profile.targetCompany,
+          targetIndustry: profile.targetIndustry,
           practicePreferences: {
-            technicalInterview: user.profile.technicalInterview,
-            behavioralInterview: user.profile.behavioralInterview,
-            caseAnalysis: user.profile.caseAnalysis,
-            statsQuestions: user.profile.statsQuestions,
+            technicalInterview: profile.technicalInterview,
+            behavioralInterview: profile.behavioralInterview,
+            caseAnalysis: profile.caseAnalysis,
+            statsQuestions: profile.statsQuestions,
           },
           contactInfo: {
-            email: user.profile.email,
-            wechat: user.profile.wechat,
-            linkedin: user.profile.linkedin,
+            email: profile.email,
+            wechat: profile.wechat,
+            linkedin: profile.linkedin,
           },
-          bio: user.profile.bio,
+          bio: profile.bio,
           // 添加匹配相关信息
           contactStatus: match.contactStatus,
           createdAt: match.createdAt?.toISOString(),
