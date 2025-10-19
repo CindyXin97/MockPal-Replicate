@@ -45,8 +45,8 @@ async function createDiverseUsers() {
           .values({
             email: user.email,
             name: user.name,
-            hashedPassword: 'dummy_hash_' + Math.random(),
-            isVerified: true,
+            passwordHash: 'dummy_hash_' + Math.random(),
+            emailVerified: new Date(),
           })
           .returning();
         

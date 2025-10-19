@@ -113,8 +113,8 @@ async function createFakePosts() {
         .values({
           email: testUserEmail,
           name: 'MockPal 测试用户',
-          hashedPassword: 'dummy_hash',
-          isVerified: true,
+          passwordHash: 'dummy_hash',
+          emailVerified: new Date(),
         })
         .returning();
       testUserId = newUser[0].id;
