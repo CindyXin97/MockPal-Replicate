@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: '题目发布成功！',
-      data: newPost[0],
+      data: newPost[0] as any,
     });
   } catch (error) {
     console.error('Error creating interview post:', error);
