@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: '评论发布成功！',
-      data: newComment[0] as any,
+      data: (newComment as any)[0],
     });
   } catch (error: any) {
     console.error('Error creating comment:', error);
