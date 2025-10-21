@@ -205,21 +205,65 @@ export async function getPotentialMatches(userId: number) {
       }
     }
     
-    // 对每个优先级组内部按成就等级（经验值）降序排序
-    // 经验值高的用户优先推荐，相同经验值则保持注册时间倒序（新用户优先）
-    const sortByAchievement = (a: typeof filteredMatches[0], b: typeof filteredMatches[0]) => {
+    // 混合排序：综合考虑等级、活跃度和新用户
+    const sortByMixedScore = (a: typeof filteredMatches[0], b: typeof filteredMatches[0]) => {
+      const now = Date.now();
+      const ONE_DAY = 24 * 60 * 60 * 1000;
+      
+      // 计算用户A的综合得分
       const aExp = achievementsMap.get(a.id)?.experiencePoints || 0;
+      const aProfile = a.profile as any;
+      const aUpdatedAt = aProfile?.updatedAt?.getTime() || a.createdAt?.getTime() || 0;
+      const aCreatedAt = a.createdAt?.getTime() || 0;
+      
+      // 等级分：经验值 * 100（最高权重）
+      const aExpScore = aExp * 100;
+      
+      // 活跃分：最近30天内更新资料 +50，最近7天 +70
+      const aDaysSinceUpdate = (now - aUpdatedAt) / ONE_DAY;
+      let aActiveScore = 0;
+      if (aDaysSinceUpdate <= 7) {
+        aActiveScore = 70; // 最近7天活跃
+      } else if (aDaysSinceUpdate <= 30) {
+        aActiveScore = 50; // 最近30天活跃
+      }
+      
+      // 新用户分：注册7天内 +30
+      const aDaysSinceCreated = (now - aCreatedAt) / ONE_DAY;
+      const aNewUserScore = aDaysSinceCreated <= 7 ? 30 : 0;
+      
+      const aScore = aExpScore + aActiveScore + aNewUserScore;
+      
+      // 计算用户B的综合得分
       const bExp = achievementsMap.get(b.id)?.experiencePoints || 0;
-      if (bExp !== aExp) return bExp - aExp; // 经验值降序
-      // 经验值相同，按创建时间降序（新用户优先）
-      return (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0);
+      const bProfile = b.profile as any;
+      const bUpdatedAt = bProfile?.updatedAt?.getTime() || b.createdAt?.getTime() || 0;
+      const bCreatedAt = b.createdAt?.getTime() || 0;
+      
+      const bExpScore = bExp * 100;
+      
+      const bDaysSinceUpdate = (now - bUpdatedAt) / ONE_DAY;
+      let bActiveScore = 0;
+      if (bDaysSinceUpdate <= 7) {
+        bActiveScore = 70;
+      } else if (bDaysSinceUpdate <= 30) {
+        bActiveScore = 50;
+      }
+      
+      const bDaysSinceCreated = (now - bCreatedAt) / ONE_DAY;
+      const bNewUserScore = bDaysSinceCreated <= 7 ? 30 : 0;
+      
+      const bScore = bExpScore + bActiveScore + bNewUserScore;
+      
+      // 按综合得分降序排序
+      return bScore - aScore;
     };
     
-    invitedOverlapList.sort(sortByAchievement);
-    overlapList.sort(sortByAchievement);
-    expList.sort(sortByAchievement);
-    jobList.sort(sortByAchievement);
-    otherList.sort(sortByAchievement);
+    invitedOverlapList.sort(sortByMixedScore);
+    overlapList.sort(sortByMixedScore);
+    expList.sort(sortByMixedScore);
+    jobList.sort(sortByMixedScore);
+    otherList.sort(sortByMixedScore);
     
     const finalList = [...invitedOverlapList, ...overlapList, ...expList, ...jobList, ...otherList].slice(0, 4);
     return {
