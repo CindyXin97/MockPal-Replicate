@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const currentUser = userResult[0];
     const userId = currentUser.id;
-    const userName = currentUser.name || currentUser.email.split('@')[0] || '用户';
+    const userName = currentUser.name || currentUser.email?.split('@')[0] || '用户';
 
     // 获取请求数据
     const body = await request.json();
