@@ -41,19 +41,19 @@ export async function createNotification(params: CreateNotificationParams) {
     let shouldNotify = true;
     switch (params.type) {
       case 'comment_reply':
-        shouldNotify = userSettings.notifyCommentReply;
+        shouldNotify = userSettings.notifyCommentReply ?? true;
         break;
       case 'comment_mention':
-        shouldNotify = userSettings.notifyMention;
+        shouldNotify = userSettings.notifyMention ?? true;
         break;
       case 'post_comment':
-        shouldNotify = userSettings.notifyPostComment;
+        shouldNotify = userSettings.notifyPostComment ?? true;
         break;
       case 'vote_up':
-        shouldNotify = userSettings.notifyVote;
+        shouldNotify = userSettings.notifyVote ?? false;
         break;
       case 'match_success':
-        shouldNotify = userSettings.notifyMatch;
+        shouldNotify = userSettings.notifyMatch ?? true;
         break;
     }
 

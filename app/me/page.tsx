@@ -16,19 +16,26 @@ interface UserStats {
     email: string;
   };
   views: {
-    total: number;
-    today: number;
+    total?: number;
+    today?: number;
+    totalInteractions?: number;
+    viewsOfMe?: number;
+    myViews?: number;
+    todayViewsOfMe?: number;
+    todayMyViews?: number;
   };
   matching: {
     totalLikes: number;
     totalMatches: number;
     successfulMatches: number;
     pendingMatches: number;
+    percentile?: number;
   };
   interviews: {
     completed: number;
     experiencePoints: number;
     currentLevel: string;
+    percentile?: number;
   };
   community: {
     postsCount: number;
@@ -39,6 +46,20 @@ interface UserStats {
   notifications: {
     unreadCount: number;
     recent: any[];
+  };
+  activity?: {
+    thisWeek: number;
+    lastWeek: number;
+    weekChange?: number;
+    thisMonth: number;
+    lastMonth: number;
+    monthChange?: number;
+    thisWeekPosts?: number;
+    thisWeekComments?: number;
+    thisWeekViews?: number;
+    thisMonthPosts?: number;
+    thisMonthComments?: number;
+    thisMonthViews?: number;
   };
 }
 
@@ -84,6 +105,7 @@ export default function MePage() {
 
   // 计算到下一等级的进度
   const getNextLevelProgress = () => {
+    if (!stats) return null;
     const currentExp = stats.interviews.experiencePoints;
     const levelThresholds = [
       { name: '新用户', exp: 0 },
@@ -195,6 +217,7 @@ export default function MePage() {
             {/* 等级进度条 */}
             {(() => {
               const progress = getNextLevelProgress();
+              if (!progress) return null;
               return (
                 <div className="space-y-0.5">
                   <div className="flex items-center justify-between text-xs">

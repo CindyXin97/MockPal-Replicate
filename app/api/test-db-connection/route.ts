@@ -25,7 +25,7 @@ export async function GET() {
       const countResult = await db.execute(sql`
         SELECT COUNT(*) as count FROM interview_votes;
       `);
-      voteCount = parseInt(countResult.rows[0]?.count || '0');
+      voteCount = parseInt(String(countResult.rows[0]?.count || '0'));
       console.log('🧪 [测试API] 投票记录数:', voteCount);
 
       // 获取最近5条记录
