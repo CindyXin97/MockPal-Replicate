@@ -63,7 +63,7 @@ export function BaseLayout({
   return (
     <div className="min-h-screen flex flex-col">
       {showHeader && <Header />}
-      <main className="flex-1 container mx-auto py-8 px-4">
+      <main className="flex-1 container mx-auto py-8 px-4 mt-16">
         {children}
       </main>
     </div>

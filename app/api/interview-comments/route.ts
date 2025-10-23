@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth-config';
 import { db } from '@/lib/db';
-import { interviewComments, users } from '@/lib/db/schema';
+import { interviewComments, users, userInterviewPosts, interviewQuestions } from '@/lib/db/schema';
 import { eq, desc, and, sql } from 'drizzle-orm';
+import {
+  notifyCommentReply,
+  notifyMentioned,
+  notifyPostComment,
+  parseMentions,
+} from '@/lib/notification-service';
 
 // POST - 创建评论
 export async function POST(request: NextRequest) {
@@ -17,9 +23,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 获取用户ID
+    // 获取用户ID和姓名
     const userResult = await db
-      .select({ id: users.id })
+      .select({ id: users.id, name: users.name, email: users.email })
       .from(users)
       .where(eq(users.email, session.user.email))
       .limit(1);
@@ -31,7 +37,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = userResult[0].id;
+    const currentUser = userResult[0];
+    const userId = currentUser.id;
+    const userName = currentUser.name || currentUser.email.split('@')[0] || '用户';
 
     // 获取请求数据
     const body = await request.json();
@@ -80,10 +88,86 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
+    const commentData = (newComment as any)[0];
+
+    // === 触发通知 ===
+    try {
+      // 1. 解析评论中的@提及
+      const mentionedUserIds = await parseMentions(content);
+      
+      // 2. 通知被@的用户
+      for (const mentionedUserId of mentionedUserIds) {
+        await notifyMentioned(
+          mentionedUserId,
+          userId,
+          userName,
+          content,
+          postType,
+          parseInt(postId)
+        );
+      }
+
+      // 3. 如果是回复评论，通知原评论作者
+      if (parentCommentId) {
+        const parentComment = await db
+          .select({ userId: interviewComments.userId })
+          .from(interviewComments)
+          .where(eq(interviewComments.id, parseInt(parentCommentId)))
+          .limit(1);
+
+        if (parentComment.length > 0) {
+          await notifyCommentReply(
+            parentComment[0].userId,
+            userId,
+            userName,
+            content,
+            postType,
+            parseInt(postId),
+            commentData.id
+          );
+        }
+      }
+
+      // 4. 如果是直接评论题目（不是回复），通知题目作者
+      if (!parentCommentId) {
+        let postAuthorId: number | null = null;
+
+        if (postType === 'user') {
+          // 用户发布的题目
+          const userPost = await db
+            .select({ userId: userInterviewPosts.userId })
+            .from(userInterviewPosts)
+            .where(eq(userInterviewPosts.id, parseInt(postId)))
+            .limit(1);
+          
+          if (userPost.length > 0) {
+            postAuthorId = userPost[0].userId;
+          }
+        }
+        // 系统题目没有作者，不需要通知
+
+        if (postAuthorId && postAuthorId !== userId) {
+          await notifyPostComment(
+            postAuthorId,
+            userId,
+            userName,
+            content,
+            postType,
+            parseInt(postId)
+          );
+        }
+      }
+
+      console.log('✅ [评论] 通知发送成功');
+    } catch (notificationError) {
+      console.error('⚠️ [评论] 发送通知失败（不影响评论发布）:', notificationError);
+      // 通知失败不影响评论发布
+    }
+
     return NextResponse.json({
       success: true,
       message: '评论发布成功！',
-      data: (newComment as any)[0],
+      data: commentData,
     });
   } catch (error: any) {
     console.error('Error creating comment:', error);

@@ -128,6 +128,13 @@ export const userAchievements = pgTable('user_achievements', {
   totalInterviews: integer('total_interviews').default(0).notNull(),
   experiencePoints: integer('experience_points').default(0).notNull(),
   currentLevel: varchar('current_level', { length: 50 }).default('新用户').notNull(),
+  // 新增统计字段
+  totalViews: integer('total_views').default(0), // 总浏览人数
+  totalMatches: integer('total_matches').default(0), // 总匹配数
+  successfulMatches: integer('successful_matches').default(0), // 匹配成功数
+  postsCount: integer('posts_count').default(0), // 发布的题目数
+  commentsCount: integer('comments_count').default(0), // 评论数
+  votesGiven: integer('votes_given').default(0), // 点赞数
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -219,6 +226,41 @@ export const interviewVotes = pgTable('interview_votes', {
   postId: integer('post_id').notNull(),
   voteType: varchar('vote_type', { length: 10 }).notNull(), // 'up' or 'down'
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 用户通知表
+export const userNotifications = pgTable('user_notifications', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  type: varchar('type', { length: 50 }).notNull(), // comment_reply, comment_mention, post_comment, vote_up, match_success
+  actorId: integer('actor_id').references(() => users.id, { onDelete: 'set null' }),
+  actorName: varchar('actor_name', { length: 255 }),
+  postType: varchar('post_type', { length: 20 }),
+  postId: integer('post_id'),
+  commentId: integer('comment_id').references(() => interviewComments.id, { onDelete: 'cascade' }),
+  matchId: integer('match_id').references(() => matches.id, { onDelete: 'cascade' }),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content'),
+  link: text('link'),
+  isRead: boolean('is_read').default(false),
+  isDeleted: boolean('is_deleted').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  readAt: timestamp('read_at'),
+});
+
+// 用户通知设置表
+export const userNotificationSettings = pgTable('user_notification_settings', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull().unique(),
+  notifyCommentReply: boolean('notify_comment_reply').default(true),
+  notifyMention: boolean('notify_mention').default(true),
+  notifyPostComment: boolean('notify_post_comment').default(true),
+  notifyVote: boolean('notify_vote').default(false),
+  notifyMatch: boolean('notify_match').default(true),
+  emailDigestEnabled: boolean('email_digest_enabled').default(true),
+  emailDigestFrequency: varchar('email_digest_frequency', { length: 20 }).default('weekly'),
+  lastDigestSent: timestamp('last_digest_sent'),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
