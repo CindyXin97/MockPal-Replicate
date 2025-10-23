@@ -1257,7 +1257,7 @@ export default function MatchesPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex justify-center gap-6 mt-8">
+                  <div className="flex justify-center gap-6 mt-4">
                     <div className="h-10 bg-gray-200 rounded-full w-20"></div>
                     <div className="h-10 bg-gray-200 rounded-full w-20"></div>
                   </div>
@@ -1331,9 +1331,9 @@ export default function MatchesPage() {
                           {currentMatch.skills && currentMatch.skills.length > 0 && (
                             <>
                               <div className="mt-4 font-semibold text-base mb-2 text-blue-500">💡 技能标签</div>
-                              <div className="flex gap-1.5 flex-wrap mb-4">
+                              <div className="flex gap-2 flex-wrap mb-4">
                                 {currentMatch.skills.map((skill: string, index: number) => (
-                                  <span key={index} className="rounded-full px-2 py-0.5 flex items-center gap-1 text-xs font-medium shadow-sm bg-green-50 text-green-600 border border-green-200">
+                                  <span key={index} className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-green-50 text-green-600 border border-green-200">
                                     💡 {skill}
                                   </span>
                                 ))}
@@ -1348,7 +1348,7 @@ export default function MatchesPage() {
                           <div className="font-bold text-lg text-gray-700">{currentMatch.targetIndustry || '未设置'}</div>
                         </div>
                       </div>
-                      <div className="flex justify-center gap-6 mt-8">
+                      <div className="flex justify-center gap-6 mt-4">
                         <Button
                           variant="outline"
                           size="lg"
@@ -1504,9 +1504,9 @@ export default function MatchesPage() {
                             {match.skills && match.skills.length > 0 && (
                               <div className="mt-4 mb-4">
                                 <div className="text-xs font-medium text-gray-700 mb-2">💡 技能标签</div>
-                                <div className="flex gap-1.5 flex-wrap">
+                                <div className="flex gap-2 flex-wrap">
                                   {match.skills.map((skill: string, index: number) => (
-                                    <span key={index} className="rounded-full px-2 py-0.5 flex items-center gap-1 text-xs font-medium shadow-sm bg-green-50 text-green-600 border border-green-200">
+                                    <span key={index} className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-green-50 text-green-600 border border-green-200">
                                       💡 {skill}
                                     </span>
                                   ))}
