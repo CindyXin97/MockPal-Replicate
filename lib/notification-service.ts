@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { userNotifications, users, userNotificationSettings } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { emailService } from '@/lib/email-service';
 
 interface CreateNotificationParams {
   userId: number;
@@ -135,7 +136,8 @@ export async function notifyMentioned(
     return null;
   }
 
-  return createNotification({
+  // 创建站内通知
+  const notification = await createNotification({
     userId: mentionedUserId,
     type: 'comment_mention',
     actorId,
@@ -146,6 +148,35 @@ export async function notifyMentioned(
     postType,
     postId,
   });
+
+  // 发送邮件通知
+  try {
+    // 获取被提及用户的邮箱
+    const mentionedUser = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(eq(users.id, mentionedUserId))
+      .limit(1);
+
+    if (mentionedUser.length > 0 && mentionedUser[0].email) {
+      const commentUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/matches?tab=questions&postType=${postType}&postId=${postId}`;
+      
+      await emailService.sendMentionEmail(mentionedUser[0].email, {
+        actorName,
+        content,
+        postType,
+        postId,
+        commentUrl,
+      });
+      
+      console.log(`✅ [通知] @提及邮件已发送给用户 ${mentionedUserId}`);
+    }
+  } catch (emailError) {
+    console.error('⚠️ [通知] @提及邮件发送失败（不影响站内通知）:', emailError);
+    // 邮件发送失败不影响站内通知
+  }
+
+  return notification;
 }
 
 /**

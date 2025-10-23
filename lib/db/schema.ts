@@ -154,7 +154,7 @@ export const userDailyViews = pgTable('user_daily_views', {
 export const emailSendLogs = pgTable('email_send_logs', {
   id: serial('id').primaryKey(),
   recipientEmail: varchar('recipient_email', { length: 255 }).notNull(), // 收件人邮箱
-  emailType: varchar('email_type', { length: 50 }).notNull(), // 邮件类型: login, password_setup, match_success
+  emailType: varchar('email_type', { length: 50 }).notNull(), // 邮件类型: login, password_setup, match_success, mention
   subject: varchar('subject', { length: 255 }), // 邮件主题
   status: varchar('status', { length: 20 }).notNull().default('sent'), // sent, failed, skipped
   errorMessage: text('error_message'), // 如果失败，记录错误信息

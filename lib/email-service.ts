@@ -22,10 +22,41 @@ class EmailService {
   /**
    * 检查邮件发送频率限制
    * 每个用户每周最多收到 2 封邮件
+   * @提及邮件每天最多发送 1 封
    */
   private async checkEmailRateLimit(email: string, emailType: string): Promise<{ allowed: boolean; message?: string; sentCount?: number }> {
     try {
-      // 计算7天前的时间戳
+      // @提及邮件使用每日限制
+      if (emailType === 'mention') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // 今天开始时间
+        
+        const result = await db
+          .select({ count: count() })
+          .from(emailSendLogs)
+          .where(
+            and(
+              eq(emailSendLogs.recipientEmail, email),
+              eq(emailSendLogs.emailType, 'mention'),
+              gte(emailSendLogs.sentAt, today),
+              eq(emailSendLogs.status, 'sent')
+            )
+          );
+        
+        const sentCount = result[0]?.count || 0;
+        
+        if (sentCount >= 1) {
+          return {
+            allowed: false,
+            message: `该邮箱今天已收到 ${sentCount} 封@提及邮件，已达到每日限制（1封）`,
+            sentCount,
+          };
+        }
+        
+        return { allowed: true, sentCount };
+      }
+      
+      // 其他邮件类型使用每周限制
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       
@@ -218,6 +249,121 @@ class EmailService {
         to, 
         'match_success', 
         'MockPal - 匹配成功通知', 
+        'failed', 
+        error instanceof Error ? error.message : String(error)
+      );
+      
+      throw error;
+    }
+  }
+  
+  // @提及邮件模板
+  public async sendMentionEmail(to: string, opts: { 
+    actorName: string; 
+    content: string; 
+    postType: string; 
+    postId: number; 
+    commentUrl: string;
+  }) {
+    console.log('🔵 [EmailService] 准备发送@提及通知');
+    console.log('📧 收件人:', to);
+    console.log('👤 提及者:', opts.actorName);
+    console.log('💬 评论内容:', opts.content.slice(0, 50) + '...');
+    console.log('🔗 跳转链接:', opts.commentUrl);
+  
+    // 开发环境：直接打印，不真正发信
+    if (process.env.NODE_ENV === 'development') {
+      console.log('\n🚀 [开发环境] @提及通知：');
+      console.log(`📢 ${opts.actorName} 在评论中提到了你！`);
+      console.log(`💬 评论内容: ${opts.content.slice(0, 100)}...`);
+      console.log(`🔗 前往查看: ${opts.commentUrl}\n`);
+      return { data: { id: 'dev-mode-skip' }, error: null };
+    }
+    
+    // 检查发送频率限制（每日1封）
+    const rateLimitCheck = await this.checkEmailRateLimit(to, 'mention');
+    if (!rateLimitCheck.allowed) {
+      console.log(`⚠️ [EmailService] ${rateLimitCheck.message}`);
+      await this.logEmailSend(to, 'mention', 'MockPal - 有人@了你', 'skipped', rateLimitCheck.message);
+      return { 
+        data: { id: 'rate-limit-skip' }, 
+        error: null,
+        skipped: true,
+        reason: 'rate_limit'
+      };
+    }
+  
+    const isProduction = process.env.NODE_ENV === 'production';
+    const fromEmail = isProduction 
+      ? 'MockPal <noreply@mockpals.com>'
+      : 'MockPal <onboarding@resend.dev>';
+  
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .logo { text-align: center; background: #F3F4F6; padding: 24px 20px; margin: -20px -20px 20px -20px; }
+            .logo img { max-width: 200px; height: auto; }
+            .header { text-align: center; margin-bottom: 24px; }
+            .button { display: inline-block; padding: 12px 20px; background: #3B82F6; color: white; text-decoration: none; border-radius: 8px; margin: 16px 0; }
+            .tip { color: #6b7280; font-size: 14px; }
+            .comment-box { background: #F9FAFB; border-left: 4px solid #3B82F6; padding: 16px; margin: 20px 0; border-radius: 4px; }
+            .comment-text { color: #374151; font-size: 15px; margin: 0; line-height: 1.6; }
+            .mention-highlight { background: #FEF3C7; padding: 2px 4px; border-radius: 3px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="logo">
+              <img src="https://mockpals.com/logo.png" alt="MockPal Logo" />
+            </div>
+            <div class="header">
+              <h1 style="color: #1f2937;">有人@了你！📢</h1>
+            </div>
+            <p style="color: #374151; font-size: 17px; text-align: center; line-height: 1.6;">
+              <strong>${opts.actorName}</strong> 在评论中提到了你
+            </p>
+            <div class="comment-box">
+              <p class="comment-text">💬 "${opts.content.slice(0, 200)}${opts.content.length > 200 ? '...' : ''}"</p>
+            </div>
+            <div style="text-align: center;">
+              <a href="${opts.commentUrl}" class="button">前往查看评论</a>
+            </div>
+            <p class="tip">如果按钮无法点击，请复制以下链接到浏览器：</p>
+            <p style="color: #3b82f6; word-break: break-all; font-size: 14px;">${opts.commentUrl}</p>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;">
+              <p>💡 提示：你可以在个人中心关闭@提及邮件通知</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  
+    try {
+      const result = await this.resend.emails.send({
+        from: fromEmail,
+        to,
+        subject: `MockPal - ${opts.actorName} 在评论中提到了你`,
+        html,
+      });
+      console.log('✅ [EmailService] @提及通知已发送');
+      
+      // 记录发送成功
+      await this.logEmailSend(to, 'mention', `MockPal - ${opts.actorName} 在评论中提到了你`, 'sent');
+      
+      return result;
+    } catch (error) {
+      console.error('❌ [EmailService] @提及通知发送失败:', error);
+      
+      // 记录发送失败
+      await this.logEmailSend(
+        to, 
+        'mention', 
+        `MockPal - ${opts.actorName} 在评论中提到了你`, 
         'failed', 
         error instanceof Error ? error.message : String(error)
       );
