@@ -213,7 +213,7 @@ function ProfilePageContent() {
   };
 
   const handleSkillChange = (index: number, value: string) => {
-    if (value.length > 12) return; // 限制每个技能不超过12个字符
+    if (value.length > 20) return; // 限制每个技能不超过20个字符
     
     setFormData(prev => {
       const newSkills = [...(prev.skills || [])];
@@ -338,9 +338,9 @@ function ProfilePageContent() {
       return;
     }
 
-    // 验证一句话介绍必填
+    // 验证个人介绍必填
     if (!formData.bio?.trim()) {
-      toast.error('请填写一句话介绍');
+      toast.error('请填写个人介绍');
       return;
     }
 
@@ -471,6 +471,7 @@ function ProfilePageContent() {
                         <SelectItem value="DS">数据科学 (DS)</SelectItem>
                         <SelectItem value="DE">数据工程 (DE)</SelectItem>
                         <SelectItem value="BA">商业分析 (BA)</SelectItem>
+                        <SelectItem value="MLE">机器学习工程师 (MLE)</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
@@ -613,8 +614,8 @@ function ProfilePageContent() {
                         onChange={(e) => handleSkillChange(index, e.target.value)}
                         placeholder={`技能 ${index + 1}`}
                         className="h-10 pr-8"
-                        style={{ width: `${Math.max(80, Math.min(160, getTextWidth(skill) + 40))}px` }}
-                        maxLength={10}
+                        style={{ width: `${Math.max(80, Math.min(200, getTextWidth(skill) + 40))}px` }}
+                        maxLength={20}
                       />
                       <Button
                         type="button"
@@ -646,15 +647,15 @@ function ProfilePageContent() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="bio">一句话介绍 <span className="text-red-500 ml-1">*</span></Label>
+                <Label htmlFor="bio">简单介绍一下自己 <span className="text-red-500 ml-1">*</span></Label>
                 <Input
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => handleInputChange('bio', e.target.value)}
-                  placeholder="如：三年打工人，在美东时区，希望找到小姐妹一起练case～"
+                  placeholder="如：三年DS经验，擅长Case，坐标纽约，工作日晚上有空～"
                   className="h-10"
                 />
-                <p className="text-sm text-gray-500">✍️ 写好您的介绍可以增加匹配成功率哦！</p>
+                <p className="text-sm text-gray-500">💡 建议包含：目前状态、擅长技能、所在时区、可Mock时间段，让匹配更精准！</p>
               </div>
 
               <Button type="submit" className="w-full px-8 py-2 text-base font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600" disabled={isLoading}>
