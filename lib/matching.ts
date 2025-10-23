@@ -275,6 +275,7 @@ export async function getPotentialMatches(userId: number) {
           username: user.name,
           jobType: profile?.jobType,
           experienceLevel: profile?.experienceLevel,
+          jobSeekingStatus: profile?.jobSeekingStatus,
           targetCompany: profile?.targetCompany,
           targetIndustry: profile?.targetIndustry,
           practicePreferences: {
@@ -560,6 +561,7 @@ export async function getSuccessfulMatches(userId: number) {
           username: user.name,
           jobType: profile.jobType,
           experienceLevel: profile.experienceLevel,
+          jobSeekingStatus: profile.jobSeekingStatus,
           targetCompany: profile.targetCompany,
           targetIndustry: profile.targetIndustry,
           practicePreferences: {

@@ -43,6 +43,7 @@ function ProfilePageContent() {
     name: '',
     jobType: 'DA',
     experienceLevel: '应届',
+    jobSeekingStatus: undefined,
     targetCompany: '',
     targetIndustry: '',
     technicalInterview: false,
@@ -96,6 +97,7 @@ function ProfilePageContent() {
           name: '',
           jobType: 'DA',
           experienceLevel: '应届',
+          jobSeekingStatus: undefined,
           targetCompany: '',
           targetIndustry: '',
           technicalInterview: false,
@@ -169,6 +171,7 @@ function ProfilePageContent() {
         name: profile.name || session?.user?.name || '',
         jobType: profile.jobType || 'DA',
         experienceLevel: profile.experienceLevel || '应届',
+        jobSeekingStatus: profile.jobSeekingStatus,
         targetCompany: profile.targetCompany || '',
         targetIndustry: profile.targetIndustry || '',
         technicalInterview: profile.technicalInterview || false,
@@ -493,6 +496,27 @@ function ProfilePageContent() {
                         <SelectItem value="1-3年">1-3年</SelectItem>
                         <SelectItem value="3-5年">3-5年</SelectItem>
                         <SelectItem value="5年以上">5年以上</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
+                      加载中...
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-1">
+                  <Label htmlFor="jobSeekingStatus">求职状态</Label>
+                  {!profileLoading ? (
+                    <Select key={`jobSeekingStatus-${profile?.jobSeekingStatus || 'default'}`} value={formData.jobSeekingStatus || ''} onValueChange={(value) => handleInputChange('jobSeekingStatus', value)}>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="选择你的求职状态" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="保持状态">🌱 保持状态 - 想保持面试感觉</SelectItem>
+                        <SelectItem value="准备中">🔍 准备中 - 正在积极准备</SelectItem>
+                        <SelectItem value="面试中">🎯 面试中 - 已有面试机会</SelectItem>
+                        <SelectItem value="已拿offer">💼 已拿offer - 继续提升能力</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (

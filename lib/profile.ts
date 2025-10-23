@@ -17,8 +17,9 @@ export async function verifyUser(userId: number): Promise<boolean> {
 // Profile type for form submission
 export type ProfileFormData = {
   name?: string; // 用户显示名称
-  jobType: 'DA' | 'DS' | 'DE' | 'BA';
+  jobType: 'DA' | 'DS' | 'DE' | 'BA' | 'MLE';
   experienceLevel: '实习' | '应届' | '1-3年' | '3-5年' | '5年以上';
+  jobSeekingStatus?: '保持状态' | '准备中' | '面试中' | '已拿offer';
   targetCompany?: string;
   targetIndustry?: string;
   otherCompanyName?: string; // 用户自定义的公司名称
@@ -52,6 +53,7 @@ async function saveProfileHistory(
       profileId: profileId || null,
       jobType: profileData.jobType || null,
       experienceLevel: profileData.experienceLevel || null,
+      jobSeekingStatus: profileData.jobSeekingStatus || null,
       targetCompany: profileData.targetCompany || null,
       targetIndustry: profileData.targetIndustry || null,
       otherCompanyName: profileData.otherCompanyName || null,
@@ -79,7 +81,7 @@ async function saveProfileHistory(
 function getChangedFields(oldProfile: any, newData: Partial<ProfileFormData>): string[] {
   const changed: string[] = [];
   const fieldsToCheck: (keyof ProfileFormData)[] = [
-    'jobType', 'experienceLevel', 'targetCompany', 'targetIndustry',
+    'jobType', 'experienceLevel', 'jobSeekingStatus', 'targetCompany', 'targetIndustry',
     'technicalInterview', 'behavioralInterview', 'caseAnalysis', 'statsQuestions',
     'email', 'wechat', 'linkedin', 'bio', 'school', 'skills'
   ];
@@ -140,6 +142,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       // 只添加非undefined的字段到更新数据中
       if (profileData.jobType !== undefined) updateData.jobType = profileData.jobType;
       if (profileData.experienceLevel !== undefined) updateData.experienceLevel = profileData.experienceLevel;
+      if (profileData.jobSeekingStatus !== undefined) updateData.jobSeekingStatus = profileData.jobSeekingStatus || null;
       if (profileData.targetCompany !== undefined) updateData.targetCompany = profileData.targetCompany || null;
       if (profileData.targetIndustry !== undefined) updateData.targetIndustry = profileData.targetIndustry || null;
       if (profileData.otherCompanyName !== undefined) updateData.otherCompanyName = profileData.otherCompanyName || null;
@@ -177,6 +180,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
         userId,
         jobType: profileData.jobType,
         experienceLevel: profileData.experienceLevel,
+        jobSeekingStatus: profileData.jobSeekingStatus || null,
         targetCompany: profileData.targetCompany || null,
         targetIndustry: profileData.targetIndustry || null,
         otherCompanyName: profileData.otherCompanyName || null,
@@ -211,6 +215,7 @@ export async function createProfile(userId: number, profileData: ProfileFormData
       userId,
       jobType: profileData.jobType,
       experienceLevel: profileData.experienceLevel,
+      jobSeekingStatus: profileData.jobSeekingStatus || null,
       targetCompany: profileData.targetCompany || null,
       targetIndustry: profileData.targetIndustry || null,
       otherCompanyName: profileData.otherCompanyName || null,

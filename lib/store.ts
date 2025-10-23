@@ -11,8 +11,9 @@ export type UserProfile = {
   id?: number;
   userId: number;
   name?: string;
-  jobType?: 'DA' | 'DS' | 'DE' | 'BA';
+  jobType?: 'DA' | 'DS' | 'DE' | 'BA' | 'MLE';
   experienceLevel?: '实习' | '应届' | '1-3年' | '3-5年' | '5年以上';
+  jobSeekingStatus?: '保持状态' | '准备中' | '面试中' | '已拿offer';
   targetCompany?: string;
   targetIndustry?: string;
   otherCompanyName?: string;
@@ -36,6 +37,7 @@ export type Match = {
   username: string | null;
   jobType?: string | null;
   experienceLevel?: string | null;
+  jobSeekingStatus?: string | null;
   targetCompany?: string | null;
   targetIndustry?: string | null;
   practicePreferences?: {

@@ -1330,10 +1330,10 @@ export default function MatchesPage() {
                           {/* 技能展示 */}
                           {currentMatch.skills && currentMatch.skills.length > 0 && (
                             <>
-                              <div className="mt-4 font-semibold text-base mb-2 text-blue-500">💡 技能标签</div>
+                              <div className="mt-4 font-semibold text-base mb-2 text-green-600">💡 技能标签</div>
                               <div className="flex gap-2 flex-wrap mb-4">
                                 {currentMatch.skills.map((skill: string, index: number) => (
-                                  <span key={index} className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-green-50 text-green-600 border border-green-200">
+                                  <span key={index} className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-green-50 text-green-600">
                                     💡 {skill}
                                   </span>
                                 ))}
@@ -1344,6 +1344,17 @@ export default function MatchesPage() {
                         <div>
                           <div className="font-semibold flex items-center gap-1 text-base text-blue-500">经验水平</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.experienceLevel || '未设置'}</div>
+                          {currentMatch.jobSeekingStatus && (
+                            <>
+                              <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">求职状态</div>
+                              <div className="font-bold text-lg">
+                                {currentMatch.jobSeekingStatus === '保持状态' && '🌱 保持状态'}
+                                {currentMatch.jobSeekingStatus === '准备中' && '🔍 准备中'}
+                                {currentMatch.jobSeekingStatus === '面试中' && '🎯 面试中'}
+                                {currentMatch.jobSeekingStatus === '已拿offer' && '💼 已拿offer'}
+                              </div>
+                            </>
+                          )}
                           <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">目标行业</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.targetIndustry || '未设置'}</div>
                         </div>
@@ -1466,6 +1477,9 @@ export default function MatchesPage() {
                               </div>
                               <div className="title">
                                 {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
+                                {match.jobSeekingStatus && (
+                                  <> · {match.jobSeekingStatus}</>
+                                )}
                               </div>
                               {/* 添加匹配时间显示 */}
                               {match.createdAt && (
@@ -1504,9 +1518,9 @@ export default function MatchesPage() {
                             {match.skills && match.skills.length > 0 && (
                               <div className="mt-4 mb-4">
                                 <div className="text-xs font-medium text-gray-700 mb-2">💡 技能标签</div>
-                                <div className="flex gap-2 flex-wrap">
+                                <div className="flex gap-1.5 flex-wrap">
                                   {match.skills.map((skill: string, index: number) => (
-                                    <span key={index} className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-green-50 text-green-600 border border-green-200">
+                                    <span key={index} className="rounded-full px-2 py-0.5 flex items-center gap-1 text-xs font-medium shadow-sm bg-green-50 text-green-600 border border-green-200">
                                       💡 {skill}
                                     </span>
                                   ))}
@@ -1730,6 +1744,9 @@ export default function MatchesPage() {
                                </div>
                               <div className="title">
                                 {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
+                                {match.jobSeekingStatus && (
+                                  <> · {match.jobSeekingStatus}</>
+                                )}
                               </div>
                             </div>
                           </div>

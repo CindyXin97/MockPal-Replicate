@@ -32,6 +32,7 @@ export const userProfiles = pgTable('user_profiles', {
   // Required tags
   jobType: varchar('job_type', { length: 50 }).notNull(), // DA/DS/DE
   experienceLevel: varchar('experience_level', { length: 50 }).notNull(), // 应届/1-3年/3年+
+  jobSeekingStatus: varchar('job_seeking_status', { length: 50 }), // 求职状态
   
   // Optional tags
   targetCompany: varchar('target_company', { length: 255 }),
@@ -66,6 +67,7 @@ export const userProfileHistory = pgTable('user_profile_history', {
   // 完整的资料快照
   jobType: varchar('job_type', { length: 50 }),
   experienceLevel: varchar('experience_level', { length: 50 }),
+  jobSeekingStatus: varchar('job_seeking_status', { length: 50 }),
   targetCompany: varchar('target_company', { length: 255 }),
   targetIndustry: varchar('target_industry', { length: 255 }),
   otherCompanyName: varchar('other_company_name', { length: 255 }),
