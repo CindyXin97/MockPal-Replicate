@@ -222,35 +222,59 @@ export async function GET(request: NextRequest) {
         return commentDate >= lastMonthStart && commentDate < lastMonthEnd;
       }).length;
       
-      // 3. 计算被浏览次数
-      const allViewsOfMe = await db
+      // 3. 计算我的浏览人数（主动行为，去重）
+      const allMyViews = await db
         .select()
         .from(userDailyViews)
-        .where(eq(userDailyViews.viewedUserId, userId));
+        .where(eq(userDailyViews.userId, userId));
       
-      thisWeekViews = allViewsOfMe.filter(v => {
-        if (!v.createdAt) return false;
-        const viewDate = new Date(v.createdAt);
-        return viewDate >= thisWeekStart && viewDate < thisWeekEnd;
-      }).length;
+      // 本周浏览的独立用户数
+      const thisWeekViewedUsers = new Set(
+        allMyViews
+          .filter(v => {
+            if (!v.createdAt) return false;
+            const viewDate = new Date(v.createdAt);
+            return viewDate >= thisWeekStart && viewDate < thisWeekEnd;
+          })
+          .map(v => v.viewedUserId)
+      );
+      thisWeekViews = thisWeekViewedUsers.size;
       
-      lastWeekViews = allViewsOfMe.filter(v => {
-        if (!v.createdAt) return false;
-        const viewDate = new Date(v.createdAt);
-        return viewDate >= lastWeekStart && viewDate < lastWeekEnd;
-      }).length;
+      // 上周浏览的独立用户数
+      const lastWeekViewedUsers = new Set(
+        allMyViews
+          .filter(v => {
+            if (!v.createdAt) return false;
+            const viewDate = new Date(v.createdAt);
+            return viewDate >= lastWeekStart && viewDate < lastWeekEnd;
+          })
+          .map(v => v.viewedUserId)
+      );
+      lastWeekViews = lastWeekViewedUsers.size;
       
-      thisMonthViews = allViewsOfMe.filter(v => {
-        if (!v.createdAt) return false;
-        const viewDate = new Date(v.createdAt);
-        return viewDate >= thisMonthStart && viewDate < thisMonthEnd;
-      }).length;
+      // 本月浏览的独立用户数
+      const thisMonthViewedUsers = new Set(
+        allMyViews
+          .filter(v => {
+            if (!v.createdAt) return false;
+            const viewDate = new Date(v.createdAt);
+            return viewDate >= thisMonthStart && viewDate < thisMonthEnd;
+          })
+          .map(v => v.viewedUserId)
+      );
+      thisMonthViews = thisMonthViewedUsers.size;
       
-      lastMonthViews = allViewsOfMe.filter(v => {
-        if (!v.createdAt) return false;
-        const viewDate = new Date(v.createdAt);
-        return viewDate >= lastMonthStart && viewDate < lastMonthEnd;
-      }).length;
+      // 上月浏览的独立用户数
+      const lastMonthViewedUsers = new Set(
+        allMyViews
+          .filter(v => {
+            if (!v.createdAt) return false;
+            const viewDate = new Date(v.createdAt);
+            return viewDate >= lastMonthStart && viewDate < lastMonthEnd;
+          })
+          .map(v => v.viewedUserId)
+      );
+      lastMonthViews = lastMonthViewedUsers.size;
       
       // 计算总活动数
       thisWeekActivity = thisWeekPosts + thisWeekComments + thisWeekViews;

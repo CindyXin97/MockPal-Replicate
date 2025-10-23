@@ -346,7 +346,7 @@ export default function MePage() {
                 <span className="text-lg hover:scale-125 transition-transform inline-block">📈</span>
                 <span>我的活动</span>
               </CardTitle>
-              <p className="text-xs text-gray-500 mt-0.5">统计发帖、评论、被浏览数</p>
+              <p className="text-xs text-gray-500 mt-0.5">统计发帖、评论、浏览数</p>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
@@ -378,7 +378,7 @@ export default function MePage() {
                     <div className="text-xs text-gray-500 mt-0.5">
                       {stats.activity && (
                         <>
-                          📝{stats.activity.thisWeekPosts ?? 0} 💬{stats.activity.thisWeekComments ?? 0} 👁️{stats.activity.thisWeekViews ?? 0}
+                          📝{stats.activity.thisWeekPosts ?? 0} 💬{stats.activity.thisWeekComments ?? 0} 📖{stats.activity.thisWeekViews ?? 0}
                         </>
                       )}
                     </div>
@@ -414,7 +414,7 @@ export default function MePage() {
                     <div className="text-xs text-gray-500 mt-0.5">
                       {stats.activity && (
                         <>
-                          📝{stats.activity.thisMonthPosts ?? 0} 💬{stats.activity.thisMonthComments ?? 0} 👁️{stats.activity.thisMonthViews ?? 0}
+                          📝{stats.activity.thisMonthPosts ?? 0} 💬{stats.activity.thisMonthComments ?? 0} 📖{stats.activity.thisMonthViews ?? 0}
                         </>
                       )}
                     </div>
