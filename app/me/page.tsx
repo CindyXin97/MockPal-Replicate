@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AuthLayout } from '@/components/base-layout';
+import { QuotaProgressCard } from '@/components/quota-progress-card';
 
 interface UserStats {
   user: {
@@ -68,9 +69,11 @@ export default function MePage() {
   const router = useRouter();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [quotaInfo, setQuotaInfo] = useState<any>(null);
 
   useEffect(() => {
     fetchStats();
+    fetchQuota();
   }, []);
 
   const fetchStats = async () => {
@@ -89,6 +92,18 @@ export default function MePage() {
       console.error('获取统计数据失败:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchQuota = async () => {
+    try {
+      const response = await fetch('/api/user/match-quota');
+      const data = await response.json();
+      if (data.success) {
+        setQuotaInfo(data.data);
+      }
+    } catch (error) {
+      console.error('获取配额信息失败:', error);
     }
   };
 
@@ -192,19 +207,19 @@ export default function MePage() {
 
   return (
     <AuthLayout>
-      <div className="max-w-5xl mx-auto space-y-3 pb-8">
+      <div className="max-w-5xl mx-auto space-y-2 pb-8">
         {/* 顶部用户信息卡片 */}
-        <Card className="border-t-4 border-t-blue-500 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-fadeInDown">
+        <Card className="border-t-2 border-t-indigo-400 shadow-sm hover:shadow-lg transition-all animate-fadeInDown bg-gradient-to-br from-indigo-50/50 to-purple-50/50">
           <CardContent className="pt-3 pb-3">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-lg hover:scale-110 transition-transform duration-300">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
                 {getUserInitial()}
               </div>
               <div className="flex-1">
                 <h1 className="text-base font-bold text-gray-900">{getUserDisplayName()}</h1>
                 <p className="text-sm text-gray-600">{stats.user.email}</p>
                 <div className="mt-0.5">
-                  <span className="inline-block px-1.5 py-0.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs rounded-full font-medium hover:scale-105 transition-transform">
+                  <span className="inline-block px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs rounded-md font-medium shadow-sm">
                     {stats.interviews.currentLevel}
                   </span>
                 </div>
@@ -232,12 +247,11 @@ export default function MePage() {
                       <span className="text-purple-600 font-medium">🎉 满级</span>
                     )}
                   </div>
-                  <div className="relative w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="relative w-full h-1.5 bg-indigo-100 rounded-full overflow-hidden">
                     <div
-                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 rounded-full transition-all duration-500 ease-out"
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-500 ease-out shadow-sm"
                       style={{ width: `${progress.percentage}%` }}
                     >
-                      <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
                     </div>
                   </div>
                   <div className="text-xs text-right text-gray-500">
@@ -246,13 +260,58 @@ export default function MePage() {
                 </div>
               );
             })()}
+
+            {/* 核心指标 */}
+            {quotaInfo && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="grid grid-cols-3 gap-3">
+                  {/* 今日可刷 */}
+                  <div className="text-center p-3 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200 hover:border-amber-300 hover:shadow-md transition-all cursor-pointer" onClick={() => router.push('/matches')}>
+                    <div className="text-2xl font-bold text-amber-600">
+                      {quotaInfo.remaining}
+                    </div>
+                    <div className="text-xs text-amber-600 mt-1 font-medium">🔥 今日可刷</div>
+                  </div>
+
+                  {/* 成功匹配 */}
+                  <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer group">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {stats.matching.successfulMatches}
+                    </div>
+                    <div className="flex items-center justify-center gap-1 text-xs text-purple-600 mt-1 font-medium">
+                      <div className="w-4 h-4 relative group-hover:scale-110 group-hover:-translate-y-0.5 transition-transform duration-300">
+                        <Image
+                          src="/logo-icon.png"
+                          alt="MockPal"
+                          width={16}
+                          height={16}
+                          className="object-contain"
+                        />
+                      </div>
+                      <span>成功匹配</span>
+                    </div>
+                  </div>
+
+                  {/* 等待回应 */}
+                  <div className="text-center p-3 bg-gradient-to-br from-pink-50 to-rose-50 rounded-lg border border-pink-200 hover:border-pink-300 hover:shadow-md transition-all cursor-pointer" onClick={() => router.push('/matches')}>
+                    <div className="text-2xl font-bold text-pink-600">
+                      {stats.matching.pendingMatches}
+                    </div>
+                    <div className="text-xs text-pink-600 mt-1 font-medium">❤️ 等待回应</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* 每日配额任务卡片 */}
+        <QuotaProgressCard />
 
         {/* 统计数据卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {/* 浏览统计 */}
-          <Card className="hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer animate-fadeInUp border-l-4 border-l-blue-400">
+          <Card className="hover:shadow-md transition-all cursor-pointer animate-fadeInUp border-l-4 border-l-blue-400 bg-gradient-to-br from-blue-50/30 to-transparent">
             <CardContent className="pt-3 pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -272,7 +331,7 @@ export default function MePage() {
           </Card>
 
           {/* 匹配统计 */}
-          <Card className="hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer animate-fadeInUp border-l-4 border-l-purple-400" style={{ animationDelay: '0.1s' }}>
+          <Card className="hover:shadow-md transition-all cursor-pointer animate-fadeInUp border-l-4 border-l-purple-400 bg-gradient-to-br from-purple-50/30 to-transparent" style={{ animationDelay: '0.1s' }}>
             <CardContent className="pt-3 pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -309,7 +368,7 @@ export default function MePage() {
           </Card>
 
           {/* 面试统计 */}
-          <Card className="hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer animate-fadeInUp border-l-4 border-l-green-400" style={{ animationDelay: '0.2s' }}>
+          <Card className="hover:shadow-md transition-all cursor-pointer animate-fadeInUp border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50/50 to-transparent" style={{ animationDelay: '0.2s' }}>
             <CardContent className="pt-3 pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -317,14 +376,14 @@ export default function MePage() {
                     <span className="text-lg hover:scale-125 transition-transform inline-block">🎤</span>
                     <span className="text-sm font-medium text-gray-700">完成面试</span>
                   </div>
-                  <div className="text-2xl font-bold text-green-600 hover:scale-110 transition-transform inline-block">
+                  <div className="text-2xl font-bold text-emerald-600 hover:scale-110 transition-transform inline-block">
                     {stats.interviews.completed}
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">
                     经验值 {stats.interviews.experiencePoints}
                   </p>
                   {stats.interviews.percentile !== undefined && stats.interviews.percentile !== null ? (
-                    <p className="text-xs text-green-600 font-medium mt-1">
+                    <p className="text-xs text-emerald-600 font-medium mt-1">
                       🎯 超过 {stats.interviews.percentile}% 的用户
                     </p>
                   ) : (
@@ -339,7 +398,7 @@ export default function MePage() {
         </div>
 
         {/* 个人进步追踪卡片 */}
-        <Card className="hover:shadow-xl transition-all duration-300 animate-fadeInUp" style={{ animationDelay: '0.25s' }}>
+        <Card className="hover:shadow-md transition-all animate-fadeInUp" style={{ animationDelay: '0.25s' }}>
           <CardHeader className="pb-1 pt-2">
             <div>
               <CardTitle className="flex items-center gap-1.5 text-base">
@@ -352,9 +411,9 @@ export default function MePage() {
           <CardContent className="pt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {/* 本周 vs 上周 */}
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-300">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-150 transition-all border border-blue-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-600 font-medium">本周活动</span>
+                  <span className="text-xs text-gray-700 font-medium">本周活动</span>
                   {stats.activity && stats.activity.weekChange !== undefined && stats.activity.weekChange !== null && stats.activity.lastWeek !== 0 ? (
                     <span className={`text-xs font-bold flex items-center gap-0.5 ${
                       stats.activity.weekChange > 0 ? 'text-green-600' : 
@@ -375,7 +434,7 @@ export default function MePage() {
                     <div className="text-xl font-bold text-blue-600">
                       {stats.activity?.thisWeek ?? 0}
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">
+                    <div className="text-xs text-gray-600 mt-0.5">
                       {stats.activity && (
                         <>
                           📝{stats.activity.thisWeekPosts ?? 0} 💬{stats.activity.thisWeekComments ?? 0} 📖{stats.activity.thisWeekViews ?? 0}
@@ -388,9 +447,9 @@ export default function MePage() {
               </div>
 
               {/* 本月 vs 上月 */}
-              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-all duration-300">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-150 transition-all border border-purple-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-600 font-medium">本月活动</span>
+                  <span className="text-xs text-gray-700 font-medium">本月活动</span>
                   {stats.activity && stats.activity.monthChange !== undefined && stats.activity.monthChange !== null && stats.activity.lastMonth !== 0 ? (
                     <span className={`text-xs font-bold flex items-center gap-0.5 ${
                       stats.activity.monthChange > 0 ? 'text-green-600' : 
@@ -411,7 +470,7 @@ export default function MePage() {
                     <div className="text-xl font-bold text-purple-600">
                       {stats.activity?.thisMonth ?? 0}
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">
+                    <div className="text-xs text-gray-600 mt-0.5">
                       {stats.activity && (
                         <>
                           📝{stats.activity.thisMonthPosts ?? 0} 💬{stats.activity.thisMonthComments ?? 0} 📖{stats.activity.thisMonthViews ?? 0}
@@ -427,7 +486,7 @@ export default function MePage() {
         </Card>
 
         {/* 通知卡片 */}
-        <Card className="hover:shadow-xl transition-all duration-300 animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
+        <Card className="hover:shadow-md transition-all animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
           <CardHeader className="pb-2 pt-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-1.5 text-base">
@@ -492,7 +551,7 @@ export default function MePage() {
         </Card>
 
         {/* 社区活动卡片 */}
-        <Card className="hover:shadow-xl transition-all duration-300 animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+        <Card className="hover:shadow-md transition-all animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="flex items-center gap-1.5 text-base">
               <span className="text-lg hover:scale-125 transition-transform inline-block">📊</span>
@@ -503,41 +562,41 @@ export default function MePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <Link
                 href="/matches?tab=questions&filter=mine"
-                className="p-2 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 hover:scale-105 hover:shadow-lg transition-all duration-300"
+                className="p-2 rounded-lg bg-gradient-to-br from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-150 border border-indigo-200 hover:border-indigo-300 hover:shadow-md transition-all"
               >
                 <div className="text-center">
                   <div className="text-lg mb-0.5 hover:scale-125 transition-transform inline-block">📝</div>
-                  <div className="text-base font-bold text-blue-600">
+                  <div className="text-base font-bold text-indigo-600">
                     {stats.community.postsCount}
                   </div>
                   <div className="text-xs text-gray-600 mt-0.5">我发布的题目</div>
                 </div>
               </Link>
 
-              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 hover:scale-105 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-150 border border-green-200 hover:border-green-300 hover:shadow-md transition-all cursor-pointer">
                 <div className="text-center">
                   <div className="text-lg mb-0.5 hover:scale-125 transition-transform inline-block">💬</div>
-                  <div className="text-base font-bold text-purple-600">
+                  <div className="text-base font-bold text-green-600">
                     {stats.community.commentsCount}
                   </div>
                   <div className="text-xs text-gray-600 mt-0.5">我的评论</div>
                 </div>
               </div>
 
-              <div className="p-2 rounded-lg bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 hover:scale-105 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-rose-50 to-rose-100 hover:from-rose-100 hover:to-rose-150 border border-rose-200 hover:border-rose-300 hover:shadow-md transition-all cursor-pointer">
                 <div className="text-center">
                   <div className="text-lg mb-0.5 hover:scale-125 transition-transform inline-block">👍</div>
-                  <div className="text-base font-bold text-green-600">
+                  <div className="text-base font-bold text-rose-600">
                     {stats.community.votesGiven}
                   </div>
                   <div className="text-xs text-gray-600 mt-0.5">我赞过的</div>
                 </div>
               </div>
 
-              <div className="p-2 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 hover:scale-105 hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-150 border border-amber-200 hover:border-amber-300 hover:shadow-md transition-all cursor-pointer">
                 <div className="text-center">
                   <div className="text-lg mb-0.5 hover:scale-125 transition-transform inline-block">🔥</div>
-                  <div className="text-base font-bold text-orange-600">
+                  <div className="text-base font-bold text-amber-600">
                     {stats.community.votesReceived}
                   </div>
                   <div className="text-xs text-gray-600 mt-0.5">收到的赞</div>

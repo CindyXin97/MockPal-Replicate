@@ -841,15 +841,15 @@ export default function MatchesPage() {
 
     const targetUser = state.potentialMatches[state.currentMatchIndex];
     
-    // 先切换到下一个人（无论什么情况都要跳转）
-    const nextIndex = state.currentMatchIndex + 1;
-    dispatch({ type: 'NEXT_MATCH' });
-    setCurrentMatchIndex(nextIndex);
-    
     try {
       const result = await likeUser(user.id, targetUser.id);
       
       if (result.success) {
+        // API调用成功，切换到下一个人
+        const nextIndex = state.currentMatchIndex + 1;
+        dispatch({ type: 'NEXT_MATCH' });
+        setCurrentMatchIndex(nextIndex);
+        
         if ('match' in result && result.match) {
           // 匹配成功：检查是否是首次匹配
           const hasShownFirstMatch = localStorage.getItem('mockpal_first_match_shown');
@@ -877,11 +877,12 @@ export default function MatchesPage() {
           toast.success(result.message || '已收到你的喜欢！');
         }
       } else {
-        toast.error(result.message || '操作失败，但已切换到下一个人');
+        // 配额用完或其他错误，不切换人，只显示错误信息
+        toast.error(result.message || '操作失败');
       }
     } catch (error) {
       console.error('Like error:', error);
-      toast.error('操作失败，但已切换到下一个人');
+      toast.error('操作失败，请稍后重试');
     }
   };
 
@@ -892,21 +893,21 @@ export default function MatchesPage() {
 
     const targetUser = state.potentialMatches[state.currentMatchIndex];
     
-    // 先切换到下一个人（无论操作是否成功）
-    const nextIndex = state.currentMatchIndex + 1;
-    dispatch({ type: 'NEXT_MATCH' });
-    setCurrentMatchIndex(nextIndex);
-    
     try {
       const result = await dislikeUser(user.id, targetUser.id);
       
-      if (!result.success) {
-        toast.error(result.message || '操作失败，但已切换到下一个人');
+      if (result.success) {
+        // API调用成功，切换到下一个人
+        const nextIndex = state.currentMatchIndex + 1;
+        dispatch({ type: 'NEXT_MATCH' });
+        setCurrentMatchIndex(nextIndex);
+      } else {
+        // 配额用完或其他错误，不切换人，只显示错误信息
+        toast.error(result.message || '操作失败');
       }
-      // 成功时不显示toast，直接切换即可
     } catch (error) {
       console.error('Dislike error:', error);
-      toast.error('操作失败，但已切换到下一个人');
+      toast.error('操作失败，请稍后重试');
     }
   };
 

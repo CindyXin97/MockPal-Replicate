@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth-config';
 import { db } from '@/lib/db';
-import { interviewComments, users, userInterviewPosts, interviewQuestions } from '@/lib/db/schema';
+import { interviewComments, users, userInterviewPosts, interviewQuestions, userDailyBonus } from '@/lib/db/schema';
 import { eq, desc, and, sql } from 'drizzle-orm';
+import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import {
   notifyCommentReply,
   notifyMentioned,
@@ -164,10 +166,117 @@ export async function POST(request: NextRequest) {
       // 通知失败不影响评论发布
     }
 
+    // 检查并发放评论奖励配额
+    const ET_TIMEZONE = 'America/New_York';
+    const now = new Date();
+    const etDate = toZonedTime(now, ET_TIMEZONE);
+    const todayStr = format(etDate, 'yyyy-MM-dd');
+    
+    let bonusInfo = null;
+    
+    try {
+      // 验证评论质量：至少10字
+      if (content.trim().length >= 10) {
+        // 查询今日是否已有记录
+        const existingBonus = await db.query.userDailyBonus.findFirst({
+          where: and(
+            eq(userDailyBonus.userId, userId),
+            eq(userDailyBonus.date, todayStr)
+          ),
+        });
+        
+        if (existingBonus) {
+          // 更新评论数
+          const newCommentsCount = existingBonus.commentsToday + 1;
+          
+          // 如果刚好达到3条，且余额未满，给予奖励
+          if (newCommentsCount === 3 && existingBonus.bonusBalance < 6) {
+            const newBalance = Math.min(existingBonus.bonusBalance + 1, 6);
+            await db
+              .update(userDailyBonus)
+              .set({
+                commentsToday: newCommentsCount,
+                bonusQuota: existingBonus.bonusQuota + 1,
+                bonusBalance: newBalance,
+                updatedAt: new Date(),
+              })
+              .where(eq(userDailyBonus.id, existingBonus.id));
+            
+            bonusInfo = {
+              earned: true,
+              quota: 1,
+              message: '🎉 恭喜！评论达到3条，获得+1个匹配配额',
+              newBalance: newBalance,
+            };
+          } else if (newCommentsCount === 3 && existingBonus.bonusBalance >= 6) {
+            // 达到3条但余额已满
+            await db
+              .update(userDailyBonus)
+              .set({
+                commentsToday: newCommentsCount,
+                updatedAt: new Date(),
+              })
+              .where(eq(userDailyBonus.id, existingBonus.id));
+            
+            bonusInfo = {
+              earned: false,
+              message: '💰 奖励配额已满(6/6)，请先使用后再继续获取奖励',
+            };
+          } else {
+            // 还没达到3条，或者已经超过3条
+            await db
+              .update(userDailyBonus)
+              .set({
+                commentsToday: newCommentsCount,
+                updatedAt: new Date(),
+              })
+              .where(eq(userDailyBonus.id, existingBonus.id));
+            
+            if (newCommentsCount < 3) {
+              bonusInfo = {
+                earned: false,
+                progress: newCommentsCount,
+                total: 3,
+                message: `还差${3 - newCommentsCount}条评论可获得+1配额`,
+              };
+            }
+          }
+        } else {
+          // 创建新记录（继承昨天的余额）
+          const recentBonus = await db.query.userDailyBonus.findFirst({
+            where: eq(userDailyBonus.userId, userId),
+            orderBy: (table, { desc }) => [desc(table.date)],
+          });
+
+          const inheritedBalance = recentBonus?.bonusBalance || 0;
+          
+          await db.insert(userDailyBonus).values({
+            userId,
+            date: todayStr,
+            postsToday: 0,
+            commentsToday: 1,
+            bonusQuota: 0,
+            bonusBalance: inheritedBalance,
+          });
+          
+          bonusInfo = {
+            earned: false,
+            progress: 1,
+            total: 3,
+            message: '还差2条评论可获得+1配额',
+          };
+        }
+      }
+    } catch (bonusError) {
+      console.error('Error awarding comment bonus:', bonusError);
+      // 即使奖励发放失败，评论已经创建成功，不影响主流程
+    }
+
     return NextResponse.json({
       success: true,
       message: '评论发布成功！',
       data: commentData,
+      bonus: bonusInfo,
     });
   } catch (error: any) {
     console.error('Error creating comment:', error);

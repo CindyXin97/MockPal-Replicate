@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth-config';
 import { db } from '@/lib/db';
-import { userInterviewPosts, users } from '@/lib/db/schema';
+import { userInterviewPosts, users, userDailyBonus } from '@/lib/db/schema';
 import { eq, desc, and, sql } from 'drizzle-orm';
+import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 // POST - 创建用户发布的面试题目
 export async function POST(request: NextRequest) {
@@ -110,10 +112,102 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
+    // 检查并发放奖励配额
+    const ET_TIMEZONE = 'America/New_York';
+    const now = new Date();
+    const etDate = toZonedTime(now, ET_TIMEZONE);
+    const todayStr = format(etDate, 'yyyy-MM-dd');
+    
+    try {
+      // 查询今日是否已有记录
+      const existingBonus = await db.query.userDailyBonus.findFirst({
+        where: and(
+          eq(userDailyBonus.userId, userId),
+          eq(userDailyBonus.date, todayStr)
+        ),
+      });
+      
+      if (existingBonus) {
+        // 如果今天还没发过帖，且余额未满，给予奖励
+        if (existingBonus.postsToday === 0 && existingBonus.bonusBalance < 6) {
+          const newBalance = Math.min(existingBonus.bonusBalance + 2, 6);
+          await db
+            .update(userDailyBonus)
+            .set({
+              postsToday: 1,
+              bonusQuota: existingBonus.bonusQuota + 2,
+              bonusBalance: newBalance,
+              updatedAt: new Date(),
+            })
+            .where(eq(userDailyBonus.id, existingBonus.id));
+          
+          return NextResponse.json({
+            success: true,
+            message: '题目发布成功！',
+            data: (newPost as any)[0],
+            bonus: {
+              earned: true,
+              quota: 2,
+              message: '🎉 恭喜！你获得了+2个匹配配额',
+              newBalance: newBalance,
+            }
+          });
+        } else if (existingBonus.bonusBalance >= 6) {
+          // 余额已满
+          return NextResponse.json({
+            success: true,
+            message: '题目发布成功！',
+            data: (newPost as any)[0],
+            bonus: {
+              earned: false,
+              message: '💰 奖励配额已满(6/6)，请先使用后再发帖获取奖励',
+            }
+          });
+        }
+      } else {
+        // 创建新记录（继承昨天的余额）
+        const recentBonus = await db.query.userDailyBonus.findFirst({
+          where: eq(userDailyBonus.userId, userId),
+          orderBy: (table, { desc }) => [desc(table.date)],
+        });
+
+        const inheritedBalance = recentBonus?.bonusBalance || 0;
+        const newBalance = Math.min(inheritedBalance + 2, 6);
+        
+        await db.insert(userDailyBonus).values({
+          userId,
+          date: todayStr,
+          postsToday: 1,
+          commentsToday: 0,
+          bonusQuota: 2,
+          bonusBalance: newBalance,
+        });
+        
+        return NextResponse.json({
+          success: true,
+          message: '题目发布成功！',
+          data: (newPost as any)[0],
+          bonus: {
+            earned: true,
+            quota: 2,
+            message: '🎉 恭喜！你获得了+2个匹配配额',
+            newBalance: newBalance,
+          }
+        });
+      }
+    } catch (bonusError) {
+      console.error('Error awarding bonus:', bonusError);
+      // 即使奖励发放失败，帖子已经创建成功，不影响主流程
+    }
+
     return NextResponse.json({
       success: true,
       message: '题目发布成功！',
       data: (newPost as any)[0],
+      bonus: {
+        earned: false,
+        message: '今日发帖奖励已领取',
+      }
     });
   } catch (error) {
     console.error('Error creating interview post:', error);

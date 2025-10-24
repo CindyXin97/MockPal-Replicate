@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { users, userProfiles, matches, feedbacks, userDailyViews } from '@/lib/db/schema';
+import { users, userProfiles, matches, feedbacks, userDailyViews, userDailyBonus } from '@/lib/db/schema';
 import { eq, and, or, not, desc, exists, inArray } from 'drizzle-orm';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
@@ -24,6 +24,10 @@ export async function getPotentialMatches(userId: number) {
     const now = new Date();
     const etDate = toZonedTime(now, ET_TIMEZONE);
     const today = format(etDate, 'yyyy-MM-dd');
+    
+    // 获取今日总配额（基础+奖励）
+    const dailyLimit = await getUserDailyMatchLimit(userId);
+    
     // 查询今天已浏览的用户ID和操作次数
     const todayViews = await db.query.userDailyViews.findMany({
       where: and(
@@ -31,7 +35,8 @@ export async function getPotentialMatches(userId: number) {
         eq(userDailyViews.date, today)
       ),
     });
-    if (todayViews.length >= 4) {
+    
+    if (todayViews.length >= dailyLimit) {
       return { success: true, matches: [] };
     }
     const viewedTodayIds = todayViews.map(v => v.viewedUserId);
@@ -265,7 +270,8 @@ export async function getPotentialMatches(userId: number) {
     jobList.sort(sortByMixedScore);
     otherList.sort(sortByMixedScore);
     
-    const finalList = [...invitedOverlapList, ...overlapList, ...expList, ...jobList, ...otherList].slice(0, 4);
+    // 使用动态配额限制返回的匹配数量
+    const finalList = [...invitedOverlapList, ...overlapList, ...expList, ...jobList, ...otherList].slice(0, dailyLimit);
     return {
       success: true,
       matches: finalList.map(user => {
@@ -296,6 +302,58 @@ export async function getPotentialMatches(userId: number) {
 }
 
 /**
+ * 获取用户今日总配额（基础+奖励）
+ */
+async function getUserDailyMatchLimit(userId: number): Promise<number> {
+  const ET_TIMEZONE = 'America/New_York';
+  const now = new Date();
+  const etDate = toZonedTime(now, ET_TIMEZONE);
+  const today = format(etDate, 'yyyy-MM-dd');
+  
+  const BASE_LIMIT = 4; // 基础配额
+  
+  try {
+    // 查询今天的bonus记录
+    let bonus = await db.query.userDailyBonus.findFirst({
+      where: and(
+        eq(userDailyBonus.userId, userId),
+        eq(userDailyBonus.date, today)
+      ),
+    });
+    
+    // 如果今天还没有记录，创建一个（继承昨天的bonus_balance）
+    if (!bonus) {
+      // 查询最近的bonus记录，获取余额
+      const recentBonus = await db.query.userDailyBonus.findFirst({
+        where: eq(userDailyBonus.userId, userId),
+        orderBy: (table, { desc }) => [desc(table.date)],
+      });
+
+      const inheritedBalance = recentBonus?.bonusBalance || 0;
+
+      // 创建今天的记录
+      const newBonus = await db.insert(userDailyBonus).values({
+        userId,
+        date: today,
+        postsToday: 0,
+        commentsToday: 0,
+        bonusQuota: 0,
+        bonusBalance: inheritedBalance, // 继承昨天的余额
+      }).returning();
+
+      bonus = newBonus[0];
+    }
+    
+    // 使用 bonusBalance（当前剩余配额）来确定实际能刷的人数
+    // 这样返回的候选人数量就会和实际配额一致
+    return BASE_LIMIT + (bonus?.bonusBalance || 0);
+  } catch (error) {
+    console.error('Error getting daily limit:', error);
+    return BASE_LIMIT;
+  }
+}
+
+/**
  * 记录用户今日浏览，带每日限制检查和防重复
  * @returns { success: true } 或 { success: false, message: string }
  */
@@ -304,45 +362,94 @@ async function recordDailyView(userId: number, targetUserId: number): Promise<{ 
   const now = new Date();
   const etDate = toZonedTime(now, ET_TIMEZONE);
   const today = format(etDate, 'yyyy-MM-dd');
+  const BASE_LIMIT = 4;
 
-  // 1. 检查是否已经记录过这个用户（避免重复）
-  const existingView = await db.query.userDailyViews.findFirst({
-    where: and(
-      eq(userDailyViews.userId, userId),
-      eq(userDailyViews.viewedUserId, targetUserId),
-      eq(userDailyViews.date, today)
-    ),
-  });
-
-  if (existingView) {
-    return { success: true }; // 已记录，直接返回成功
-  }
-
-  // 2. 检查今日浏览次数是否已达到限制（严格检查）
-  const todayViews = await db.query.userDailyViews.findMany({
-    where: and(
-      eq(userDailyViews.userId, userId),
-      eq(userDailyViews.date, today)
-    ),
-  });
-
-  if (todayViews.length >= 4) {
-    return { success: false, message: '今日浏览次数已达上限（4次），请明天再来' };
-  }
-
-  // 3. 插入新记录
   try {
+    // 1. 检查是否已经记录过这个用户（避免重复）
+    const existingView = await db.query.userDailyViews.findFirst({
+      where: and(
+        eq(userDailyViews.userId, userId),
+        eq(userDailyViews.viewedUserId, targetUserId),
+        eq(userDailyViews.date, today)
+      ),
+    });
+
+    if (existingView) {
+      return { success: true }; // 已记录，直接返回成功
+    }
+
+    // 2. 查询今天已浏览的记录
+    const todayViews = await db.query.userDailyViews.findMany({
+      where: and(
+        eq(userDailyViews.userId, userId),
+        eq(userDailyViews.date, today)
+      ),
+    });
+
+    const currentViewCount = todayViews.length;
+
+    // 3. 查询今日奖励配额（无论是否已用完基础配额）
+    const bonus = await db.query.userDailyBonus.findFirst({
+      where: and(
+        eq(userDailyBonus.userId, userId),
+        eq(userDailyBonus.date, today)
+      ),
+    });
+
+    const bonusBalance = bonus?.bonusBalance || 0; // 剩余可用配额
+    const bonusQuota = bonus?.bonusQuota || 0; // 今日获得的总奖励配额
+    const totalQuota = BASE_LIMIT + bonusQuota; // 今日总配额（用于显示）
+    const currentLimit = BASE_LIMIT + bonusBalance; // 当前可用上限（用于检查）
+
+    // 4. 检查是否超过当前可用上限
+    if (currentViewCount >= currentLimit) {
+      return { 
+        success: false, 
+        message: `今日浏览次数已达上限（共${totalQuota}次）。💡 发布真题可获得更多配额！` 
+      };
+    }
+
+    // 5. 如果已经用完基础配额，需要扣除奖励配额
+    if (currentViewCount >= BASE_LIMIT) {
+      if (bonus && bonusBalance > 0) {
+        await db
+          .update(userDailyBonus)
+          .set({
+            bonusBalance: bonusBalance - 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(userDailyBonus.id, bonus.id));
+      } else {
+        // 理论上不应该到这里，因为上面已经检查过了
+        return { 
+          success: false, 
+          message: `今日浏览次数已达上限（共${BASE_LIMIT}次）。💡 发布真题可获得更多配额！` 
+        };
+      }
+    }
+
+    // 6. 插入浏览记录
     await db.insert(userDailyViews).values({
       userId,
       viewedUserId: targetUserId,
       date: today,
       createdAt: new Date(),
     });
+
     return { success: true };
-  } catch (error) {
-    // 如果是唯一性约束冲突（并发情况），也算成功
+  } catch (error: any) {
     console.error('Record daily view error:', error);
-    return { success: true };
+    
+    // 只有在唯一性约束冲突时才返回成功（说明已经记录过了）
+    if (error?.code === '23505' || error?.message?.includes('unique')) {
+      return { success: true };
+    }
+    
+    // 其他错误返回失败
+    return { 
+      success: false, 
+      message: '记录浏览失败，请稍后重试' 
+    };
   }
 }
 

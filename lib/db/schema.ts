@@ -332,6 +332,23 @@ export const verificationTokens = pgTable('verification_tokens', {
   };
 });
 
+// 用户每日奖励配额表
+export const userDailyBonus = pgTable('user_daily_bonus', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  date: varchar('date', { length: 10 }).notNull(), // YYYY-MM-DD格式
+  postsToday: integer('posts_today').default(0).notNull(), // 今日发帖数
+  commentsToday: integer('comments_today').default(0).notNull(), // 今日评论数
+  bonusQuota: integer('bonus_quota').default(0).notNull(), // 当天新增的奖励配额
+  bonusBalance: integer('bonus_balance').default(0).notNull(), // 奖励配额余额（可累积，上限6）
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    uniqueUserDate: unique().on(table.userId, table.date),
+  };
+});
+
 export type User = InferModel<typeof users>;
 export type UserProfile = InferModel<typeof userProfiles>;
 export type UserProfileHistory = InferModel<typeof userProfileHistory>;
@@ -345,4 +362,5 @@ export type InterviewQuestion = InferModel<typeof interviewQuestions>;
 export type InterviewRequest = InferModel<typeof interviewRequests>;
 export type UserInterviewPost = InferModel<typeof userInterviewPosts>;
 export type InterviewComment = InferModel<typeof interviewComments>;
-export type InterviewVote = InferModel<typeof interviewVotes>; 
+export type InterviewVote = InferModel<typeof interviewVotes>;
+export type UserDailyBonus = InferModel<typeof userDailyBonus>; 

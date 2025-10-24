@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,6 +38,7 @@ export function PostQuestionModal({
   filterOptions,
 }: PostQuestionModalProps) {
   const [loading, setLoading] = useState(false);
+  const [customCompanySelected, setCustomCompanySelected] = useState(false);
   const [formData, setFormData] = useState({
     company: '',
     position: '',
@@ -47,6 +48,13 @@ export function PostQuestionModal({
     question: '',
     isAnonymous: false,
   });
+
+  // 当对话框关闭时重置自定义公司选择状态
+  useEffect(() => {
+    if (!isOpen) {
+      setCustomCompanySelected(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +97,9 @@ export function PostQuestionModal({
           question: '',
           isAnonymous: false,
         });
+        setCustomCompanySelected(false);
+        // 通知配额卡片刷新数据
+        window.dispatchEvent(new CustomEvent('quotaUpdated'));
         onSuccess();
         onClose();
       } else {
@@ -129,10 +140,16 @@ export function PostQuestionModal({
                 🏢 公司 <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={formData.company}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, company: value })
-                }
+                value={customCompanySelected ? '其他' : formData.company}
+                onValueChange={(value) => {
+                  if (value === '其他') {
+                    setCustomCompanySelected(true);
+                    setFormData({ ...formData, company: '' });
+                  } else {
+                    setCustomCompanySelected(false);
+                    setFormData({ ...formData, company: value });
+                  }
+                }}
               >
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="选择" />
@@ -236,7 +253,7 @@ export function PostQuestionModal({
           </div>
 
           {/* 如果选择"其他"公司，显示自定义输入框 */}
-          {formData.company === '其他' && (
+          {customCompanySelected && (
             <div className="space-y-2">
               <Label htmlFor="customCompany" className="text-sm">
                 请输入公司名称 <span className="text-red-500">*</span>

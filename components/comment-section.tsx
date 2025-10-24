@@ -89,6 +89,8 @@ export function CommentSection({ postType, postId, commentsCount, defaultExpande
         toast.success('评论发布成功！');
         setNewComment('');
         fetchComments();
+        // 通知配额卡片刷新数据
+        window.dispatchEvent(new CustomEvent('quotaUpdated'));
       } else {
         toast.error(data.message || '评论失败');
       }
