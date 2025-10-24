@@ -1283,11 +1283,11 @@ export default function MatchesPage() {
               ) : (
                 <>
                   {currentMatch ? (
-                    <Card className="w-full max-w-lg mx-auto rounded-3xl shadow-xl border-0 bg-white p-5 mt-4">
+                    <Card className="w-full max-w-lg mx-auto rounded-3xl shadow-xl border-0 bg-white p-6 mt-4">
                       <div className="flex flex-col items-center">
                         <div className="w-28 h-28 rounded-full shadow flex items-center justify-center mb-4 border-4 border-white bg-blue-50">
                           <img
-                            src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${currentMatch.username}`}
+                            src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${currentMatch.id === 58 ? 'Isabella' : currentMatch.username}`}
                             alt="avatar"
                             className="w-24 h-24 rounded-full object-cover"
                           />
@@ -1296,7 +1296,11 @@ export default function MatchesPage() {
                         {/* 显示用户成就等级 */}
                         {renderAchievement(currentMatch.id)}
                         {currentMatch.bio && (
-                          <div className="text-base text-gray-500 mb-2 text-center max-w-xs mx-auto">{currentMatch.bio}</div>
+                          <div className="w-full px-4 mb-3">
+                            <div className="text-sm text-gray-600 text-left leading-loose whitespace-pre-wrap">
+                              {currentMatch.bio}
+                            </div>
+                          </div>
                         )}
                       </div>
                       <div className="grid grid-cols-2 gap-8 my-6">
@@ -1454,7 +1458,7 @@ export default function MatchesPage() {
                           <div className="card-header">
                             <div className="avatar">
                               <img
-                                src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${match.username || 'user'}`}
+                                src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${match.id === 58 ? 'Isabella' : (match.username || 'user')}`}
                                 alt="avatar"
                                 className="w-full h-full rounded-full object-cover"
                               />
