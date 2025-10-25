@@ -403,7 +403,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 返回完整统计数据
-    return NextResponse.json({
+    const responseData = {
       success: true,
       data: {
         user: {
@@ -476,7 +476,21 @@ export async function GET(request: NextRequest) {
           recent: recentNotifications,
         },
       },
+    };
+    
+    // 🔍 DEBUG: 记录活动统计数据
+    console.log('🔍 [Stats API] 用户', userId, '返回数据:', {
+      thisWeek: thisWeekActivity,
+      thisMonth: thisMonthActivity,
+      thisWeekPosts,
+      thisWeekComments,
+      thisWeekViews,
+      thisMonthPosts,
+      thisMonthComments,
+      thisMonthViews,
     });
+    
+    return NextResponse.json(responseData);
   } catch (error: any) {
     console.error('❌ [统计API] 获取数据失败:', error);
     return NextResponse.json(
