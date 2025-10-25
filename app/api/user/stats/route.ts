@@ -142,10 +142,13 @@ export async function GET(request: NextRequest) {
     try {
       const now = new Date();
       
-      // 本周开始和结束
+      // 本周开始和结束（周一作为一周开始）
       const thisWeekStart = new Date(now);
-      thisWeekStart.setDate(now.getDate() - now.getDay());
       thisWeekStart.setHours(0, 0, 0, 0);
+      const dayOfWeek = thisWeekStart.getDay();
+      const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 周日特殊处理，周一为0
+      thisWeekStart.setDate(thisWeekStart.getDate() - diff);
+      
       const thisWeekEnd = new Date(thisWeekStart);
       thisWeekEnd.setDate(thisWeekStart.getDate() + 7);
       
