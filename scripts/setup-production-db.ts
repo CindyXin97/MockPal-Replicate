@@ -62,7 +62,7 @@ async function runMigrations() {
       email VARCHAR(255),
       wechat VARCHAR(255),
       linkedin VARCHAR(255),
-      bio VARCHAR(255),
+      bio VARCHAR(1000),
       created_at TIMESTAMP DEFAULT NOW() NOT NULL,
       updated_at TIMESTAMP DEFAULT NOW() NOT NULL
     )

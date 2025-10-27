@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS user_profile_history (
   email VARCHAR(255),
   wechat VARCHAR(255),
   linkedin VARCHAR(255),
-  bio VARCHAR(255),
+  bio VARCHAR(1000),
   school VARCHAR(255),
   
   -- 变更元数据

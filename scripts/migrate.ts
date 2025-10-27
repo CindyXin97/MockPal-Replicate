@@ -62,7 +62,7 @@ async function main() {
         email VARCHAR(255),
         wechat VARCHAR(255),
         linkedin VARCHAR(255),
-        bio VARCHAR(255),
+        bio VARCHAR(1000),
         school VARCHAR(255),
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -86,7 +86,7 @@ async function main() {
     }
 
     try {
-      await sql`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS bio VARCHAR(255)`;
+      await sql`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS bio VARCHAR(1000)`;
       console.log('Added bio column');
     } catch (error) {
       console.log('bio column already exists or error:', error);
