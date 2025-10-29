@@ -42,20 +42,20 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
 
-    // 获取用户所有收藏的题目ID
-    let savedQuestionsQuery = db
-      .select()
-      .from(userSavedQuestions)
-      .where(eq(userSavedQuestions.userId, currentUserId));
-
+    // 构建查询条件
+    const conditions = [eq(userSavedQuestions.userId, currentUserId)];
+    
     // 如果有类型筛选
     if (questionType && questionType !== 'all') {
-      savedQuestionsQuery = savedQuestionsQuery.where(
-        eq(userSavedQuestions.questionType, questionType)
-      );
+      conditions.push(eq(userSavedQuestions.questionType, questionType));
     }
 
-    const savedQuestions = await savedQuestionsQuery.orderBy(desc(userSavedQuestions.createdAt));
+    // 获取用户所有收藏的题目ID
+    const savedQuestions = await db
+      .select()
+      .from(userSavedQuestions)
+      .where(and(...conditions))
+      .orderBy(desc(userSavedQuestions.createdAt));
 
     // 分别获取系统题目和用户发布的题目
     const systemQuestionIds = savedQuestions
