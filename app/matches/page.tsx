@@ -25,6 +25,7 @@ import { FirstMatchModal } from '@/components/first-match-modal';
 
 
 import { PostQuestionModal } from '@/components/post-question-modal';
+import { SaveQuestionButton } from '@/components/save-question-button';
 
 // 面试真题类型定义
 interface InterviewQuestion {
@@ -39,6 +40,7 @@ interface InterviewQuestion {
   year: number;
   postType: 'system' | 'user';
   isOwnPost: boolean;
+  isSaved?: boolean;
   stats?: {
     upvotes: number;
     downvotes: number;
@@ -341,6 +343,24 @@ const InterviewQuestionsTab = () => {
                       <span className="text-gray-500">{question.year}</span>
                     </div>
                     <div className="flex items-center gap-2">
+                      <SaveQuestionButton
+                        questionId={question.id}
+                        questionType={question.postType}
+                        isSaved={question.isSaved}
+                        onSaveChange={(saved) => {
+                          // 更新本地状态
+                          setQuestions(prev => 
+                            prev.map(q => 
+                              q.id === question.id && q.postType === question.postType
+                                ? { ...q, isSaved: saved }
+                                : q
+                            )
+                          );
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        showText={false}
+                      />
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty)}`}>
                         {getDifficultyLabel(question.difficulty)}
                       </span>

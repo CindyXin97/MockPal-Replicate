@@ -231,6 +231,16 @@ export const interviewVotes = pgTable('interview_votes', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// 用户收藏题目表
+export const userSavedQuestions = pgTable('user_saved_questions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  questionType: varchar('question_type', { length: 20 }).notNull(), // 'system' or 'user'
+  questionId: integer('question_id').notNull(), // interview_questions.id 或 user_interview_posts.id
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // 用户通知表
 export const userNotifications = pgTable('user_notifications', {
   id: serial('id').primaryKey(),
@@ -363,4 +373,5 @@ export type InterviewRequest = InferModel<typeof interviewRequests>;
 export type UserInterviewPost = InferModel<typeof userInterviewPosts>;
 export type InterviewComment = InferModel<typeof interviewComments>;
 export type InterviewVote = InferModel<typeof interviewVotes>;
+export type UserSavedQuestion = InferModel<typeof userSavedQuestions>;
 export type UserDailyBonus = InferModel<typeof userDailyBonus>; 

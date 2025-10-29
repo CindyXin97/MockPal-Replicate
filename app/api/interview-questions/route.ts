@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/lib/auth-config';
 import { db } from '@/lib/db';
-import { interviewQuestions, userInterviewPosts, users, interviewVotes, interviewComments } from '@/lib/db/schema';
+import { interviewQuestions, userInterviewPosts, users, interviewVotes, interviewComments, userSavedQuestions } from '@/lib/db/schema';
 import { and, eq, like, desc, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -362,6 +362,24 @@ export async function GET(request: NextRequest) {
               }
             }
 
+            // 获取当前用户的收藏状态
+            let isSaved = false;
+            if (currentUserId) {
+              const savedResult = await db
+                .select({ id: userSavedQuestions.id })
+                .from(userSavedQuestions)
+                .where(
+                  and(
+                    eq(userSavedQuestions.userId, currentUserId),
+                    eq(userSavedQuestions.questionType, postType),
+                    eq(userSavedQuestions.questionId, postId)
+                  )
+                )
+                .limit(1);
+
+              isSaved = savedResult.length > 0;
+            }
+
             const upvotes = upvotesResult[0]?.count || 0;
             const downvotes = downvotesResult[0]?.count || 0;
             const comments = commentsResult[0]?.count || 0;
@@ -379,6 +397,7 @@ export async function GET(request: NextRequest) {
                 views: question.viewsCount || 0,
               },
               userVote,
+              isSaved,
             };
           })
         );
