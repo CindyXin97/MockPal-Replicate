@@ -119,6 +119,21 @@ export function Header() {
                 </span>
               </Link>
               <Link 
+                href="/my-library" 
+                className={`group relative text-sm font-medium transition-all duration-300 ${
+                  pathname === '/my-library' 
+                    ? 'text-blue-600 font-semibold' 
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}
+              >
+                <span className="relative">
+                  我的题库
+                  <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300 ${
+                    pathname === '/my-library' ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}></span>
+                </span>
+              </Link>
+              <Link 
                 href="/me" 
                 className={`group relative text-sm font-medium transition-all duration-300 ${
                   pathname?.startsWith('/me')

@@ -157,6 +157,24 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       if (profileData.school !== undefined) updateData.school = profileData.school;
       if (profileData.skills !== undefined) updateData.skills = profileData.skills ? JSON.stringify(profileData.skills) : null;
 
+      // 验证更新后至少有一种练习内容（如果提供了练习内容字段）
+      const practiceFieldsProvided = profileData.technicalInterview !== undefined || 
+                                     profileData.behavioralInterview !== undefined || 
+                                     profileData.caseAnalysis !== undefined || 
+                                     profileData.statsQuestions !== undefined;
+      
+      if (practiceFieldsProvided) {
+        // 计算更新后的状态
+        const finalTechnical = profileData.technicalInterview !== undefined ? profileData.technicalInterview : oldProfile.technicalInterview;
+        const finalBehavioral = profileData.behavioralInterview !== undefined ? profileData.behavioralInterview : oldProfile.behavioralInterview;
+        const finalCase = profileData.caseAnalysis !== undefined ? profileData.caseAnalysis : oldProfile.caseAnalysis;
+        const finalStats = profileData.statsQuestions !== undefined ? profileData.statsQuestions : oldProfile.statsQuestions;
+        
+        if (!finalTechnical && !finalBehavioral && !finalCase && !finalStats) {
+          return { success: false, message: '请至少选择一种期望练习内容' };
+        }
+      }
+
       console.log('📝 准备更新的数据:', JSON.stringify(updateData, null, 2));
 
       await db
@@ -174,6 +192,14 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       // Create new profile - 验证必需字段
       if (!profileData.jobType || !profileData.experienceLevel || !profileData.school) {
         return { success: false, message: '创建资料时需要提供职位类型、经验水平和学校信息' };
+      }
+
+      // 验证至少选择一种练习内容
+      if (!profileData.technicalInterview && 
+          !profileData.behavioralInterview && 
+          !profileData.caseAnalysis && 
+          !profileData.statsQuestions) {
+        return { success: false, message: '请至少选择一种期望练习内容' };
       }
 
       const newProfileResult = await db.insert(userProfiles).values({
@@ -211,6 +237,14 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
 // Create user profile
 export async function createProfile(userId: number, profileData: ProfileFormData) {
   try {
+    // 验证至少选择一种练习内容
+    if (!profileData.technicalInterview && 
+        !profileData.behavioralInterview && 
+        !profileData.caseAnalysis && 
+        !profileData.statsQuestions) {
+      return { success: false, message: '请至少选择一种期望练习内容' };
+    }
+
     await db.insert(userProfiles).values({
       userId,
       jobType: profileData.jobType,

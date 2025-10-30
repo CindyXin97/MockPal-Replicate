@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -124,6 +124,49 @@ export function CommentSection({ postType, postId, commentsCount, defaultExpande
     return comment.userName || comment.userEmail?.split('@')[0] || '用户';
   };
 
+  // 高亮显示 @用户名
+  const highlightMentions = (text: string) => {
+    // 匹配 @用户名 模式（用户名可以是中英文、数字、下划线）
+    const mentionRegex = /@([\w\u4e00-\u9fa5]+)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = mentionRegex.exec(text)) !== null) {
+      // 添加普通文本（不加任何样式，保持原色）
+      if (match.index > lastIndex) {
+        parts.push(
+          <span key={`text-${lastIndex}`} className="text-gray-900">
+            {text.substring(lastIndex, match.index)}
+          </span>
+        );
+      }
+      
+      // 添加高亮的 @用户名（蓝色加粗）
+      parts.push(
+        <span 
+          key={`mention-${match.index}`} 
+          className="text-blue-600 font-semibold"
+        >
+          {match[0]}
+        </span>
+      );
+      
+      lastIndex = match.index + match[0].length;
+    }
+
+    // 添加剩余的文本（不加任何样式，保持原色）
+    if (lastIndex < text.length) {
+      parts.push(
+        <span key={`text-${lastIndex}`} className="text-gray-900">
+          {text.substring(lastIndex)}
+        </span>
+      );
+    }
+
+    return parts.length > 0 ? parts : text;
+  };
+
   return (
     <div className="mt-4 border-t pt-4">
       <div className="flex items-center justify-between mb-4">
@@ -142,14 +185,25 @@ export function CommentSection({ postType, postId, commentsCount, defaultExpande
         <div className="space-y-4">
           {/* 评论输入框 */}
           <form onSubmit={handleSubmitComment} className="space-y-3">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="分享你的想法..."
-              rows={3}
-              className="resize-none"
-              disabled={loading}
-            />
+            <div className="relative">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="分享你的想法... (可使用 @用户名 提及他人)"
+                rows={3}
+                className="resize-none"
+                disabled={loading}
+              />
+              {/* 预览区域 - 显示带高亮的文本 */}
+              {newComment && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <div className="text-xs text-gray-500 mb-1">预览：</div>
+                  <div className="text-sm whitespace-pre-wrap break-words">
+                    {highlightMentions(newComment)}
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-500">
                 {newComment.length}/1000 字
@@ -185,9 +239,9 @@ export function CommentSection({ postType, postId, commentsCount, defaultExpande
                           {formatDate(comment.createdAt)}
                         </span>
                       </div>
-                      <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                        {comment.content}
-                      </p>
+                      <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                        {highlightMentions(comment.content)}
+                      </div>
                     </div>
                   </div>
                 </Card>
