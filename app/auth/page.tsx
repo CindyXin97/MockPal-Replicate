@@ -21,6 +21,7 @@ function AuthPageContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
 
   useEffect(() => {
     // 根据 URL 参数决定显示模式
@@ -108,7 +109,7 @@ function AuthPageContent() {
 
     setIsLoading(true);
     try {
-      const result = await registerWithEmail(registerEmail);
+      const result = await registerWithEmail(registerEmail, inviteCode.trim() || undefined);
       
       if (result.success) {
         toast.success(result.message);
@@ -305,6 +306,23 @@ function AuthPageContent() {
                           required
                         />
                       </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-code">
+                        邀请码 <span className="text-xs text-gray-400 font-normal">(选填)</span>
+                      </Label>
+                      <Input
+                        id="invite-code"
+                        type="text"
+                        placeholder="如有好友分享的邀请码，请输入"
+                        className="uppercase"
+                        value={inviteCode}
+                        onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                        maxLength={12}
+                      />
+                      <p className="text-xs text-gray-500">
+                        💡 使用邀请码注册，好友将获得额外配额奖励
+                      </p>
                     </div>
                     <Button
                       type="button"

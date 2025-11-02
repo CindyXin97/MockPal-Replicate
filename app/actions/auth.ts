@@ -3,12 +3,12 @@
 import { sendPasswordSetupEmail, setPassword } from '@/lib/auth';
 
 // 邮箱+密码注册 - 发送设置密码链接
-export async function registerWithEmail(email: string) {
+export async function registerWithEmail(email: string, inviteCode?: string) {
   if (!email) {
     return { success: false, message: '请输入邮箱地址' };
   }
 
-  return sendPasswordSetupEmail(email);
+  return sendPasswordSetupEmail(email, inviteCode);
 }
 
 // 设置密码

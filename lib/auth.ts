@@ -39,7 +39,7 @@ export async function authenticateWithEmailPassword(email: string, password: str
 }
 
 // 发送设置密码链接
-export async function sendPasswordSetupEmail(email: string) {
+export async function sendPasswordSetupEmail(email: string, inviteCode?: string) {
   try {
     // 检查邮箱是否已注册
     let user = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -72,7 +72,12 @@ export async function sendPasswordSetupEmail(email: string) {
 
     // 构建设置密码链接
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const setupUrl = `${baseUrl}/auth/set-password?token=${token}&email=${encodeURIComponent(email)}`;
+    let setupUrl = `${baseUrl}/auth/set-password?token=${token}&email=${encodeURIComponent(email)}`;
+    
+    // 如果提供了邀请码，添加到URL参数中
+    if (inviteCode && inviteCode.trim()) {
+      setupUrl += `&inviteCode=${encodeURIComponent(inviteCode.trim().toUpperCase())}`;
+    }
 
     // 发送邮件
     await emailService.sendPasswordSetupEmail(email, setupUrl);
@@ -140,7 +145,16 @@ export async function setPassword(email: string, token: string, password: string
       school: '未填写',
     });
 
-    return { success: true, message: '密码设置成功，请登录' };
+    // 为新用户生成邀请码
+    const { getOrCreateUserInviteCode } = await import('@/lib/invite-codes');
+    try {
+      await getOrCreateUserInviteCode(user[0].id);
+    } catch (error) {
+      console.error('Failed to create invite code for new user:', error);
+      // 不影响注册流程，继续
+    }
+
+    return { success: true, userId: user[0].id, message: '密码设置成功，请登录' };
   } catch (error) {
     console.error('Set password error:', error);
     return { success: false, message: '设置密码失败，请稍后再试' };

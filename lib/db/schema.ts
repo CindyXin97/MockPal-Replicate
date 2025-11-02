@@ -359,6 +359,28 @@ export const userDailyBonus = pgTable('user_daily_bonus', {
   };
 });
 
+// 用户邀请码表
+export const userInviteCodes = pgTable('user_invite_codes', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull().unique(),
+  inviteCode: varchar('invite_code', { length: 12 }).notNull().unique(),
+  timesUsed: integer('times_used').default(0).notNull(),
+  totalReferrals: integer('total_referrals').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 邀请码使用记录表
+export const inviteCodeUsage = pgTable('invite_code_usage', {
+  id: serial('id').primaryKey(),
+  inviteCode: varchar('invite_code', { length: 12 }).notNull().references(() => userInviteCodes.inviteCode, { onDelete: 'cascade' }),
+  referrerUserId: integer('referrer_user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  referredUserId: integer('referred_user_id').references(() => users.id, { onDelete: 'cascade' }).notNull().unique(),
+  rewardType: varchar('reward_type', { length: 20 }).default('quota').notNull(),
+  rewardAmount: integer('reward_amount').default(2).notNull(),
+  usedAt: timestamp('used_at').defaultNow().notNull(),
+});
+
 export type User = InferModel<typeof users>;
 export type UserProfile = InferModel<typeof userProfiles>;
 export type UserProfileHistory = InferModel<typeof userProfileHistory>;
@@ -374,4 +396,6 @@ export type UserInterviewPost = InferModel<typeof userInterviewPosts>;
 export type InterviewComment = InferModel<typeof interviewComments>;
 export type InterviewVote = InferModel<typeof interviewVotes>;
 export type UserSavedQuestion = InferModel<typeof userSavedQuestions>;
-export type UserDailyBonus = InferModel<typeof userDailyBonus>; 
+export type UserDailyBonus = InferModel<typeof userDailyBonus>;
+export type UserInviteCode = InferModel<typeof userInviteCodes>;
+export type InviteCodeUsage = InferModel<typeof inviteCodeUsage>; 

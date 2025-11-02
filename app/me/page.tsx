@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { AuthLayout } from '@/components/base-layout';
 import { QuotaProgressCard } from '@/components/quota-progress-card';
+import { InviteCodeCard } from '@/components/invite-code-card';
 
 interface UserStats {
   user: {
@@ -304,6 +305,9 @@ export default function MePage() {
             )}
           </CardContent>
         </Card>
+
+        {/* 邀请好友卡片 */}
+        <InviteCodeCard />
 
         {/* 每日配额任务卡片 */}
         <QuotaProgressCard />
