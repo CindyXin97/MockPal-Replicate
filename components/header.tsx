@@ -5,19 +5,54 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 import {
   Menubar,
   MenubarContent,
   MenubarItem,
   MenubarMenu,
-  MenubarSeparator,
   MenubarTrigger,
 } from '@/components/ui/menubar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function Header() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [language, setLanguage] = useAtom(languageAtom);
+
+  const texts = language === 'zh'
+    ? {
+        profile: '个人资料',
+        matches: '匹配管理',
+        library: '我的题库',
+        achievements: '我的成就',
+        logout: '退出登录',
+        defaultUserName: '用户',
+        languageToggleAria: '选择语言',
+        languageSelectPlaceholder: '选择语言',
+        languageOptionZh: '简体中文',
+        languageOptionEn: 'English',
+      }
+    : {
+        profile: 'Profile',
+        matches: 'Matches',
+        library: 'My Library',
+        achievements: 'Achievements',
+        logout: 'Sign out',
+        defaultUserName: 'User',
+        languageToggleAria: 'Select language',
+        languageSelectPlaceholder: 'Language',
+        languageOptionZh: 'Chinese',
+        languageOptionEn: 'English',
+      };
 
   // 获取未读通知数量
   useEffect(() => {
@@ -57,7 +92,7 @@ export function Header() {
   const getUserDisplayName = () => {
     if (session?.user?.name) return session.user.name;
     if (session?.user?.email) return session.user.email.split('@')[0];
-    return '用户';
+    return texts.defaultUserName;
   };
 
   // 获取用户头像字母
@@ -69,22 +104,39 @@ export function Header() {
   return (
     <header className="w-full px-4 py-2 bg-white/80 backdrop-blur border-b shadow-sm fixed top-0 left-0 z-30">
       <div className="container mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 h-12">
-          <div className="h-12 w-12 overflow-hidden flex items-center justify-center rounded">
-            <Image
-              src="/logo-icon.png"
-              alt="MockPal Logo"
-              width={48}
-              height={48}
-              className="object-contain"
-              priority
-            />
-          </div>
-          <span className="text-2xl font-extrabold tracking-tight text-black font-['Poppins']" style={{ fontWeight: 700 }}>
-            Mock<span className="text-blue-500">Pal</span>
-          </span>
-        </Link>
-        
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2 h-12">
+            <div className="h-12 w-12 overflow-hidden flex items-center justify-center rounded">
+              <Image
+                src="/logo-icon.png"
+                alt="MockPal Logo"
+                width={48}
+                height={48}
+                className="object-contain"
+                priority
+              />
+            </div>
+            <span className="text-2xl font-extrabold tracking-tight text-black font-['Poppins']" style={{ fontWeight: 700 }}>
+              Mock<span className="text-blue-500">Pal</span>
+            </span>
+          </Link>
+          <Select
+            value={language}
+            onValueChange={(value) => setLanguage(value as 'zh' | 'en')}
+          >
+            <SelectTrigger
+              aria-label={texts.languageToggleAria}
+              className="w-32 border-blue-200 text-blue-600 hover:bg-blue-50 focus:ring-blue-200 focus:ring-offset-0"
+            >
+              <SelectValue placeholder={texts.languageSelectPlaceholder} />
+            </SelectTrigger>
+            <SelectContent align="start">
+              <SelectItem value="zh">{texts.languageOptionZh}</SelectItem>
+              <SelectItem value="en">{texts.languageOptionEn}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <nav>
           {status === 'authenticated' && session ? (
             <div className="flex items-center gap-6">
@@ -97,7 +149,7 @@ export function Header() {
                 }`}
               >
                 <span className="relative">
-                  个人资料
+                  {texts.profile}
                   <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300 ${
                     pathname === '/profile' ? 'w-full' : 'w-0 group-hover:w-full'
                   }`}></span>
@@ -112,7 +164,7 @@ export function Header() {
                 }`}
               >
                 <span className="relative">
-                  匹配管理
+                  {texts.matches}
                   <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300 ${
                     pathname === '/matches' ? 'w-full' : 'w-0 group-hover:w-full'
                   }`}></span>
@@ -127,7 +179,7 @@ export function Header() {
                 }`}
               >
                 <span className="relative">
-                  我的题库
+                  {texts.library}
                   <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300 ${
                     pathname === '/my-library' ? 'w-full' : 'w-0 group-hover:w-full'
                   }`}></span>
@@ -142,7 +194,7 @@ export function Header() {
                 }`}
               >
                 <span className="relative">
-                  我的成就
+                  {texts.achievements}
                   <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300 ${
                     pathname?.startsWith('/me') ? 'w-full' : 'w-0 group-hover:w-full'
                   }`}></span>
@@ -162,7 +214,7 @@ export function Header() {
                   <MenubarContent align="end" className="w-48">
                     <MenubarItem onClick={handleLogout} className="cursor-pointer">
                       <span className="text-lg mr-2">🚪</span>
-                      <span>退出登录</span>
+                      <span>{texts.logout}</span>
                     </MenubarItem>
                   </MenubarContent>
                 </MenubarMenu>
