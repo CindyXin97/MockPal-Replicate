@@ -38,8 +38,8 @@ export function Header() {
         defaultUserName: '用户',
         languageToggleAria: '选择语言',
         languageSelectPlaceholder: '选择语言',
-        languageOptionZh: '简体中文',
-        languageOptionEn: 'English',
+        languageOptionZh: '中文',
+        languageOptionEn: 'EN',
       }
     : {
         profile: 'Profile',
@@ -50,8 +50,8 @@ export function Header() {
         defaultUserName: 'User',
         languageToggleAria: 'Select language',
         languageSelectPlaceholder: 'Language',
-        languageOptionZh: 'Chinese',
-        languageOptionEn: 'English',
+        languageOptionZh: '中文',
+        languageOptionEn: 'EN',
       };
 
   // 获取未读通知数量
@@ -104,7 +104,7 @@ export function Header() {
   return (
     <header className="w-full px-4 py-2 bg-white/80 backdrop-blur border-b shadow-sm fixed top-0 left-0 z-30">
       <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-start sm:items-center gap-2 sm:gap-4">
           <Link href="/" className="flex items-center gap-2 h-12">
             <div className="h-12 w-12 overflow-hidden flex items-center justify-center rounded">
               <Image
@@ -120,21 +120,23 @@ export function Header() {
               Mock<span className="text-blue-500">Pal</span>
             </span>
           </Link>
-          <Select
-            value={language}
-            onValueChange={(value) => setLanguage(value as 'zh' | 'en')}
-          >
-            <SelectTrigger
-              aria-label={texts.languageToggleAria}
-              className="w-32 border-blue-200 text-blue-600 hover:bg-blue-50 focus:ring-blue-200 focus:ring-offset-0"
+          <div className="order-2 sm:order-none mt-1 sm:mt-0">
+            <Select
+              value={language}
+              onValueChange={(value) => setLanguage(value as 'zh' | 'en')}
             >
-              <SelectValue placeholder={texts.languageSelectPlaceholder} />
-            </SelectTrigger>
-            <SelectContent align="start">
-              <SelectItem value="zh">{texts.languageOptionZh}</SelectItem>
-              <SelectItem value="en">{texts.languageOptionEn}</SelectItem>
-            </SelectContent>
-          </Select>
+              <SelectTrigger
+                aria-label={texts.languageToggleAria}
+                className="h-8 w-16 sm:w-20 px-2 text-xs sm:text-sm border-blue-200 text-blue-600 hover:bg-blue-50 focus:ring-blue-200 focus:ring-offset-0"
+              >
+                <SelectValue placeholder={texts.languageSelectPlaceholder} />
+              </SelectTrigger>
+              <SelectContent align="start" sideOffset={4}>
+                <SelectItem value="zh">{texts.languageOptionZh}</SelectItem>
+                <SelectItem value="en">{texts.languageOptionEn}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <nav>
