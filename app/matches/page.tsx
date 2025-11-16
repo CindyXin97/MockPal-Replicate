@@ -22,6 +22,7 @@ import '@/styles/success.css';
 import { FeedbackModal } from '@/components/feedback-modal';
 import { MatchStatusCard } from '@/components/match-status-card';
 import { FirstMatchModal } from '@/components/first-match-modal';
+import { languageAtom } from '@/lib/store';
 
 
 import { PostQuestionModal } from '@/components/post-question-modal';
@@ -57,6 +58,87 @@ interface InterviewQuestion {
 
 // 面试真题组件
 const InterviewQuestionsTab = () => {
+  const [language] = useAtom(languageAtom);
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        pageTitle: 'Interview Questions 📝',
+        pageSubtitle: 'Share your interview experiences and discover ideas from others.',
+        postButton: 'Share My Experience',
+        filtersTitle: 'Filters',
+        source: '📌 Source',
+        sourceAll: 'All',
+        sourceSystem: '🏆 Curated',
+        sourceUser: '👥 User posts',
+        sourceMine: '📝 My posts',
+        company: 'Company',
+        companyAll: 'All companies',
+        position: 'Position',
+        positionAll: 'All positions',
+        type: 'Type',
+        typeAll: 'All types',
+        difficulty: 'Difficulty',
+        difficultyAll: 'All difficulties',
+        year: 'Year',
+        yearAll: 'All years',
+        typeLabels: {
+          technical: '🔧 Technical',
+          behavioral: '🧑‍🤝‍🧑 Behavioral',
+          case_study: '🧩 Case study',
+          stats: '📊 Statistics'
+        } as Record<string, string>,
+        difficultyLabels: { easy: 'Easy', medium: 'Medium', hard: 'Hard' } as Record<string, string>,
+        questionTitle: '📝 Question:',
+        sourceLabel: 'Source: ',
+        authorLabel: 'Shared by: ',
+        commentsCount: (n: number) => `${n} comments`,
+        viewDetails: 'View details →',
+        paginationPrev: 'Previous',
+        paginationNext: 'Next',
+        paginationInfo: (page: number, total: number) => `Page ${page} of ${total}`,
+        emptyTitle: 'No questions found',
+        emptyDesc: 'Try adjusting filters or check back later.',
+      };
+    }
+    return {
+      pageTitle: '真题分享 📝',
+      pageSubtitle: '分享你的面试经历，看看大家有没有更好的想法吧？',
+      postButton: '分享我的面试经历',
+      filtersTitle: '筛选条件',
+      source: '📌 来源',
+      sourceAll: '全部来源',
+      sourceSystem: '🏆 系统精选',
+      sourceUser: '👥 用户分享',
+      sourceMine: '📝 我的发布',
+      company: '公司',
+      companyAll: '全部公司',
+      position: '职位',
+      positionAll: '全部职位',
+      type: '题目类型',
+      typeAll: '全部类型',
+      difficulty: '难度',
+      difficultyAll: '全部难度',
+      year: '年份',
+      yearAll: '全部年份',
+      typeLabels: {
+        technical: '🔧 技术面试',
+        behavioral: '🧑‍🤝‍🧑 行为面试',
+        case_study: '🧩 案例分析',
+        stats: '📊 统计问题'
+      } as Record<string, string>,
+      difficultyLabels: { easy: '简单', medium: '中等', hard: '困难' } as Record<string, string>,
+      questionTitle: '📝 问题：',
+      sourceLabel: '来源：',
+      authorLabel: '分享者：',
+      commentsCount: (n: number) => `${n} 条评论`,
+      viewDetails: '点击查看详情 →',
+      paginationPrev: '上一页',
+      paginationNext: '下一页',
+      paginationInfo: (page: number, total: number) => `第 ${page} 页，共 ${total} 页`,
+      emptyTitle: '暂无相关题目',
+      emptyDesc: '请调整筛选条件或稍后再试',
+    };
+  }, [language]);
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPostModal, setShowPostModal] = useState(false);
@@ -145,13 +227,7 @@ const InterviewQuestionsTab = () => {
   };
 
   const getQuestionTypeLabel = (type: string) => {
-    const typeMap: Record<string, string> = {
-      technical: '🔧 技术面试',
-      behavioral: '🧑‍🤝‍🧑 行为面试',
-      case_study: '🧩 案例分析',
-      stats: '📊 统计问题'
-    };
-    return typeMap[type] || type;
+    return t.typeLabels[type] || type;
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -164,12 +240,7 @@ const InterviewQuestionsTab = () => {
   };
 
   const getDifficultyLabel = (difficulty: string) => {
-    const labelMap: Record<string, string> = {
-      easy: '简单',
-      medium: '中等',
-      hard: '困难'
-    };
-    return labelMap[difficulty] || difficulty;
+    return t.difficultyLabels[difficulty] || difficulty;
   };
 
   return (
@@ -177,8 +248,8 @@ const InterviewQuestionsTab = () => {
       {/* 页面标题和发帖按钮 */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <div className="text-center sm:text-left">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">真题分享 📝</h1>
-          <p className="text-base sm:text-lg text-gray-600">分享你的面试经历，看看大家有没有更好的想法吧？</p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">{t.pageTitle}</h1>
+          <p className="text-base sm:text-lg text-gray-600">{t.pageSubtitle}</p>
         </div>
         <Button
           onClick={() => setShowPostModal(true)}
@@ -191,7 +262,7 @@ const InterviewQuestionsTab = () => {
             height={20}
             className="rounded"
           />
-                  分享我的面试经历
+          {t.postButton}
         </Button>
       </div>
 
@@ -209,84 +280,84 @@ const InterviewQuestionsTab = () => {
       {/* 筛选器 */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>筛选条件</CardTitle>
+          <CardTitle>{t.filtersTitle}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {/* 来源筛选 - 放在第一个，最重要 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">📌 来源</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.source}</label>
               <select
                 value={filters.source}
                 onChange={(e) => handleFilterChange('source', e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md text-sm font-medium"
               >
-                <option value="all">全部来源</option>
-                <option value="system">🏆 系统精选</option>
-                <option value="user">👥 用户分享</option>
-                <option value="mine">📝 我的发布</option>
+                <option value="all">{t.sourceAll}</option>
+                <option value="system">{t.sourceSystem}</option>
+                <option value="user">{t.sourceUser}</option>
+                <option value="mine">{t.sourceMine}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">公司</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.company}</label>
               <select
                 value={filters.company}
                 onChange={(e) => handleFilterChange('company', e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="all">全部公司</option>
+                <option value="all">{t.companyAll}</option>
                 {filterOptions.companies.map(company => (
                   <option key={company} value={company}>{company}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">职位</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.position}</label>
               <select
                 value={filters.position}
                 onChange={(e) => handleFilterChange('position', e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="all">全部职位</option>
+                <option value="all">{t.positionAll}</option>
                 {filterOptions.positions.map(position => (
                   <option key={position} value={position}>{position}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">题目类型</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.type}</label>
               <select
                 value={filters.questionType}
                 onChange={(e) => handleFilterChange('questionType', e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="all">全部类型</option>
+                <option value="all">{t.typeAll}</option>
                 {filterOptions.questionTypes.map(type => (
                   <option key={type} value={type}>{getQuestionTypeLabel(type)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">难度</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.difficulty}</label>
               <select
                 value={filters.difficulty}
                 onChange={(e) => handleFilterChange('difficulty', e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="all">全部难度</option>
+                <option value="all">{t.difficultyAll}</option>
                 {filterOptions.difficulties.map(difficulty => (
                   <option key={difficulty} value={difficulty}>{getDifficultyLabel(difficulty)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">年份</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.year}</label>
               <select
                 value={filters.year}
                 onChange={(e) => handleFilterChange('year', e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="all">全部年份</option>
+                <option value="all">{t.yearAll}</option>
                 {filterOptions.years.map(year => (
                   <option key={year} value={year}>{year}</option>
                 ))}
@@ -370,7 +441,7 @@ const InterviewQuestionsTab = () => {
                   
                   {/* 问题内容预览 */}
                   <div className="mb-4">
-                    <h3 className="font-medium text-gray-800 mb-2">📝 问题：</h3>
+                    <h3 className="font-medium text-gray-800 mb-2">{t.questionTitle}</h3>
                     <p className="text-gray-700 leading-relaxed line-clamp-3">
                       {question.question}
                     </p>
@@ -379,14 +450,14 @@ const InterviewQuestionsTab = () => {
                   {/* 来源信息 */}
                   {question.source && (
                     <div className="text-xs text-gray-500 mb-3">
-                      来源：{question.source}
+                      {t.sourceLabel}{question.source}
                     </div>
                   )}
 
                   {/* 用户信息（如果是用户发布的） */}
                   {question.postType === 'user' && !question.isAnonymous && question.userName && (
                     <div className="text-xs text-gray-500 mb-3">
-                      分享者：{question.userName}
+                      {t.authorLabel}{question.userName}
                     </div>
                   )}
 
@@ -400,10 +471,10 @@ const InterviewQuestionsTab = () => {
                         👎 {question.stats.downvotes}
                       </span>
                       <span className="flex items-center gap-1">
-                        💬 {question.stats.comments} 条评论
+                        💬 {t.commentsCount(question.stats.comments)}
                       </span>
                       <span className="ml-auto text-blue-500 font-medium">
-                        点击查看详情 →
+                        {t.viewDetails}
                       </span>
                     </div>
                   )}
@@ -422,10 +493,10 @@ const InterviewQuestionsTab = () => {
                   disabled={pagination.page === 1}
                   onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                 >
-                  上一页
+                  {t.paginationPrev}
                 </Button>
                 <span className="text-sm text-gray-600">
-                  第 {pagination.page} 页，共 {pagination.totalPages} 页
+                  {t.paginationInfo(pagination.page, pagination.totalPages)}
                 </span>
                 <Button
                   variant="outline"
@@ -433,7 +504,7 @@ const InterviewQuestionsTab = () => {
                   disabled={pagination.page === pagination.totalPages}
                   onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                 >
-                  下一页
+                  {t.paginationNext}
                 </Button>
               </div>
             </div>
@@ -444,8 +515,8 @@ const InterviewQuestionsTab = () => {
           <CardContent className="p-12 text-center">
             <div className="flex flex-col items-center">
               <div className="text-4xl mb-4">🔍</div>
-              <h3 className="text-lg font-medium text-gray-800 mb-2">暂无相关题目</h3>
-              <p className="text-gray-600">请调整筛选条件或稍后再试</p>
+              <h3 className="text-lg font-medium text-gray-800 mb-2">{t.emptyTitle}</h3>
+              <p className="text-gray-600">{t.emptyDesc}</p>
             </div>
           </CardContent>
         </Card>
@@ -461,6 +532,49 @@ const InterviewQuestionsTab = () => {
 
 // 面经需求收集组件
 const RequestInterviewExperienceCard = () => {
+  const [language] = useAtom(languageAtom);
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        wantMore: 'Want to see more experiences?',
+        desc: 'Tell us which companies and positions you want to see.',
+        toggleOpen: 'Request',
+        toggleClose: 'Close',
+        companyLabel: 'Company name',
+        positionLabel: 'Position name',
+        companyPlaceholder: 'e.g., Google, Meta, ByteDance...',
+        positionPlaceholder: 'e.g., Data Scientist, Product Analyst...',
+        additionLabel: 'Additional notes',
+        optional: '(optional)',
+        cancel: 'Cancel',
+        submit: 'Submit',
+        submitting: 'Submitting...',
+        collectedCompanies: (n: number) => `Collected ${n}+ companies`,
+        collectedQuestions: (n: number) => `${n}+ questions`,
+        latest: 'Latest 2025',
+        source: '1point3acres',
+      };
+    }
+    return {
+      wantMore: '想看更多面经？',
+      desc: '告诉我们你希望看到哪些公司和岗位的面试题目',
+      toggleOpen: '提需求',
+      toggleClose: '收起',
+      companyLabel: '公司名称',
+      positionLabel: '职位名称',
+      companyPlaceholder: '如：Google, Meta, 字节跳动...',
+      positionPlaceholder: '如：数据科学家, 产品分析师...',
+      additionLabel: '补充说明',
+      optional: '(可选)',
+      cancel: '取消',
+      submit: '提交需求',
+      submitting: '提交中...',
+      collectedCompanies: (n: number) => `已收集 ${n}+ 公司`,
+      collectedQuestions: (n: number) => `${n}+ 道真题`,
+      latest: '2025年最新',
+      source: '一亩三分地',
+    };
+  }, [language]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     company: '',
@@ -507,8 +621,8 @@ const RequestInterviewExperienceCard = () => {
           <div className="flex items-center gap-3">
             <div className="text-2xl">💡</div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">想看更多面经？</h3>
-              <p className="text-gray-600 text-sm">告诉我们你希望看到哪些公司和岗位的面试题目</p>
+              <h3 className="text-lg font-semibold text-gray-800">{t.wantMore}</h3>
+              <p className="text-gray-600 text-sm">{t.desc}</p>
             </div>
           </div>
           <Button
@@ -517,7 +631,7 @@ const RequestInterviewExperienceCard = () => {
             size="sm"
             className="border-2 border-blue-500 text-blue-500 hover:bg-blue-50"
           >
-            {showForm ? '收起' : '提需求'}
+            {showForm ? t.toggleClose : t.toggleOpen}
           </Button>
         </div>
 
@@ -526,37 +640,37 @@ const RequestInterviewExperienceCard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  公司名称 <span className="text-red-500">*</span>
+                  {t.companyLabel} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.company}
                   onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                  placeholder="如：Google, Meta, 字节跳动..."
+                  placeholder={t.companyPlaceholder}
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  职位名称 <span className="text-red-500">*</span>
+                  {t.positionLabel} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.position}
                   onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-                  placeholder="如：数据科学家, 产品分析师..."
+                  placeholder={t.positionPlaceholder}
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                补充说明 <span className="text-gray-500">(可选)</span>
+                {t.additionLabel} <span className="text-gray-500">{t.optional}</span>
               </label>
               <textarea
                 value={formData.message}
                 onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                placeholder="如：希望看到2025年最新的面试题目，或者特定的面试类型..."
+                placeholder={language === 'en' ? 'e.g., 2025 latest questions, or specific interview types...' : '如：希望看到2025年最新的面试题目，或者特定的面试类型...'}
                 rows={3}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
@@ -568,14 +682,14 @@ const RequestInterviewExperienceCard = () => {
                 onClick={() => setShowForm(false)}
                 disabled={submitting}
               >
-                取消
+                {t.cancel}
               </Button>
               <Button
                 type="submit"
                 disabled={submitting}
                 className="bg-blue-500 hover:bg-blue-600 text-white"
               >
-                {submitting ? '提交中...' : '提交需求'}
+                {submitting ? t.submitting : t.submit}
               </Button>
             </div>
           </form>
@@ -584,19 +698,19 @@ const RequestInterviewExperienceCard = () => {
         <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
           <div className="flex items-center gap-1">
             <span className="text-green-500">✓</span>
-            <span>已收集 16+ 公司</span>
+            <span>{t.collectedCompanies(16)}</span>
           </div>
-                                  <div className="flex items-center gap-1">
-                  <span className="text-green-500">✓</span>
-                  <span>62+ 道真题</span>
-                </div>
+          <div className="flex items-center gap-1">
+            <span className="text-green-500">✓</span>
+            <span>{t.collectedQuestions(62)}</span>
+          </div>
           <div className="flex items-center gap-1">
             <span className="text-blue-500">🔥</span>
-            <span>2025年最新</span>
+            <span>{t.latest}</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-purple-500">📚</span>
-            <span>一亩三分地</span>
+            <span>{t.source}</span>
           </div>
         </div>
       </CardContent>
@@ -607,6 +721,133 @@ const RequestInterviewExperienceCard = () => {
 export default function MatchesPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [language] = useAtom(languageAtom);
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        tabs: { browse: '🔍 Browse', matches: 'Matched', guide: '🧭 Guide', questions: '📝 Questions' },
+        completeProfileTitle: 'Complete your profile to start matching!',
+        completeProfileDesc: 'To recommend the best partners for you,\nplease take 2 minutes to complete your profile.',
+        completeProfileBtn: 'Complete my profile',
+        skip: 'Skip',
+        match: 'Match',
+        dailyLimitTitle: 'Daily recommendations used up!',
+        dailyLimitDesc: 'Come back tomorrow for new partners,\nor refresh to try again!',
+        seeMore: 'See more',
+        jobType: 'Job Type',
+        targetCompany: 'Target Company',
+        desiredPractice: 'Desired Practice',
+        tech: 'Technical',
+        behavioral: 'Behavioral',
+        case: 'Case study',
+        stats: 'Statistics',
+        skills: '💡 Skills',
+        experience: 'Experience Level',
+        jobSeeking: 'Job Search Status',
+        targetIndustry: 'Target Industry',
+        contactTitle: 'Contact:',
+        email: 'Email',
+        wechat: 'WhatsApp',
+        linkedin: 'LinkedIn',
+        viewTemplates: 'View Templates',
+        feedbackQ1: '📋 Added contact?',
+        yes: 'Yes',
+        no: 'No',
+        feedbackQ2: '🎯 Did you interview?',
+        feedbackTitle: '✍️ Please share your interview feedback:',
+        feedbackPlaceholder: 'Share your interview experience, takeaways, or suggestions...',
+        feedbackSubmit: 'Submit Feedback 🚀',
+        matchesAchievementTitle: 'Achievement System',
+        matchesAchievementDesc: 'Gain experience by completing interviews! 🌱 Rookie (0) → ⭐ Interview Novice (1-4) → 🌟 Rising Star (5-9) → 🌙 Interview Pro (10-14) → 👑 Interview Mentor (15+)',
+        viewGuide: 'View Interview Guide',
+        noMatchesTitle: 'No successful matches',
+        noMatchesDesc: 'Keep browsing candidates to find your practice partner!',
+        matchedPrefix: 'Matched ',
+        hoursAgo: (h: number) => `${h} hours ago`,
+        daysAgo: (d: number) => `${d} days ago`,
+        anonymous: 'Anonymous',
+        notSet: 'Not set',
+        // Guide tab strings
+        guideTitle: 'Complete Your Mock in 3 Steps',
+        guideSubtitle: 'Simple, clear, and efficient',
+        guideStep1Title: 'Contact and schedule',
+        guideStep1Desc: 'Click "Contact" to get details and schedule about 1 hour for a mock.',
+        guideStep2Title: 'Review questions and start',
+        guideStep2Part1: '20-25 mins',
+        guideStep2Part1Tail: ' for the mock interview',
+        guideStep2Part2: '10-15 mins',
+        guideStep2Part2Tail: ' to provide feedback',
+        guideStep2Rotate: '🔄 Then switch roles and repeat',
+        guideStep3Title: 'Return to submit feedback',
+        guideStep3Desc: 'Discuss in the Questions tab and share problems',
+        guideFooterPrimary: 'Start Matching',
+        guideFooterSecondary: 'View Questions',
+        support: 'Support',
+        contactId: 'Royal__city',
+      };
+    }
+    return {
+      tabs: { browse: '🔍 浏览候选人', matches: '成功匹配', guide: '🧭 面试指南', questions: '📝 真题分享' },
+      completeProfileTitle: '完善资料，开始匹配！',
+      completeProfileDesc: '为了为您推荐最合适的练习伙伴，\n请先花2分钟完善您的资料',
+      completeProfileBtn: '完善我的资料',
+      skip: '跳过',
+      match: '匹配',
+      dailyLimitTitle: '今日推荐已用完！',
+      dailyLimitDesc: '明天再来发现新伙伴吧～\n或者刷新看看有没有新机会！',
+      seeMore: '期待看到更多',
+      jobType: '岗位类型',
+      targetCompany: '目标公司',
+      desiredPractice: '期望练习内容',
+      tech: '技术面',
+      behavioral: '行为面',
+      case: '案例分析',
+      stats: '统计题目',
+      skills: '💡 技能标签',
+      experience: '经验水平',
+      jobSeeking: '求职状态',
+      targetIndustry: '目标行业',
+      contactTitle: '联系方式：',
+      email: '邮箱',
+      wechat: '微信',
+      linkedin: '领英',
+      viewTemplates: '查看联系模板',
+      feedbackQ1: '📋 是否添加联系方式？',
+      yes: '是',
+      no: '否',
+      feedbackQ2: '🎯 是否进行面试？',
+      feedbackTitle: '✍️ 请填写你的面试反馈：',
+      feedbackPlaceholder: '分享你的面试体验、收获或建议吧...',
+      feedbackSubmit: '提交反馈 🚀',
+      matchesAchievementTitle: '成就等级系统',
+      matchesAchievementDesc: '完成面试获得经验，提升等级！🌱新用户(0次) → ⭐面试新手(1-4次) → 🌟面试新星(5-9次) → 🌙面试达人(10-14次) → 👑面试导师(15次+)',
+      viewGuide: '查看面试指南',
+      noMatchesTitle: '暂无成功匹配',
+      noMatchesDesc: '继续浏览候选人，找到合适的练习伙伴吧！',
+      matchedPrefix: '匹配于 ',
+      hoursAgo: (h: number) => `${h}小时前`,
+      daysAgo: (d: number) => `${d}天前`,
+      anonymous: '匿名用户',
+      notSet: '未设置',
+      // Guide tab strings
+      guideTitle: '三步完成Mock面试',
+      guideSubtitle: '简单、清晰、高效',
+      guideStep1Title: '联系TA，约定时间',
+      guideStep1Desc: '点击"联系TA"获取联系方式，约定1小时左右的时间进行Mock',
+      guideStep2Title: '查看真题，开始Mock',
+      guideStep2Part1: '20-25分钟',
+      guideStep2Part1Tail: ' 进行Mock面试',
+      guideStep2Part2: '10-15分钟',
+      guideStep2Part2Tail: ' 给出反馈建议',
+      guideStep2Rotate: '🔄 然后轮换角色，重复上述流程',
+      guideStep3Title: '回来打勾，提交反馈',
+      guideStep3Desc: '在真题分享区讨论交流，分享题目',
+      guideFooterPrimary: '开始寻找匹配',
+      guideFooterSecondary: '查看真题分享',
+      support: '有问题联系客服',
+      contactId: 'Royal__city',
+    };
+  }, [language]);
   
   // 使用useMemo缓存user对象，避免每次渲染创建新对象
   const user = useMemo(() => {
@@ -831,7 +1072,7 @@ export default function MatchesPage() {
       }
     } catch (error) {
       console.error('Error loading matches:', error);
-      toast.error('获取匹配失败，请稍后再试');
+      toast.error(language === 'en' ? 'Failed to fetch matches, please try again later' : '获取匹配失败，请稍后再试');
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
@@ -876,12 +1117,12 @@ export default function MatchesPage() {
           
           if (!hasShownFirstMatch) {
             // 首次匹配：显示弹窗
-            setFirstMatchPartner(targetUser.username || '新伙伴');
+            setFirstMatchPartner(targetUser.username || (language === 'en' ? 'New partner' : '新伙伴'));
             setShowFirstMatchModal(true);
             localStorage.setItem('mockpal_first_match_shown', 'true');
           } else {
             // 非首次匹配：显示toast
-            toast.success('匹配成功！🎉 请到成功匹配页面查看');
+            toast.success(language === 'en' ? 'Matched! 🎉 Check the Matched tab.' : '匹配成功！🎉 请到成功匹配页面查看');
           }
           
           const successfulResult = await fetchSuccessfulMatches(user.id);
@@ -1053,24 +1294,31 @@ export default function MatchesPage() {
     if (!achievement) {
             return {
         icon: '🌱', 
-        level: '新用户', 
-        description: '刚加入平台的新成员',
+        level: language === 'en' ? 'Rookie' : '新用户', 
+        description: language === 'en' ? 'Just joined the platform' : '刚加入平台的新成员',
         showMoon: false
       };
     }
 
     const levelMap: { [key: string]: any } = {
-      '新用户': { icon: '🌱', description: '刚加入平台的新成员', showMoon: false },
-      '面试新手': { icon: '⭐', description: '开始积累经验', showMoon: false },
-      '面试新星': { icon: '🌟', description: '积极的面试伙伴', showMoon: false },
-      '面试达人': { icon: '🌙', description: '完成第一阶段挑战', showMoon: true },
-      '面试导师': { icon: '👑', description: '经验丰富的面试专家', showMoon: true },
+      '新用户': { icon: '🌱', description: language === 'en' ? 'Just joined the platform' : '刚加入平台的新成员', showMoon: false },
+      '面试新手': { icon: '⭐', description: language === 'en' ? 'Starting to build experience' : '开始积累经验', showMoon: false },
+      '面试新星': { icon: '🌟', description: language === 'en' ? 'An active interview partner' : '积极的面试伙伴', showMoon: false },
+      '面试达人': { icon: '🌙', description: language === 'en' ? 'Completed the first milestone' : '完成第一阶段挑战', showMoon: true },
+      '面试导师': { icon: '👑', description: language === 'en' ? 'Experienced interview mentor' : '经验丰富的面试专家', showMoon: true },
     };
 
     const levelInfo = levelMap[achievement.currentLevel] || levelMap['新用户'];
     return {
       ...levelInfo,
-      level: achievement.currentLevel,
+      level: language === 'en'
+        ? (achievement.currentLevel === '新用户' ? 'Rookie'
+          : achievement.currentLevel === '面试新手' ? 'Interview Novice'
+          : achievement.currentLevel === '面试新星' ? 'Rising Star'
+          : achievement.currentLevel === '面试达人' ? 'Interview Pro'
+          : achievement.currentLevel === '面试导师' ? 'Interview Mentor'
+          : achievement.currentLevel)
+        : achievement.currentLevel,
       experiencePoints: achievement.experiencePoints,
     };
   };
@@ -1094,44 +1342,73 @@ export default function MatchesPage() {
         text: 'text-green-700',
         border: 'border-green-200',
         hover: 'hover:bg-green-200',
-        title: '新用户标识',
-        description: '刚注册的用户，还未完成面试练习'
+        title: language === 'en' ? 'Rookie Badge' : '新用户标识',
+        description: language === 'en' ? 'Newly registered, has not completed a mock' : '刚注册的用户，还未完成面试练习'
       },
       '面试新手': {
         bg: 'bg-blue-100',
         text: 'text-blue-700',
         border: 'border-blue-200',
         hover: 'hover:bg-blue-200',
-        title: '面试新手',
-        description: '开始积累面试经验，正在学习阶段'
+        title: language === 'en' ? 'Interview Novice' : '面试新手',
+        description: language === 'en' ? 'Starting to gain interview experience' : '开始积累面试经验，正在学习阶段'
       },
       '面试新星': {
         bg: 'bg-purple-100',
         text: 'text-purple-700',
         border: 'border-purple-200',
         hover: 'hover:bg-purple-200',
-        title: '面试新星',
-        description: '积极参与面试练习，表现优秀'
+        title: language === 'en' ? 'Rising Star' : '面试新星',
+        description: language === 'en' ? 'Active participant with strong performance' : '积极参与面试练习，表现优秀'
       },
       '面试达人': {
         bg: 'bg-yellow-100',
         text: 'text-yellow-700',
         border: 'border-yellow-200',
         hover: 'hover:bg-yellow-200',
-        title: '面试达人',
-        description: '经验丰富的面试者，完成第一阶段挑战'
+        title: language === 'en' ? 'Interview Pro' : '面试达人',
+        description: language === 'en' ? 'Experienced; completed the first milestone' : '经验丰富的面试者，完成第一阶段挑战'
       },
       '面试导师': {
         bg: 'bg-red-100',
         text: 'text-red-700',
         border: 'border-red-200',
         hover: 'hover:bg-red-200',
-        title: '面试导师',
-        description: '最高级别用户，经验丰富的面试专家'
+        title: language === 'en' ? 'Interview Mentor' : '面试导师',
+        description: language === 'en' ? 'Top-tier level; seasoned interview mentor' : '最高级别用户，经验丰富的面试专家'
       }
     };
     
     return levelStyles[level] || levelStyles['新用户'];
+  };
+
+  // 求职状态文案映射
+  const translateJobSeekingStatus = (status?: string | null) => {
+    if (!status) return '';
+    if (language !== 'en') {
+      if (status === '保持状态') return '🌱 保持状态';
+      if (status === '准备中') return '🔍 准备中';
+      if (status === '面试中') return '🎯 面试中';
+      if (status === '已拿offer') return '💼 已拿offer';
+      return status;
+    }
+    if (status === '保持状态') return '🌱 Keep warm';
+    if (status === '准备中') return '🔍 Preparing';
+    if (status === '面试中') return '🎯 Interviewing';
+    if (status === '已拿offer') return '💼 Offer in hand';
+    return status;
+  };
+
+  // 经验水平文案映射
+  const translateExperienceLevel = (level?: string | null) => {
+    if (!level) return '';
+    if (language !== 'en') return level;
+    if (level === '实习') return 'Intern';
+    if (level === '应届') return 'Entry-level';
+    if (level === '1-3年') return '1-3 years';
+    if (level === '3-5年') return '3-5 years';
+    if (level === '5年以上') return '5+ years';
+    return level;
   };
 
   // 渲染成就等级的函数
@@ -1213,26 +1490,26 @@ export default function MatchesPage() {
               className={state.activeTab === "browse" ? "active" : ""}
               onClick={() => dispatch({ type: "SET_TAB", payload: "browse" })}
             >
-              🔍 浏览候选人
+              {t.tabs.browse}
             </button>
             <button
               className={state.activeTab === "matches" ? "active" : ""}
               onClick={() => dispatch({ type: "SET_TAB", payload: "matches" })}
             >
               <Image src="/logo-icon.png" alt="Logo" width={20} height={20} className="tab-logo" />
-              成功匹配
+              {t.tabs.matches}
             </button>
             <button
               className={state.activeTab === "guide" ? "active" : ""}
               onClick={() => dispatch({ type: "SET_TAB", payload: "guide" })}
             >
-              🧭 面试指南
+              {t.tabs.guide}
             </button>
             <button
               className={state.activeTab === "questions" ? "active" : ""}
               onClick={() => dispatch({ type: "SET_TAB", payload: "questions" })}
             >
-              📝 真题分享
+              {t.tabs.questions}
             </button>
           </div>
         </div>
@@ -1287,17 +1564,16 @@ export default function MatchesPage() {
                 <Card className="w-full max-w-xl mx-auto rounded-3xl shadow-xl border-0 p-10 flex flex-col items-center mt-4 bg-gradient-to-r from-blue-50 via-white to-blue-50">
                   <div className="text-6xl mb-6">👤</div>
                   <h2 className="text-2xl font-extrabold mb-4 text-center text-blue-500">
-                    完善资料，开始匹配！
+                    {t.completeProfileTitle}
                   </h2>
                   <p className="text-lg mb-6 text-center text-blue-500/80">
-                    为了为您推荐最合适的练习伙伴，<br/>
-                    请先花2分钟完善您的资料
+                    {t.completeProfileDesc.split('\\n').map((line, idx) => (<React.Fragment key={idx}>{line}{idx < t.completeProfileDesc.split('\\n').length - 1 ? <br/> : null}</React.Fragment>))}
                   </p>
                   <Button
                     onClick={() => router.push('/profile?from=matches')}
                     className="rounded-full px-10 py-3 text-lg font-bold text-white shadow-lg transition-all bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 hover:scale-105"
                   >
-                    完善我的资料
+                    {t.completeProfileBtn}
                   </Button>
                 </Card>
               ) : (
@@ -1325,37 +1601,37 @@ export default function MatchesPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-8 my-6">
                         <div>
-                          <div className="font-semibold flex items-center gap-1 text-base text-blue-500">岗位类型</div>
-                          <div className="font-bold text-lg text-gray-700">{currentMatch.jobType || '未设置'}</div>
-                          <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">目标公司</div>
-                          <div className="font-bold text-lg text-gray-700">{currentMatch.targetCompany || '未设置'}</div>
-                          <div className="mt-4 font-semibold text-base mb-1 text-blue-500">期望练习内容</div>
+                          <div className="font-semibold flex items-center gap-1 text-base text-blue-500">{t.jobType}</div>
+                          <div className="font-bold text-lg text-gray-700">{currentMatch.jobType || t.notSet}</div>
+                          <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">{t.targetCompany}</div>
+                          <div className="font-bold text-lg text-gray-700">{currentMatch.targetCompany || t.notSet}</div>
+                          <div className="mt-4 font-semibold text-base mb-1 text-blue-500">{t.desiredPractice}</div>
                           <div className="flex gap-2 flex-wrap mb-2">
                             {currentMatch.practicePreferences?.technicalInterview && (
                               <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-blue-50 text-blue-500">
-                                🥊 技术面
+                                🥊 {t.tech}
                               </span>
                             )}
                             {currentMatch.practicePreferences?.behavioralInterview && (
                               <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-blue-50 text-blue-500">
-                                🧑‍🤝‍🧑 行为面
+                                🧑‍🤝‍🧑 {t.behavioral}
                               </span>
                             )}
                             {currentMatch.practicePreferences?.caseAnalysis && (
                               <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-blue-50 text-blue-500">
-                                🧩 案例分析
+                                🧩 {t.case}
                               </span>
                             )}
                             {currentMatch.practicePreferences?.statsQuestions && (
                               <span className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-blue-50 text-blue-500">
-                                📊 统计题目
+                                📊 {t.stats}
                               </span>
                             )}
                           </div>
                           {/* 技能展示 */}
                           {currentMatch.skills && currentMatch.skills.length > 0 && (
                             <>
-                              <div className="mt-4 font-semibold text-base mb-2 text-green-600">💡 技能标签</div>
+                              <div className="mt-4 font-semibold text-base mb-2 text-green-600">{t.skills}</div>
                               <div className="flex gap-2 flex-wrap mb-4">
                                 {currentMatch.skills.map((skill: string, index: number) => (
                                   <span key={index} className="rounded-full px-3 py-0.5 flex items-center gap-1 text-base font-semibold shadow-sm bg-green-50 text-green-600">
@@ -1367,21 +1643,16 @@ export default function MatchesPage() {
                           )}
                         </div>
                         <div>
-                          <div className="font-semibold flex items-center gap-1 text-base text-blue-500">经验水平</div>
-                          <div className="font-bold text-lg text-gray-700">{currentMatch.experienceLevel || '未设置'}</div>
+                          <div className="font-semibold flex items-center gap-1 text-base text-blue-500">{t.experience}</div>
+                          <div className="font-bold text-lg text-gray-700">{translateExperienceLevel(currentMatch.experienceLevel) || t.notSet}</div>
                           {currentMatch.jobSeekingStatus && (
                             <>
-                              <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">求职状态</div>
-                              <div className="font-bold text-lg">
-                                {currentMatch.jobSeekingStatus === '保持状态' && '🌱 保持状态'}
-                                {currentMatch.jobSeekingStatus === '准备中' && '🔍 准备中'}
-                                {currentMatch.jobSeekingStatus === '面试中' && '🎯 面试中'}
-                                {currentMatch.jobSeekingStatus === '已拿offer' && '💼 已拿offer'}
-                              </div>
+                              <div className="mt-4 font-semibold flex items中心 gap-1 text-base text-blue-500">{t.jobSeeking}</div>
+                              <div className="font-bold text-lg">{translateJobSeekingStatus(currentMatch.jobSeekingStatus)}</div>
                             </>
                           )}
-                          <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">目标行业</div>
-                          <div className="font-bold text-lg text-gray-700">{currentMatch.targetIndustry || '未设置'}</div>
+                          <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">{t.targetIndustry}</div>
+                          <div className="font-bold text-lg text-gray-700">{currentMatch.targetIndustry || t.notSet}</div>
                         </div>
                       </div>
                       <div className="flex justify-center gap-6 mt-4">
@@ -1391,27 +1662,27 @@ export default function MatchesPage() {
                           onClick={handleDislike}
                           className="rounded-full px-8 py-2 text-lg font-bold bg-white shadow transition-all border-2 border-blue-500 text-blue-500 hover:bg-blue-50"
                         >
-                          跳过
+                          {t.skip}
                         </Button>
                         <Button
                           size="lg"
                           onClick={handleLike}
                           className="rounded-full px-8 py-2 text-lg font-bold text-white shadow transition-all bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 hover:scale-105"
                         >
-                          匹配
+                          {t.match}
                         </Button>
                       </div>
                     </Card>
                   ) : (
                     <Card className="w-full max-w-xl mx-auto rounded-[2.5rem] shadow-2xl border-0 p-10 flex flex-col items-center mt-4 bg-gradient-to-r from-blue-100 via-white to-blue-100">
                       <div className="text-6xl mb-4">🦉</div>
-                      <p className="text-2xl font-extrabold mb-1 tracking-wide text-blue-500">今日推荐已用完！</p>
-                      <p className="text-lg mb-8 text-blue-500/80">明天再来发现新伙伴吧～<br/>或者刷新看看有没有新机会！</p>
+                      <p className="text-2xl font-extrabold mb-1 tracking-wide text-blue-500">{t.dailyLimitTitle}</p>
+                      <p className="text-lg mb-8 text-blue-500/80">{t.dailyLimitDesc.split('\\n').map((line, idx) => (<React.Fragment key={idx}>{line}{idx < t.dailyLimitDesc.split('\\n').length - 1 ? <br/> : null}</React.Fragment>))}</p>
                       <Button
                         onClick={handleExpectMore}
                         className="rounded-full px-10 py-3 text-lg font-bold text-white shadow-lg transition-all bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 hover:scale-105"
                       >
-                        期待看到更多
+                        {t.seeMore}
                       </Button>
                     </Card>
                   )}
@@ -1453,9 +1724,9 @@ export default function MatchesPage() {
                         <div className="flex items-center flex-1">
                           <span className="text-xl mr-3">🏆</span>
                           <div className="text-sm text-blue-500/90">
-                            <p className="font-semibold mb-2">成就等级系统</p>
+                            <p className="font-semibold mb-2">{t.matchesAchievementTitle}</p>
                             <p className="leading-relaxed">
-                              完成面试获得经验，提升等级！🌱<span className="font-medium">新用户</span>(0次) → ⭐<span className="font-medium">面试新手</span>(1-4次) → 🌟<span className="font-medium">面试新星</span>(5-9次) → 🌙<span className="font-medium">面试达人</span>(10-14次) → 👑<span className="font-medium">面试导师</span>(15次+)
+                              {t.matchesAchievementDesc}
                             </p>
                           </div>
                         </div>
@@ -1463,7 +1734,7 @@ export default function MatchesPage() {
                           onClick={() => dispatch({ type: "SET_TAB", payload: "guide" })}
                           className="ml-4 flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
                         >
-                          <span>查看面试指南</span>
+                          <span>{t.viewGuide}</span>
                           <span className="text-lg">→</span>
                         </button>
                       </div>
@@ -1484,7 +1755,7 @@ export default function MatchesPage() {
                               />
                             </div>
                             <div>
-                              <div className="name">{match.username || '匿名用户'}</div>
+                              <div className="name">{match.username || t.anonymous}</div>
                               {/* 显示用户成就等级 */}
                               <div className="flex items-center gap-1 mb-1">
                                 {(() => {
@@ -1501,19 +1772,19 @@ export default function MatchesPage() {
                                 })()}
                               </div>
                               <div className="title">
-                                {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
+                                {match.jobType || t.notSet} · {translateExperienceLevel(match.experienceLevel) || t.notSet}
                                 {match.jobSeekingStatus && (
-                                  <> · {match.jobSeekingStatus}</>
+                                  <> · {translateJobSeekingStatus(match.jobSeekingStatus)}</>
                                 )}
                               </div>
                               {/* 添加匹配时间显示 */}
                               {match.createdAt && (
                                 <div className="text-xs text-gray-500 mt-1">
-                                  匹配于 {(() => {
+                                  {t.matchedPrefix}{(() => {
                                     const hours = Math.floor((Date.now() - new Date(match.createdAt).getTime()) / (1000 * 60 * 60));
-                                    if (hours < 24) return `${hours}小时前`;
+                                    if (hours < 24) return t.hoursAgo(hours);
                                     const days = Math.floor(hours / 24);
-                                    return `${days}天前`;
+                                    return t.daysAgo(days);
                                   })()}
                                 </div>
                               )}
@@ -1526,23 +1797,23 @@ export default function MatchesPage() {
                             )}
                             <div className="tags">
                               {match.practicePreferences?.technicalInterview && (
-                                <span className="tag">技术面</span>
+                                <span className="tag">{t.tech}</span>
                               )}
                               {match.practicePreferences?.behavioralInterview && (
-                                <span className="tag">行为面</span>
+                                <span className="tag">{t.behavioral}</span>
                               )}
                               {match.practicePreferences?.caseAnalysis && (
-                                <span className="tag">案例分析</span>
+                                <span className="tag">{t.case}</span>
                               )}
                               {match.practicePreferences?.statsQuestions && (
-                                <span className="tag">统计题目</span>
+                                <span className="tag">{t.stats}</span>
                               )}
                             </div>
                             
                             {/* 技能展示 */}
                             {match.skills && match.skills.length > 0 && (
                               <div className="mt-4 mb-4">
-                                <div className="text-xs font-medium text-gray-700 mb-2">💡 技能标签</div>
+                                <div className="text-xs font-medium text-gray-700 mb-2">{t.skills}</div>
                                 <div className="flex gap-1.5 flex-wrap">
                                   {match.skills.map((skill: string, index: number) => (
                                     <span key={index} className="rounded-full px-2 py-0.5 flex items-center gap-1 text-xs font-medium shadow-sm bg-green-50 text-green-600 border border-green-200">
@@ -1555,21 +1826,38 @@ export default function MatchesPage() {
                             
                             {/* 2. 联系方式参考格式 */}
                             <div className="contact">
-                              <div className="contact-title">联系方式：</div>
+                              <div className="contact-title">{t.contactTitle}</div>
                               {match.contactInfo?.email && (
                                 <div className="contact-item">
-                                  <span>📧 邮箱: {match.contactInfo.email}</span>
+                                  <span>📧 {t.email}: {match.contactInfo.email}</span>
                                 </div>
                               )}
-                              {match.contactInfo?.wechat && (
-                                <div className="contact-item">
-                                  <span>💬 微信: {match.contactInfo.wechat}</span>
-                                </div>
-                              )}
-                              {match.contactInfo?.linkedin && (
-                                <div className="contact-item">
-                                  <span>🔗 领英: {match.contactInfo.linkedin}</span>
-                                </div>
+                              {language === 'en' ? (
+                                <>
+                                  {match.contactInfo?.linkedin && (
+                                    <div className="contact-item">
+                                      <span>🔗 {t.linkedin}: {match.contactInfo.linkedin}</span>
+                                    </div>
+                                  )}
+                                  {match.contactInfo?.wechat && (
+                                    <div className="contact-item">
+                                      <span>💬 {t.wechat}: {match.contactInfo.wechat}</span>
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  {match.contactInfo?.wechat && (
+                                    <div className="contact-item">
+                                      <span>💬 {t.wechat}: {match.contactInfo.wechat}</span>
+                                    </div>
+                                  )}
+                                  {match.contactInfo?.linkedin && (
+                                    <div className="contact-item">
+                                      <span>🔗 {t.linkedin}: {match.contactInfo.linkedin}</span>
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </div>
                             
@@ -1578,7 +1866,7 @@ export default function MatchesPage() {
                                 onClick={() => handleShowContactTemplates(match)}
                                 className="contact-button"
                               >
-                                查看联系模板
+                                {t.viewTemplates}
                               </button>
                             </div>
                             
@@ -1586,7 +1874,7 @@ export default function MatchesPage() {
                             <div className="feedback-flow mt-3 p-2 bg-gray-50 rounded-md">
                               {/* 第一步：是否添加联系方式？ */}
                               <div className="mb-2">
-                                <div className="text-sm font-medium text-gray-700 mb-1">📋 是否添加联系方式？</div>
+                                <div className="text-sm font-medium text-gray-700 mb-1">{t.feedbackQ1}</div>
                                 <label className="inline-flex items-center mr-4">
                                   <input
                                     type="radio"
@@ -1596,7 +1884,7 @@ export default function MatchesPage() {
                                     onChange={() => handleContactStatusChange(matchId, 'yes')}
                                     className="mr-1"
                                   />
-                                  是
+                                  {t.yes}
                                 </label>
                                 <label className="inline-flex items-center">
                                   <input
@@ -1607,14 +1895,14 @@ export default function MatchesPage() {
                                     onChange={() => handleContactStatusChange(matchId, 'no')}
                                     className="mr-1"
                                   />
-                                  否
+                                  {t.no}
                                 </label>
                               </div>
                               
                               {/* 第二步：是否进行面试？- 只在添加联系方式后显示 */}
                               {state.contactStatus?.[matchId] === 'yes' && (
                                 <div className="mb-2">
-                                  <div className="text-sm font-medium text-gray-700 mb-1">🎯 是否进行面试？</div>
+                                  <div className="text-sm font-medium text-gray-700 mb-1">{t.feedbackQ2}</div>
                                   <label className="inline-flex items-center mr-4">
                                     <input
                                       type="radio"
@@ -1624,7 +1912,7 @@ export default function MatchesPage() {
                                        onChange={() => handleInterviewChange(matchId, 'yes')}
                                       className="mr-1"
                                     />
-                                    是
+                                    {t.yes}
                                   </label>
                                   <label className="inline-flex items-center">
                                     <input
@@ -1635,7 +1923,7 @@ export default function MatchesPage() {
                                        onChange={() => handleInterviewChange(matchId, 'no')}
                                       className="mr-1"
                                     />
-                                    否
+                                    {t.no}
                                   </label>
                                 </div>
                               )}
@@ -1734,8 +2022,8 @@ export default function MatchesPage() {
                     <div className="cards-container">
                       <div className="card">
                         <div className="card-body text-center py-12">
-                          <p className="text-xl mb-4">暂无成功匹配</p>
-                          <p className="text-gray-500">继续浏览候选人，找到合适的练习伙伴吧！</p>
+                          <p className="text-xl mb-4">{t.noMatchesTitle}</p>
+                          <p className="text-gray-500">{t.noMatchesDesc}</p>
                         </div>
                       </div>
                     </div>
@@ -1768,9 +2056,9 @@ export default function MatchesPage() {
                                  })()}
                                </div>
                               <div className="title">
-                                {match.jobType || '未设置'} · {match.experienceLevel || '未设置'}
+                                {match.jobType || t.notSet} · {translateExperienceLevel(match.experienceLevel) || t.notSet}
                                 {match.jobSeekingStatus && (
-                                  <> · {match.jobSeekingStatus}</>
+                                  <> · {translateJobSeekingStatus(match.jobSeekingStatus)}</>
                                 )}
                               </div>
                             </div>
@@ -1875,9 +2163,9 @@ export default function MatchesPage() {
                 <div className="text-center mb-8 animate-fadeInDown">
                   <div className="text-5xl mb-3">🎯</div>
                   <h1 className="text-3xl font-bold mb-2 text-gray-800">
-                    三步完成Mock面试
+                    {t.guideTitle}
                   </h1>
-                  <p className="text-base text-gray-600">简单、清晰、高效</p>
+                  <p className="text-base text-gray-600">{t.guideSubtitle}</p>
                 </div>
 
                 {/* 流程步骤 */}
@@ -1888,10 +2176,10 @@ export default function MatchesPage() {
                       <span className="text-4xl">📱</span>
                       <div className="flex-1">
                         <h3 className="text-xl font-bold text-gray-800 mb-2">
-                          联系TA，约定时间
+                          {t.guideStep1Title}
                         </h3>
                         <p className="text-base text-gray-700 leading-relaxed">
-                          点击"联系TA"获取联系方式，约定<span className="font-semibold">1小时</span>左右的时间进行Mock
+                          {t.guideStep1Desc}
                         </p>
                       </div>
                     </div>
@@ -1903,23 +2191,23 @@ export default function MatchesPage() {
                       <span className="text-4xl">📚</span>
                       <div className="flex-1">
                         <h3 className="text-xl font-bold text-gray-800 mb-2">
-                          查看真题，开始Mock
+                          {t.guideStep2Title}
                         </h3>
                         <div className="space-y-2">
                           <p className="text-base text-gray-700">
                             <span className="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium mr-2">
-                              20-25分钟
+                              {t.guideStep2Part1}
                             </span>
-                            进行Mock面试
+                            {t.guideStep2Part1Tail}
                           </p>
                           <p className="text-base text-gray-700">
                             <span className="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium mr-2">
-                              10-15分钟
+                              {t.guideStep2Part2}
                             </span>
-                            给出反馈建议
+                            {t.guideStep2Part2Tail}
                           </p>
                           <p className="text-base text-gray-700 font-semibold mt-2">
-                            🔄 然后轮换角色，重复上述流程
+                            {t.guideStep2Rotate}
                           </p>
                         </div>
                       </div>
@@ -1932,14 +2220,14 @@ export default function MatchesPage() {
                       <span className="text-4xl">✅</span>
                       <div className="flex-1">
                         <h3 className="text-xl font-bold text-gray-800 mb-2">
-                          回来打勾，提交反馈
+                          {t.guideStep3Title}
                         </h3>
                         <p className="text-base text-gray-700 leading-relaxed mb-3">
-                          在真题分享区讨论交流，分享题目
+                          {t.guideStep3Desc}
                         </p>
                         <div className="bg-green-50 rounded-lg p-2.5 border-l-4 border-green-400">
                           <p className="text-sm text-gray-700 font-semibold">
-                            💎 完成反馈可升级，优先被推荐
+                            💎 {language === 'en' ? 'Feedback helps you level up and get prioritized.' : '完成反馈可升级，优先被推荐'}
                           </p>
                         </div>
                       </div>
@@ -1955,7 +2243,7 @@ export default function MatchesPage() {
                       className="text-white font-medium text-base px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
                       style={{ backgroundColor: '#157ff1' }}
                     >
-                      开始寻找匹配
+                      {t.guideFooterPrimary}
                     </Button>
                     <Button
                       onClick={() => dispatch({ type: "SET_TAB", payload: "questions" })}
@@ -1963,11 +2251,11 @@ export default function MatchesPage() {
                       className="border-2 bg-white hover:bg-blue-50 font-medium text-base px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
                       style={{ borderColor: '#157ff1', color: '#157ff1' }}
                     >
-                      查看真题分享
+                      {t.guideFooterSecondary}
                     </Button>
                   </div>
                   <p className="text-sm text-gray-600">
-                    有问题联系客服 <span className="font-semibold">Royal__city</span>
+                    {t.support} <span className="font-semibold">{t.contactId}</span>
                   </p>
                 </div>
               </div>
