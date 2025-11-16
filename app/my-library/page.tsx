@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { SaveQuestionButton } from '@/components/save-question-button';
 import { toast } from 'sonner';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 
 interface QuestionInLibrary {
   id: number;
@@ -38,6 +40,83 @@ interface QuestionInLibrary {
 export default function MyLibraryPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [language] = useAtom(languageAtom);
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        title: 'My Library 📚',
+        subtitle: 'Manage your saved interview questions',
+        statsTotal: 'Total',
+        statsSystem: 'Curated',
+        statsUser: 'User posts',
+        filters: 'Filters',
+        typeLabel: 'Type',
+        typeAll: 'All',
+        typeSystem: 'Curated',
+        typeUser: 'User posts',
+        companyLabel: 'Company',
+        companyAll: 'All companies',
+        difficultyLabel: 'Difficulty',
+        difficultyAll: 'All difficulties',
+        qTitle: '📝 Question:',
+        savedAtPrefix: 'Saved ',
+        emptyTitle: 'No saved questions yet',
+        emptyDesc: 'Find interesting questions in the Questions tab and save them to your library!',
+        browseQuestions: 'Browse Questions',
+        typeMap: {
+          technical: '🔧 Technical',
+          behavioral: '🧑‍🤝‍🧑 Behavioral',
+          case_study: '🧩 Case study',
+          stats: '📊 Statistics',
+        } as Record<string, string>,
+        difficultyMap: { easy: 'Easy', medium: 'Medium', hard: 'Hard' } as Record<string, string>,
+        time: {
+          today: 'today',
+          yesterday: 'yesterday',
+          daysAgo: (d: number) => `${d} days ago`,
+          weeksAgo: (w: number) => `${w} weeks ago`,
+          monthsAgo: (m: number) => `${m} months ago`,
+          yearsAgo: (y: number) => `${y} years ago`,
+        },
+      };
+    }
+    return {
+      title: '我的题库 📚',
+      subtitle: '管理你收藏的面试题目',
+      statsTotal: '总计',
+      statsSystem: '系统精选',
+      statsUser: '用户分享',
+      filters: '筛选条件',
+      typeLabel: '题目类型',
+      typeAll: '全部类型',
+      typeSystem: '系统精选',
+      typeUser: '用户分享',
+      companyLabel: '公司',
+      companyAll: '全部公司',
+      difficultyLabel: '难度',
+      difficultyAll: '全部难度',
+      qTitle: '📝 问题：',
+      savedAtPrefix: '收藏于 ',
+      emptyTitle: '还没有收藏任何题目',
+      emptyDesc: '在真题列表中找到感兴趣的题目，点击收藏按钮添加到你的题库吧！',
+      browseQuestions: '浏览真题',
+      typeMap: {
+        technical: '🔧 技术面试',
+        behavioral: '🧑‍🤝‍🧑 行为面试',
+        case_study: '🧩 案例分析',
+        stats: '📊 统计问题',
+      } as Record<string, string>,
+      difficultyMap: { easy: '简单', medium: '中等', hard: '困难' } as Record<string, string>,
+      time: {
+        today: '今天',
+        yesterday: '昨天',
+        daysAgo: (d: number) => `${d}天前`,
+        weeksAgo: (w: number) => `${w}周前`,
+        monthsAgo: (m: number) => `${m}个月前`,
+        yearsAgo: (y: number) => `${y}年前`,
+      },
+    };
+  }, [language]);
   const [questions, setQuestions] = useState<QuestionInLibrary[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -118,13 +197,7 @@ export default function MyLibraryPage() {
   };
 
   const getQuestionTypeLabel = (type: string) => {
-    const typeMap: Record<string, string> = {
-      technical: '🔧 技术面试',
-      behavioral: '🧑‍🤝‍🧑 行为面试',
-      case_study: '🧩 案例分析',
-      stats: '📊 统计问题'
-    };
-    return typeMap[type] || type;
+    return t.typeMap[type] || type;
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -137,12 +210,7 @@ export default function MyLibraryPage() {
   };
 
   const getDifficultyLabel = (difficulty: string) => {
-    const labelMap: Record<string, string> = {
-      easy: '简单',
-      medium: '中等',
-      hard: '困难'
-    };
-    return labelMap[difficulty] || difficulty;
+    return t.difficultyMap[difficulty] || difficulty;
   };
 
   const formatDate = (dateString: string) => {
@@ -151,12 +219,12 @@ export default function MyLibraryPage() {
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    if (days === 0) return '今天';
-    if (days === 1) return '昨天';
-    if (days < 7) return `${days}天前`;
-    if (days < 30) return `${Math.floor(days / 7)}周前`;
-    if (days < 365) return `${Math.floor(days / 30)}个月前`;
-    return `${Math.floor(days / 365)}年前`;
+    if (days === 0) return t.time.today;
+    if (days === 1) return t.time.yesterday;
+    if (days < 7) return t.time.daysAgo(days);
+    if (days < 30) return t.time.weeksAgo(Math.floor(days / 7));
+    if (days < 365) return t.time.monthsAgo(Math.floor(days / 30));
+    return t.time.yearsAgo(Math.floor(days / 365));
   };
 
   if (status === 'loading') {
@@ -177,8 +245,8 @@ export default function MyLibraryPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* 页面标题 */}
         <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">我的题库 📚</h1>
-          <p className="text-base sm:text-lg text-gray-600">管理你收藏的面试题目</p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">{t.title}</h1>
+          <p className="text-base sm:text-lg text-gray-600">{t.subtitle}</p>
         </div>
 
         {/* 统计卡片 */}
@@ -187,7 +255,7 @@ export default function MyLibraryPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">总计</p>
+                  <p className="text-sm text-gray-600">{t.statsTotal}</p>
                   <p className="text-3xl font-bold text-blue-600">{stats.total}</p>
                 </div>
                 <div className="text-4xl">📚</div>
@@ -198,7 +266,7 @@ export default function MyLibraryPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">系统精选</p>
+                  <p className="text-sm text-gray-600">{t.statsSystem}</p>
                   <p className="text-3xl font-bold text-purple-600">{stats.systemCount}</p>
                 </div>
                 <div className="text-4xl">🏆</div>
@@ -209,7 +277,7 @@ export default function MyLibraryPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">用户分享</p>
+                  <p className="text-sm text-gray-600">{t.statsUser}</p>
                   <p className="text-3xl font-bold text-green-600">{stats.userCount}</p>
                 </div>
                 <div className="text-4xl">👥</div>
@@ -221,43 +289,43 @@ export default function MyLibraryPage() {
         {/* 筛选器 */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>筛选条件</CardTitle>
+            <CardTitle>{t.filters}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">题目类型</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.typeLabel}</label>
                 <select
                   value={filters.questionType}
                   onChange={(e) => handleFilterChange('questionType', e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-md text-sm"
                 >
-                  <option value="all">全部类型</option>
-                  <option value="system">系统精选</option>
-                  <option value="user">用户分享</option>
+                  <option value="all">{t.typeAll}</option>
+                  <option value="system">{t.typeSystem}</option>
+                  <option value="user">{t.typeUser}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">公司</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.companyLabel}</label>
                 <select
                   value={filters.company}
                   onChange={(e) => handleFilterChange('company', e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-md text-sm"
                 >
-                  <option value="all">全部公司</option>
+                  <option value="all">{t.companyAll}</option>
                   {filterOptions.companies.map(company => (
                     <option key={company} value={company}>{company}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">难度</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.difficultyLabel}</label>
                 <select
                   value={filters.difficulty}
                   onChange={(e) => handleFilterChange('difficulty', e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-md text-sm"
                 >
-                  <option value="all">全部难度</option>
+                  <option value="all">{t.difficultyAll}</option>
                   {filterOptions.difficulties.map(difficulty => (
                     <option key={difficulty} value={difficulty}>{getDifficultyLabel(difficulty)}</option>
                   ))}
@@ -341,7 +409,7 @@ export default function MyLibraryPage() {
                   
                   {/* 问题内容预览 */}
                   <div className="mb-4">
-                    <h3 className="font-medium text-gray-800 mb-2">📝 问题：</h3>
+                    <h3 className="font-medium text-gray-800 mb-2">{t.qTitle}</h3>
                     <p className="text-gray-700 leading-relaxed line-clamp-3">
                       {question.question}
                     </p>
@@ -365,7 +433,7 @@ export default function MyLibraryPage() {
                       )}
                     </div>
                     <span className="text-xs text-gray-500">
-                      收藏于 {formatDate(question.savedAt)}
+                      {t.savedAtPrefix}{formatDate(question.savedAt)}
                     </span>
                   </div>
                 </CardContent>
@@ -376,15 +444,15 @@ export default function MyLibraryPage() {
           <Card>
             <CardContent className="p-12 text-center">
               <div className="text-6xl mb-4">📚</div>
-              <h3 className="text-xl font-semibold mb-2">还没有收藏任何题目</h3>
+              <h3 className="text-xl font-semibold mb-2">{t.emptyTitle}</h3>
               <p className="text-gray-600 mb-6">
-                在真题列表中找到感兴趣的题目，点击收藏按钮添加到你的题库吧！
+                {t.emptyDesc}
               </p>
               <Button
                 onClick={() => router.push('/matches?tab=questions')}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                浏览真题
+                {t.browseQuestions}
               </Button>
             </CardContent>
           </Card>

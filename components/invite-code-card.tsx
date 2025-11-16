@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Copy, Check } from 'lucide-react';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 
 interface InviteCodeInfo {
   inviteCode: string;
@@ -16,6 +18,33 @@ export function InviteCodeCard() {
   const [inviteInfo, setInviteInfo] = useState<InviteCodeInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [language] = useAtom(languageAtom);
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        title: 'Invite Friends',
+        copied: 'Copied',
+        copy: 'Copy',
+        joined: (n: number) => `${n} friends joined`,
+        usedTimes: (n: number) => `Used ${n} times`,
+        hint: '💡 When a friend registers with your invite code, you get +2 daily match quotas',
+        toastCopied: 'Invite code copied!',
+        toastCopyFailed: 'Copy failed',
+        fetchFailed: 'Failed to fetch invite code',
+      };
+    }
+    return {
+      title: '邀请好友',
+      copied: '已复制',
+      copy: '复制',
+      joined: (n: number) => `${n} 位好友已加入`,
+      usedTimes: (n: number) => `使用次数 ${n}`,
+      hint: '💡 好友使用你的邀请码注册，你将获得 +2 每日匹配配额',
+      toastCopied: '邀请码已复制！',
+      toastCopyFailed: '复制失败',
+      fetchFailed: '获取邀请码失败',
+    };
+  }, [language]);
 
   useEffect(() => {
     fetchInviteCode();
@@ -29,11 +58,11 @@ export function InviteCodeCard() {
       if (data.success) {
         setInviteInfo(data.data);
       } else {
-        toast.error(data.message || '获取邀请码失败');
+        toast.error(data.message || t.fetchFailed);
       }
     } catch (error) {
       console.error('Failed to fetch invite code:', error);
-      toast.error('获取邀请码失败');
+      toast.error(t.fetchFailed);
     } finally {
       setLoading(false);
     }
@@ -45,14 +74,14 @@ export function InviteCodeCard() {
     try {
       await navigator.clipboard.writeText(inviteInfo.inviteCode);
       setCopied(true);
-      toast.success('邀请码已复制！');
+      toast.success(t.toastCopied);
       
       setTimeout(() => {
         setCopied(false);
       }, 2000);
     } catch (error) {
       console.error('Failed to copy:', error);
-      toast.error('复制失败');
+      toast.error(t.toastCopyFailed);
     }
   };
 
@@ -75,7 +104,7 @@ export function InviteCodeCard() {
       <CardContent className="pt-3 pb-3">
         {/* 标题 */}
         <h2 className="text-base font-semibold text-gray-800 flex items-center gap-1 mb-2">
-          <span className="text-lg">🎁</span> 邀请好友
+          <span className="text-lg">🎁</span> {t.title}
         </h2>
 
         {/* 邀请码 */}
@@ -92,12 +121,12 @@ export function InviteCodeCard() {
             {copied ? (
               <>
                 <Check size={14} className="mr-1" />
-                已复制
+                {t.copied}
               </>
             ) : (
               <>
                 <Copy size={14} className="mr-1" />
-                复制
+                {t.copy}
               </>
             )}
           </Button>
@@ -106,17 +135,17 @@ export function InviteCodeCard() {
         {/* 统计信息 */}
         <div className="flex items-center justify-between text-xs">
           <div className="text-gray-600">
-            <span className="font-medium text-green-700">{inviteInfo.totalReferrals}</span> 位好友已加入
+            <span className="font-medium text-green-700">{inviteInfo.totalReferrals}</span> {t.joined(inviteInfo.totalReferrals).replace(/^\d+\s*/, '')}
           </div>
           <div className="text-gray-600">
-            使用次数 <span className="font-medium text-green-700">{inviteInfo.timesUsed}</span>
+            {t.usedTimes(inviteInfo.timesUsed).replace(/\d+\s*/, '')} <span className="font-medium text-green-700">{inviteInfo.timesUsed}</span>
           </div>
         </div>
 
         {/* 提示信息 */}
         <div className="mt-2 p-2 bg-green-50 rounded-md border border-green-100">
           <p className="text-xs text-green-700">
-            💡 好友使用你的邀请码注册，你将获得 <span className="font-bold text-green-800">+2 每日匹配配额</span>
+            {t.hint}
           </p>
         </div>
       </CardContent>

@@ -142,7 +142,7 @@ export async function notifyMentioned(
     type: 'comment_mention',
     actorId,
     actorName,
-    title: `${actorName} 在评论中提到了你`,
+    title: `${actorName} mentioned you in a comment / 在评论中提到了你`,
     content: content.slice(0, 100),
     link: `/matches?tab=questions&postType=${postType}&postId=${postId}`,
     postType,

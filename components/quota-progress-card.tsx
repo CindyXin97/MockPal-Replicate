@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 
 interface QuotaInfo {
   base: number;
@@ -33,6 +35,35 @@ export function QuotaProgressCard() {
   const router = useRouter();
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [language] = useAtom(languageAtom);
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        title: 'Daily Quota Tasks',
+        todayLeft: (n: number) => `Available today: ${n}`,
+        postTask: '📝 Post interview questions',
+        commentTask: '💬 Comment on questions',
+        done: '✅ Done',
+        reward: (n: number) => `+${n} quota`,
+        goPost: 'Post',
+        goComment: 'Comment',
+        hint: '💡 Complete tasks to earn extra quotas, up to 6 in total',
+        fetchFailed: 'Failed to fetch quota info',
+      } as const;
+    }
+    return {
+      title: '每日配额任务',
+      todayLeft: (n: number) => `今日可用: ${n}`,
+      postTask: '📝 发布面试真题',
+      commentTask: '💬 评论真题',
+      done: '✅ 已完成',
+      reward: (n: number) => `+${n} 配额`,
+      goPost: '去发布',
+      goComment: '去评论',
+      hint: '💡 完成任务可获得额外配额，最多累积至6个',
+      fetchFailed: '获取配额信息失败',
+    } as const;
+  }, [language]);
 
   useEffect(() => {
     const fetchQuota = async () => {
@@ -44,32 +75,27 @@ export function QuotaProgressCard() {
         if (data.success) {
           setQuotaInfo(data.data);
         } else {
-          toast.error(data.message || '获取配额信息失败');
+          toast.error(data.message || t.fetchFailed);
         }
       } catch (error) {
         console.error('Failed to fetch quota info:', error);
-        toast.error('获取配额信息失败');
+        toast.error(t.fetchFailed);
       } finally {
         setLoading(false);
       }
     };
 
     fetchQuota();
-    
-    // 每30秒刷新一次，保持数据最新
     const interval = setInterval(fetchQuota, 30000);
-    
-    // 监听配额更新事件（当用户评论或发帖后触发）
     const handleQuotaUpdate = () => {
       fetchQuota();
     };
     window.addEventListener('quotaUpdated', handleQuotaUpdate);
-    
     return () => {
       clearInterval(interval);
       window.removeEventListener('quotaUpdated', handleQuotaUpdate);
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, t.fetchFailed]);
 
   if (loading) {
     return (
@@ -104,10 +130,10 @@ export function QuotaProgressCard() {
     );
   }
 
-  if (!quotaInfo || !quotaInfo.progress) return null; // Added safety check for quotaInfo.progress
+  if (!quotaInfo || !quotaInfo.progress) return null;
 
-  const postProgress = quotaInfo.progress.posts 
-    ? (quotaInfo.progress.posts.current / quotaInfo.progress.posts.required) * 100 
+  const postProgress = quotaInfo.progress.posts
+    ? (quotaInfo.progress.posts.current / quotaInfo.progress.posts.required) * 100
     : 0;
   const commentProgress = quotaInfo.progress.comments
     ? (quotaInfo.progress.comments.current / quotaInfo.progress.comments.required) * 100
@@ -119,11 +145,11 @@ export function QuotaProgressCard() {
         {/* 标题和今日可用配额 */}
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-base font-semibold text-gray-800 flex items-center gap-1">
-            <span className="text-lg">💎</span> 每日配额任务
+            <span className="text-lg">💎</span> {t.title}
           </h2>
           {quotaInfo.remaining > 0 && (
             <span className="text-xs px-2 py-0.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md font-semibold shadow-sm">
-              今日可用: {quotaInfo.remaining}
+              {t.todayLeft(quotaInfo.remaining)}
             </span>
           )}
         </div>
@@ -131,22 +157,22 @@ export function QuotaProgressCard() {
         {/* 任务列表 */}
         <div className="space-y-2">
           {/* 发帖任务 */}
-          {quotaInfo.progress.posts && ( // Conditional rendering
+          {quotaInfo.progress.posts && (
             <div className="p-2 rounded-lg bg-white/60 border border-blue-100">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">📝 发布面试真题</span>
+                  <span className="text-sm font-medium text-gray-700">{t.postTask}</span>
                   <span className="text-xs text-gray-500">
                     ({quotaInfo.progress.posts.current}/{quotaInfo.progress.posts.required})
                   </span>
                 </div>
                 {quotaInfo.progress.posts.current >= quotaInfo.progress.posts.required ? (
                   <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-md font-semibold border border-green-200">
-                    ✅ 已完成
+                    {t.done}
                   </span>
                 ) : (
                   <span className="text-xs px-2 py-0.5 bg-blue-500 text-white rounded-md font-semibold shadow-sm">
-                    +{quotaInfo.progress.posts.reward} 配额
+                    {t.reward(quotaInfo.progress.posts.reward)}
                   </span>
                 )}
               </div>
@@ -161,7 +187,7 @@ export function QuotaProgressCard() {
                     size="sm"
                     className="h-6 text-xs px-2 border-blue-300 text-blue-600 hover:bg-blue-50 font-medium"
                   >
-                    去发布
+                    {t.goPost}
                   </Button>
                 </div>
               )}
@@ -169,22 +195,22 @@ export function QuotaProgressCard() {
           )}
 
           {/* 评论任务 */}
-          {quotaInfo.progress.comments && ( // Conditional rendering
+          {quotaInfo.progress.comments && (
             <div className="p-2 rounded-lg bg-white/60 border border-blue-100">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">💬 评论真题</span>
+                  <span className="text-sm font-medium text-gray-700">{t.commentTask}</span>
                   <span className="text-xs text-gray-500">
                     ({quotaInfo.progress.comments.current}/{quotaInfo.progress.comments.required})
                   </span>
                 </div>
                 {quotaInfo.progress.comments.current >= quotaInfo.progress.comments.required ? (
                   <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-md font-semibold border border-green-200">
-                    ✅ 已完成
+                    {t.done}
                   </span>
                 ) : (
                   <span className="text-xs px-2 py-0.5 bg-blue-500 text-white rounded-md font-semibold shadow-sm">
-                    +{quotaInfo.progress.comments.reward} 配额
+                    {t.reward(quotaInfo.progress.comments.reward)}
                   </span>
                 )}
               </div>
@@ -198,7 +224,7 @@ export function QuotaProgressCard() {
                   size="sm"
                   className="h-6 text-xs px-2 border-blue-300 text-blue-600 hover:bg-blue-50 font-medium"
                 >
-                  去评论
+                  {t.goComment}
                 </Button>
               </div>
             </div>
@@ -207,7 +233,7 @@ export function QuotaProgressCard() {
 
         {/* 提示信息 */}
         <p className="text-xs text-gray-500 mt-2 text-center">
-          💡 完成任务可获得额外配额，最多累积至6个
+          {t.hint}
         </p>
       </CardContent>
     </Card>

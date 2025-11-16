@@ -322,21 +322,21 @@ class EmailService {
               <img src="https://mockpals.com/logo.png" alt="MockPal Logo" />
             </div>
             <div class="header">
-              <h1 style="color: #1f2937;">有人@了你！📢</h1>
+              <h1 style="color: #1f2937;">You were mentioned! 📢 / 有人@了你！📢</h1>
             </div>
             <p style="color: #374151; font-size: 17px; text-align: center; line-height: 1.6;">
-              <strong>${opts.actorName}</strong> 在评论中提到了你
+              <strong>${opts.actorName}</strong> mentioned you in a comment / 在评论中提到了你
             </p>
             <div class="comment-box">
               <p class="comment-text">💬 "${opts.content.slice(0, 200)}${opts.content.length > 200 ? '...' : ''}"</p>
             </div>
             <div style="text-align: center;">
-              <a href="${opts.commentUrl}" class="button">前往查看评论</a>
+              <a href="${opts.commentUrl}" class="button">View Comment / 前往查看评论</a>
             </div>
-            <p class="tip">如果按钮无法点击，请复制以下链接到浏览器：</p>
+            <p class="tip">If the button doesn't work, copy this link into your browser: / 如果按钮无法点击，请复制以下链接到浏览器：</p>
             <p style="color: #3b82f6; word-break: break-all; font-size: 14px;">${opts.commentUrl}</p>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;">
-              <p>💡 提示：你可以在个人中心关闭@提及邮件通知</p>
+              <p>💡 Tip: You can disable mention emails in your profile settings. / 提示：你可以在个人中心关闭@提及邮件通知</p>
             </div>
           </div>
         </body>
@@ -347,13 +347,13 @@ class EmailService {
       const result = await this.resend.emails.send({
         from: fromEmail,
         to,
-        subject: `MockPal - ${opts.actorName} 在评论中提到了你`,
+        subject: `MockPal - ${opts.actorName} mentioned you in a comment / 在评论中提到了你`,
         html,
       });
       console.log('✅ [EmailService] @提及通知已发送');
       
       // 记录发送成功
-      await this.logEmailSend(to, 'mention', `MockPal - ${opts.actorName} 在评论中提到了你`, 'sent');
+      await this.logEmailSend(to, 'mention', `MockPal - ${opts.actorName} mentioned you in a comment / 在评论中提到了你`, 'sent');
       
       return result;
     } catch (error) {
@@ -363,7 +363,7 @@ class EmailService {
       await this.logEmailSend(
         to, 
         'mention', 
-        `MockPal - ${opts.actorName} 在评论中提到了你`, 
+        `MockPal - ${opts.actorName} mentioned you in a comment / 在评论中提到了你`, 
         'failed', 
         error instanceof Error ? error.message : String(error)
       );

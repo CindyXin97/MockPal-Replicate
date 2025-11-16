@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AuthLayout } from '@/components/base-layout';
 import { toast } from 'sonner';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 
 interface Notification {
   id: number;
@@ -23,6 +25,42 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [language] = useAtom(languageAtom);
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        title: 'My Notifications',
+        unreadTip: (n: number) => `${n} unread`,
+        back: 'Back',
+        markAll: 'Mark all as read',
+        all: 'All',
+        unread: 'Unread',
+        loading: 'Loading...',
+        empty: 'No notifications',
+        emptyUnread: 'No unread notifications',
+        // relative time
+        justNow: 'just now',
+        minutesAgo: (m: number) => `${m} minutes ago`,
+        hoursAgo: (h: number) => `${h} hours ago`,
+        daysAgo: (d: number) => `${d} days ago`,
+      } as const;
+    }
+    return {
+      title: '我的通知',
+      unreadTip: (n: number) => `有 ${n} 条未读通知`,
+      back: '返回',
+      markAll: '全部标记为已读',
+      all: '全部',
+      unread: '未读',
+      loading: '加载中...',
+      empty: '暂无通知',
+      emptyUnread: '暂无未读通知',
+      justNow: '刚刚',
+      minutesAgo: (m: number) => `${m}分钟前`,
+      hoursAgo: (h: number) => `${h}小时前`,
+      daysAgo: (d: number) => `${d}天前`,
+    } as const;
+  }, [language]);
 
   useEffect(() => {
     fetchNotifications();
@@ -41,7 +79,7 @@ export default function NotificationsPage() {
       }
     } catch (error) {
       console.error('获取通知失败:', error);
-      toast.error('获取通知失败');
+      toast.error(language === 'en' ? 'Failed to fetch notifications' : '获取通知失败');
     } finally {
       setLoading(false);
     }
@@ -83,12 +121,12 @@ export default function NotificationsPage() {
       });
 
       if (response.ok) {
-        toast.success('已全部标记为已读');
+        toast.success(language === 'en' ? 'All marked as read' : '已全部标记为已读');
         fetchNotifications();
       }
     } catch (error) {
       console.error('标记全部已读失败:', error);
-      toast.error('操作失败');
+      toast.error(language === 'en' ? 'Operation failed' : '操作失败');
     }
   };
 
@@ -100,15 +138,36 @@ export default function NotificationsPage() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return '刚刚';
-    if (diffMins < 60) return `${diffMins}分钟前`;
-    if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays < 7) return `${diffDays}天前`;
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    if (diffMins < 1) return t.justNow;
+    if (diffMins < 60) return t.minutesAgo(diffMins);
+    if (diffHours < 24) return t.hoursAgo(diffHours);
+    if (diffDays < 7) return t.daysAgo(diffDays);
+    return language === 'en'
+      ? date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      : date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  // 关键词替换（渲染时语言级映射，不改后端数据）
+  const translateText = (text: string | null | undefined) => {
+    if (!text) return '';
+    if (language !== 'en') return text;
+    // 常见通知标题/内容关键词替换（仅在英文时）
+    const replacements: Array<[RegExp, string]> = [
+      [/在评论中提到了你/g, 'mentioned you in a comment'],
+      [/回复了你/g, 'replied to you'],
+      [/新的?评论/g, 'new comment'],
+      [/匹配成功/g, 'match success'],
+      [/点赞了你/g, 'liked you'],
+    ];
+    let out = text;
+    for (const [pattern, repl] of replacements) {
+      out = out.replace(pattern, repl);
+    }
+    // 处理我们之前加的双语模板“EN / 中文”——保留 EN 前半部分
+    if (out.includes(' / ')) {
+      out = out.split(' / ')[0];
+    }
+    return out;
   };
 
   const getNotificationIcon = (type: string) => {
@@ -134,22 +193,22 @@ export default function NotificationsPage() {
         {/* 页面标题和操作栏 */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">我的通知</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
             {unreadCount > 0 && (
               <p className="text-sm text-gray-600 mt-1">
-                有 {unreadCount} 条未读通知
+                {language === 'en' ? t.unreadTip(unreadCount) : t.unreadTip(unreadCount)}
               </p>
             )}
           </div>
           <div className="flex items-center gap-3">
             <Link href="/me">
               <Button variant="outline" size="sm">
-                返回
+                {t.back}
               </Button>
             </Link>
             {unreadCount > 0 && (
               <Button onClick={markAllAsRead} size="sm" variant="outline">
-                全部标记为已读
+                {t.markAll}
               </Button>
             )}
           </div>
@@ -162,14 +221,14 @@ export default function NotificationsPage() {
             size="sm"
             onClick={() => setFilter('all')}
           >
-            全部
+            {t.all}
           </Button>
           <Button
             variant={filter === 'unread' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter('unread')}
           >
-            未读 {unreadCount > 0 && `(${unreadCount})`}
+            {t.unread} {unreadCount > 0 && `(${unreadCount})`}
           </Button>
         </div>
 
@@ -177,7 +236,7 @@ export default function NotificationsPage() {
         <Card>
           <CardContent className="p-0">
             {loading ? (
-              <div className="text-center py-12 text-gray-500">加载中...</div>
+              <div className="text-center py-12 text-gray-500">{t.loading}</div>
             ) : notifications.length > 0 ? (
               <div className="divide-y">
                 {notifications.map((notification) => (
@@ -206,11 +265,11 @@ export default function NotificationsPage() {
                               notification.isRead ? 'text-gray-700' : 'text-gray-900'
                             }`}
                           >
-                            {notification.title}
+                            {translateText(notification.title)}
                           </p>
                           {notification.content && (
                             <p className="text-sm text-gray-600 mt-1">
-                              {notification.content}
+                              {translateText(notification.content)}
                             </p>
                           )}
                           <p className="text-xs text-gray-500 mt-2">
@@ -229,7 +288,7 @@ export default function NotificationsPage() {
               </div>
             ) : (
               <div className="text-center py-12 text-gray-500">
-                {filter === 'unread' ? '暂无未读通知' : '暂无通知'}
+                {filter === 'unread' ? t.emptyUnread : t.empty}
               </div>
             )}
           </CardContent>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { AuthLayout } from '@/components/base-layout';
 import { QuotaProgressCard } from '@/components/quota-progress-card';
 import { InviteCodeCard } from '@/components/invite-code-card';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 
 interface UserStats {
   user: {
@@ -71,6 +73,98 @@ export default function MePage() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [quotaInfo, setQuotaInfo] = useState<any>(null);
+  const [language] = useAtom(languageAtom);
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        loading: 'Loading...',
+        loadFailed: 'Load failed, please refresh and try again',
+        editProfile: 'Edit Profile',
+        levelMax: 'MAX',
+        exp: 'EXP',
+        toNext: (remain: number, nextName: string) => `Need ${remain} more to reach ${nextName}`,
+        percentComplete: (pct: number) => `${pct}% complete`,
+        todayQuota: '🔥 Today quota',
+        successfulMatches: 'Matched',
+        pending: (n: number) => `Waiting ${n}`,
+        interactions: 'Interactions',
+        myViewsPair: (mine: number, ofMe: number) => `My views ${mine} · Views of me ${ofMe}`,
+        matched: 'Matched',
+        outperform: (pct: number) => `🎯 Outperforms ${pct}% of users`,
+        startMatching: 'Start matching to get ranked!',
+        interviewsCompleted: 'Interviews',
+        expPoints: (xp: number) => `EXP ${xp}`,
+        finishInterviews: 'Complete interviews to get ranked!',
+        myActivity: 'My Activity',
+        myActivityDesc: 'Posts, comments and views',
+        thisWeek: 'This week',
+        thisMonth: 'This month',
+        notifications: 'Notifications',
+        unread: (n: number) => `${n} unread`,
+        viewAll: 'View all',
+        noNotifications: 'No notifications',
+        postsCount: 'My posts',
+        commentsCount: 'My comments',
+        votesGiven: 'My likes',
+        votesReceived: 'Likes received',
+        levelMap: {
+          '新用户': 'Rookie',
+          '面试新手': 'Interview Novice',
+          '面试新星': 'Rising Star',
+          '面试达人': 'Interview Pro',
+          '面试导师': 'Interview Mentor',
+          '满级': 'MAX',
+        } as Record<string, string>,
+        time: {
+          justNow: 'just now',
+          minutesAgo: (m: number) => `${m} minutes ago`,
+          hoursAgo: (h: number) => `${h} hours ago`,
+          daysAgo: (d: number) => `${d} days ago`,
+          date: (d: Date) => d.toLocaleDateString('en-US'),
+        },
+      };
+    }
+    return {
+      loading: '加载中...',
+      loadFailed: '加载失败，请刷新页面重试',
+      editProfile: '编辑资料',
+      levelMax: '满级',
+      exp: '经验值',
+      toNext: (remain: number, nextName: string) => `还需 ${remain} 次升级到 ${nextName}`,
+      percentComplete: (pct: number) => `${pct}% 完成`,
+      todayQuota: '🔥 今日可刷',
+      successfulMatches: '成功匹配',
+      pending: (n: number) => `等待中 ${n} 人`,
+      interactions: '互动人数',
+      myViewsPair: (mine: number, ofMe: number) => `我浏览 ${mine} · 访问我 ${ofMe}`,
+      matched: '匹配成功',
+      outperform: (pct: number) => `🎯 超过 ${pct}% 的用户`,
+      startMatching: '开始匹配来获取排名！',
+      interviewsCompleted: '完成面试',
+      expPoints: (xp: number) => `经验值 ${xp}`,
+      finishInterviews: '完成面试来获取排名！',
+      myActivity: '我的活动',
+      myActivityDesc: '统计发帖、评论、浏览数',
+      thisWeek: '本周活动',
+      thisMonth: '本月活动',
+      notifications: '消息',
+      unread: (n: number) => `${n} 条未读`,
+      viewAll: '查看全部',
+      noNotifications: '暂无通知',
+      postsCount: '我发布的题目',
+      commentsCount: '我的评论',
+      votesGiven: '我赞过的',
+      votesReceived: '收到的赞',
+      levelMap: {} as Record<string, string>,
+      time: {
+        justNow: '刚刚',
+        minutesAgo: (m: number) => `${m}分钟前`,
+        hoursAgo: (h: number) => `${h}小时前`,
+        daysAgo: (d: number) => `${d}天前`,
+        date: (d: Date) => d.toLocaleDateString('zh-CN'),
+      },
+    };
+  }, [language]);
 
   useEffect(() => {
     fetchStats();
@@ -111,7 +205,7 @@ export default function MePage() {
   const getUserDisplayName = () => {
     if (stats?.user.name) return stats.user.name;
     if (stats?.user.email) return stats.user.email.split('@')[0];
-    return '用户';
+    return language === 'en' ? 'User' : '用户';
   };
 
   const getUserInitial = () => {
@@ -175,11 +269,32 @@ export default function MePage() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return '刚刚';
-    if (diffMins < 60) return `${diffMins}分钟前`;
-    if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays < 7) return `${diffDays}天前`;
-    return date.toLocaleDateString('zh-CN');
+    if (diffMins < 1) return t.time.justNow;
+    if (diffMins < 60) return t.time.minutesAgo(diffMins);
+    if (diffHours < 24) return t.time.hoursAgo(diffHours);
+    if (diffDays < 7) return t.time.daysAgo(diffDays);
+    return t.time.date(date);
+  };
+
+  // 通知标题/内容在英文模式下做关键词替换（不改后端数据）
+  const translateNotificationText = (text: string | null | undefined) => {
+    if (!text) return '';
+    if (language !== 'en') return text;
+    const replacements: Array<[RegExp, string]> = [
+      [/在评论中提到了你/g, 'mentioned you in a comment'],
+      [/回复了你/g, 'replied to you'],
+      [/新的?评论/g, 'new comment'],
+      [/匹配成功/g, 'match success'],
+      [/点赞了你/g, 'liked you'],
+    ];
+    let out = text;
+    for (const [pattern, repl] of replacements) {
+      out = out.replace(pattern, repl as unknown as string);
+    }
+    if (out.includes(' / ')) {
+      out = out.split(' / ')[0];
+    }
+    return out;
   };
 
   if (loading) {
@@ -221,12 +336,12 @@ export default function MePage() {
                 <p className="text-sm text-gray-600">{stats.user.email}</p>
                 <div className="mt-0.5">
                   <span className="inline-block px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs rounded-md font-medium shadow-sm">
-                    {stats.interviews.currentLevel}
+                    {language === 'en' ? (t.levelMap[stats.interviews.currentLevel] || stats.interviews.currentLevel) : stats.interviews.currentLevel}
                   </span>
                 </div>
               </div>
               <Button asChild variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-400 transition-colors text-sm h-7 px-2">
-                <Link href="/profile">编辑资料</Link>
+                <Link href="/profile">{t.editProfile}</Link>
               </Button>
             </div>
             
@@ -238,14 +353,14 @@ export default function MePage() {
                 <div className="space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-600">
-                      经验值 {progress.current} / {progress.next}
+                      {t.exp} {progress.current} / {progress.next}
                     </span>
                     {progress.remaining > 0 ? (
                       <span className="text-blue-600 font-medium">
-                        还需 {progress.remaining} 次升级到 {progress.nextLevelName}
+                        {t.toNext(progress.remaining, language === 'en' ? (t.levelMap[progress.nextLevelName] || progress.nextLevelName) : progress.nextLevelName)}
                       </span>
                     ) : (
-                      <span className="text-purple-600 font-medium">🎉 满级</span>
+                      <span className="text-purple-600 font-medium">🎉 {t.levelMax}</span>
                     )}
                   </div>
                   <div className="relative w-full h-1.5 bg-indigo-100 rounded-full overflow-hidden">
@@ -256,7 +371,7 @@ export default function MePage() {
                     </div>
                   </div>
                   <div className="text-xs text-right text-gray-500">
-                    {progress.percentage}% 完成
+                    {t.percentComplete(progress.percentage)}
                   </div>
                 </div>
               );
@@ -271,7 +386,7 @@ export default function MePage() {
                     <div className="text-2xl font-bold text-amber-600">
                       {quotaInfo.remaining}
                     </div>
-                    <div className="text-xs text-amber-600 mt-1 font-medium">🔥 今日可刷</div>
+                    <div className="text-xs text-amber-600 mt-1 font-medium">{t.todayQuota}</div>
                   </div>
 
                   {/* 成功匹配 */}
@@ -289,7 +404,7 @@ export default function MePage() {
                           className="object-contain"
                         />
                       </div>
-                      <span>成功匹配</span>
+                    <span>{t.successfulMatches}</span>
                     </div>
                   </div>
 
@@ -298,7 +413,7 @@ export default function MePage() {
                     <div className="text-2xl font-bold text-pink-600">
                       {stats.matching.pendingMatches}
                     </div>
-                    <div className="text-xs text-pink-600 mt-1 font-medium">❤️ 等待回应</div>
+                  <div className="text-xs text-pink-600 mt-1 font-medium">❤️ {t.pending(stats.matching.pendingMatches)}</div>
                   </div>
                 </div>
               </div>
@@ -321,13 +436,13 @@ export default function MePage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="text-lg hover:scale-125 transition-transform inline-block">👥</span>
-                    <span className="text-sm font-medium text-gray-700">互动人数</span>
+                    <span className="text-sm font-medium text-gray-700">{t.interactions}</span>
                   </div>
                   <div className="text-2xl font-bold text-blue-600 hover:scale-110 transition-transform inline-block">
                     {stats.views.totalInteractions ?? 0}
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    我浏览 {stats.views.myViews ?? 0} · 访问我 {stats.views.viewsOfMe ?? 0}
+                    {t.myViewsPair(stats.views.myViews ?? 0, stats.views.viewsOfMe ?? 0)}
                   </p>
                 </div>
               </div>
@@ -349,21 +464,21 @@ export default function MePage() {
                         className="object-contain"
                       />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">匹配成功</span>
+                    <span className="text-sm font-medium text-gray-700">{t.matched}</span>
                   </div>
                   <div className="text-2xl font-bold text-purple-600 hover:scale-110 transition-transform inline-block">
                     {stats.matching.successfulMatches}
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    等待中 {stats.matching.pendingMatches} 人
+                    {t.pending(stats.matching.pendingMatches)}
                   </p>
                   {stats.matching.percentile !== undefined && stats.matching.percentile !== null ? (
                     <p className="text-xs text-purple-600 font-medium mt-1">
-                      🎯 超过 {stats.matching.percentile}% 的用户
+                      {t.outperform(stats.matching.percentile!)}
                     </p>
                   ) : (
                     <p className="text-xs text-gray-400 mt-1">
-                      开始匹配来获取排名！
+                      {t.startMatching}
                     </p>
                   )}
                 </div>
@@ -378,21 +493,21 @@ export default function MePage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="text-lg hover:scale-125 transition-transform inline-block">🎤</span>
-                    <span className="text-sm font-medium text-gray-700">完成面试</span>
+                    <span className="text-sm font-medium text-gray-700">{t.interviewsCompleted}</span>
                   </div>
                   <div className="text-2xl font-bold text-emerald-600 hover:scale-110 transition-transform inline-block">
                     {stats.interviews.completed}
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    经验值 {stats.interviews.experiencePoints}
+                    {t.expPoints(stats.interviews.experiencePoints)}
                   </p>
                   {stats.interviews.percentile !== undefined && stats.interviews.percentile !== null ? (
                     <p className="text-xs text-emerald-600 font-medium mt-1">
-                      🎯 超过 {stats.interviews.percentile}% 的用户
+                      {t.outperform(stats.interviews.percentile!)}
                     </p>
                   ) : (
                     <p className="text-xs text-gray-400 mt-1">
-                      完成面试来获取排名！
+                      {t.finishInterviews}
                     </p>
                   )}
                 </div>
@@ -407,9 +522,9 @@ export default function MePage() {
             <div>
               <CardTitle className="flex items-center gap-1.5 text-base">
                 <span className="text-lg hover:scale-125 transition-transform inline-block">📈</span>
-                <span>我的活动</span>
+                <span>{t.myActivity}</span>
               </CardTitle>
-              <p className="text-xs text-gray-500 mt-0.5">统计发帖、评论、浏览数</p>
+              <p className="text-xs text-gray-500 mt-0.5">{t.myActivityDesc}</p>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
@@ -417,7 +532,7 @@ export default function MePage() {
               {/* 本周 vs 上周 */}
               <div className="p-2 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-150 transition-all border border-blue-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-700 font-medium">本周活动</span>
+                  <span className="text-xs text-gray-700 font-medium">{t.thisWeek}</span>
                   {stats.activity && stats.activity.weekChange !== undefined && stats.activity.weekChange !== null && stats.activity.lastWeek !== 0 ? (
                     <span className={`text-xs font-bold flex items-center gap-0.5 ${
                       stats.activity.weekChange > 0 ? 'text-green-600' : 
@@ -453,7 +568,7 @@ export default function MePage() {
               {/* 本月 vs 上月 */}
               <div className="p-2 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-150 transition-all border border-purple-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-700 font-medium">本月活动</span>
+                  <span className="text-xs text-gray-700 font-medium">{t.thisMonth}</span>
                   {stats.activity && stats.activity.monthChange !== undefined && stats.activity.monthChange !== null && stats.activity.lastMonth !== 0 ? (
                     <span className={`text-xs font-bold flex items-center gap-0.5 ${
                       stats.activity.monthChange > 0 ? 'text-green-600' : 
@@ -495,15 +610,15 @@ export default function MePage() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-1.5 text-base">
                 <span className="text-lg hover:rotate-12 transition-transform inline-block">🔔</span>
-                <span>消息</span>
+                <span>{t.notifications}</span>
                 {stats.notifications.unreadCount > 0 && (
                   <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
-                    {stats.notifications.unreadCount} 条未读
+                    {t.unread(stats.notifications.unreadCount)}
                   </span>
                 )}
               </CardTitle>
               <Button asChild variant="ghost" size="sm" className="hover:bg-blue-50 transition-colors h-6 text-xs">
-                <Link href="/me/notifications">查看全部</Link>
+                <Link href="/me/notifications">{t.viewAll}</Link>
               </Button>
             </div>
           </CardHeader>
@@ -530,11 +645,11 @@ export default function MePage() {
                               notification.isRead ? 'text-gray-700' : 'text-gray-900'
                             }`}
                           >
-                            {notification.title}
+                            {translateNotificationText(notification.title)}
                           </p>
                           {notification.content && (
                             <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
-                              {notification.content}
+                              {translateNotificationText(notification.content)}
                             </p>
                           )}
                         </div>
@@ -548,7 +663,7 @@ export default function MePage() {
               </div>
             ) : (
               <div className="text-center py-4 text-sm text-gray-500">
-                暂无通知
+                {t.noNotifications}
               </div>
             )}
           </CardContent>
@@ -557,9 +672,9 @@ export default function MePage() {
         {/* 社区活动卡片 */}
         <Card className="hover:shadow-md transition-all animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
           <CardHeader className="pb-2 pt-3">
-            <CardTitle className="flex items-center gap-1.5 text-base">
+              <CardTitle className="flex items-center gap-1.5 text-base">
               <span className="text-lg hover:scale-125 transition-transform inline-block">📊</span>
-              <span>我的活动</span>
+                <span>{t.myActivity}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
@@ -573,7 +688,7 @@ export default function MePage() {
                   <div className="text-base font-bold text-indigo-600">
                     {stats.community.postsCount}
                   </div>
-                  <div className="text-xs text-gray-600 mt-0.5">我发布的题目</div>
+                  <div className="text-xs text-gray-600 mt-0.5">{t.postsCount}</div>
                 </div>
               </Link>
 
@@ -583,7 +698,7 @@ export default function MePage() {
                   <div className="text-base font-bold text-green-600">
                     {stats.community.commentsCount}
                   </div>
-                  <div className="text-xs text-gray-600 mt-0.5">我的评论</div>
+                  <div className="text-xs text-gray-600 mt-0.5">{t.commentsCount}</div>
                 </div>
               </div>
 
@@ -593,7 +708,7 @@ export default function MePage() {
                   <div className="text-base font-bold text-rose-600">
                     {stats.community.votesGiven}
                   </div>
-                  <div className="text-xs text-gray-600 mt-0.5">我赞过的</div>
+                  <div className="text-xs text-gray-600 mt-0.5">{t.votesGiven}</div>
                 </div>
               </div>
 
@@ -603,7 +718,7 @@ export default function MePage() {
                   <div className="text-base font-bold text-amber-600">
                     {stats.community.votesReceived}
                   </div>
-                  <div className="text-xs text-gray-600 mt-0.5">收到的赞</div>
+                  <div className="text-xs text-gray-600 mt-0.5">{t.votesReceived}</div>
                 </div>
               </div>
             </div>
