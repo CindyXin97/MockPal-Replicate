@@ -16,11 +16,153 @@ import { CompanyAutocomplete } from '@/components/ui/company-autocomplete';
 import { ProfileFormData } from '@/lib/profile';
 import { TARGET_COMPANIES, TARGET_INDUSTRIES, SCHOOLS } from '@/lib/constants';
 import { useProfile } from '@/lib/useProfile';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 
 function ProfilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status, update } = useSession();
+  const [language] = useAtom(languageAtom);
+
+  const texts = useMemo(() => {
+    if (language === 'en') {
+      return {
+        title: 'Profile',
+        subtitle: 'Select the role you want to practice now. We’ll match partners with the same goals.',
+        displayNameLabel: 'Display name',
+        displayNamePlaceholder: 'Enter your display name',
+        displayNameHelp: 'This is the name shown to other users',
+        schoolLabel: 'School',
+        schoolPlaceholder: 'Enter school name',
+        loading: 'Loading...',
+        jobTypeLabel: 'Job Type',
+        jobTypePlaceholder: 'Select job type',
+        jobTypeOptions: {
+          DA: 'Data Analyst (DA)',
+          DS: 'Data Scientist (DS)',
+          DE: 'Data Engineer (DE)',
+          BA: 'Business Analyst (BA)',
+          MLE: 'Machine Learning Engineer (MLE)',
+        } as Record<string, string>,
+        experienceLevelLabel: 'Experience Level',
+        experienceLevelPlaceholder: 'Select experience level',
+        experienceLevels: ['Intern', 'Entry-level', '1-3 years', '3-5 years', '5+ years'],
+        jobSeekingLabel: 'Job Search Status',
+        jobSeekingPlaceholder: 'Select your job search status',
+        jobSeekingOptions: {
+          保持状态: '🌱 Keep warm - Maintain interview readiness',
+          准备中: '🔍 Preparing - Actively getting ready',
+          面试中: '🎯 Interviewing - Currently have interviews',
+          已拿offer: '💼 Offer in hand - Keep improving',
+        } as Record<string, string>,
+        targetCompanyLabel: 'Target Company',
+        targetCompanyPlaceholder: 'Enter company name',
+        targetIndustryLabel: 'Target Industry',
+        targetIndustryPlaceholder: 'Select target industry',
+        practiceLabel: 'Desired Practice Topics',
+        practiceOptions: {
+          technical: 'Technical',
+          behavioral: 'Behavioral',
+          case: 'Case study',
+          stats: 'Statistics',
+        },
+        contactLabel: 'Contact (visible after matching; WhatsApp/LinkedIn recommended)',
+        emailPlaceholder: 'Email',
+        wechatPlaceholder: 'WhatsApp',
+        linkedinPlaceholder: 'LinkedIn https://www.linkedin.com/in/your-profile',
+        skillsLabel: 'My Skills',
+        skillsAddHint: 'Up to 3 skills, e.g., A/B Testing, ML, Product..',
+        skillPlaceholderPrefix: 'Skill',
+        bioLabel: 'Brief self-introduction',
+        bioPlaceholder: 'e.g., 3 years DS, strong in Case, NYC timezone, free on weekday evenings.',
+        bioHelp: 'Tip: Share status, strengths, timezone, availability to improve matching.',
+        submitting: 'Saving...',
+        submit: 'Save profile',
+        pageLoading: 'Loading...',
+        industriesEn: {
+          technology: 'Technology/Internet',
+          finance: 'Finance/Banking',
+          healthcare: 'Healthcare',
+          retail: 'Retail/E-commerce',
+          manufacturing: 'Manufacturing',
+          education: 'Education',
+          consulting: 'Consulting',
+          media: 'Media/Entertainment',
+          transportation: 'Transportation/Logistics',
+          energy: 'Energy/Utilities',
+          government: 'Government/Nonprofit',
+          real_estate: 'Real Estate',
+          agriculture: 'Agriculture',
+          tourism: 'Travel/Hospitality',
+          sports: 'Sports',
+          other: 'Other',
+        } as Record<string, string>,
+      };
+    }
+    return {
+      title: '个人资料',
+      subtitle: '请选择你现在最想练习的岗位，系统将为你匹配相同目标的练习伙伴',
+      displayNameLabel: '显示名称',
+      displayNamePlaceholder: '请输入您的显示名称',
+      displayNameHelp: '这是其他用户看到的您的名称',
+      schoolLabel: '学校',
+      schoolPlaceholder: '请输入学校名称',
+      loading: '加载中...',
+      jobTypeLabel: '岗位类型',
+      jobTypePlaceholder: '请选择岗位类型',
+      jobTypeOptions: {
+        DA: '数据分析 (DA)',
+        DS: '数据科学 (DS)',
+        DE: '数据工程 (DE)',
+        BA: '商业分析 (BA)',
+        MLE: '机器学习工程师 (MLE)',
+      } as Record<string, string>,
+      experienceLevelLabel: '经验水平',
+      experienceLevelPlaceholder: '请选择经验水平',
+      experienceLevels: ['实习', '应届', '1-3年', '3-5年', '5年以上'],
+      jobSeekingLabel: '求职状态',
+      jobSeekingPlaceholder: '选择你的求职状态',
+      jobSeekingOptions: {
+        保持状态: '🌱 保持状态 - 想保持面试感觉',
+        准备中: '🔍 准备中 - 正在积极准备',
+        面试中: '🎯 面试中 - 已有面试机会',
+        已拿offer: '💼 已拿offer - 继续提升能力',
+      } as Record<string, string>,
+      targetCompanyLabel: '目标公司',
+      targetCompanyPlaceholder: '请输入公司名称',
+      targetIndustryLabel: '目标行业',
+      targetIndustryPlaceholder: '请选择目标行业',
+      practiceLabel: '期望练习内容',
+      practiceOptions: {
+        technical: '技术面',
+        behavioral: '行为面',
+        case: '案例分析',
+        stats: '统计题目',
+      },
+      contactLabel: '联系方式 (匹配成功后可见，推荐添加微信)',
+      emailPlaceholder: '邮箱',
+      wechatPlaceholder: '微信',
+      linkedinPlaceholder: 'LinkedIn https://www.linkedin.com/in/your-profile',
+      skillsLabel: '我的技能',
+      skillsAddHint: '💡 最多可添加3个技能，例如: A/B Testing, ML, Product..',
+      skillPlaceholderPrefix: '技能',
+      bioLabel: '简单介绍一下自己',
+      bioPlaceholder: '如：三年DS经验，擅长Case，坐标纽约，工作日晚上有空～',
+      bioHelp: '💡 建议包含：目前状态、擅长技能、所在时区、可Mock时间段，让匹配更精准！',
+      submitting: '保存中...',
+      submit: '保存资料',
+      pageLoading: '加载中...',
+      industriesEn: {} as Record<string, string>, // not used in zh
+    };
+  }, [language]);
+
+  const mapIndustryLabel = (value: string, defaultLabel: string) => {
+    if (language === 'en') {
+      return texts.industriesEn[value] || defaultLabel;
+    }
+    return defaultLabel;
+  };
   
   const fromMatches = searchParams.get('from') === 'matches';
   
@@ -272,6 +414,18 @@ function ProfilePageContent() {
     };
   };
 
+  const translateLevelLabel = (label: string) => {
+    if (language !== 'en') return label;
+    const map: Record<string, string> = {
+      '新用户': 'Rookie',
+      '面试新手': 'Interview Novice',
+      '面试新星': 'Rising Star',
+      '面试达人': 'Interview Pro',
+      '面试导师': 'Interview Mentor',
+    };
+    return map[label] || label;
+  };
+
   // 计算文本实际宽度，考虑中文字符
   const getTextWidth = (text: string) => {
     if (!text) return 16; // 最小宽度
@@ -418,110 +572,122 @@ function ProfilePageContent() {
           <CardHeader className="pb-2">
             {/* 响应式布局：移动端纵向，桌面端横向 */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 mb-1">
-              <CardTitle className="text-xl font-extrabold text-center tracking-tight text-gray-900">个人资料</CardTitle>
+              <CardTitle className="text-xl font-extrabold text-center tracking-tight text-gray-900">{texts.title}</CardTitle>
               {/* 显示用户等级徽章 */}
               {userAchievement && (
                 <div className="flex items-center justify-center sm:justify-start gap-1 px-2 py-0.5 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full border border-blue-200 shadow-sm mx-auto sm:mx-0 w-fit">
                   <span className="text-sm">{getUserLevelInfo().icon}</span>
-                  <span className="text-[10px] font-semibold text-blue-700">{getUserLevelInfo().level}</span>
+                  <span className="text-[10px] font-semibold text-blue-700">{translateLevelLabel(getUserLevelInfo().level)}</span>
                 </div>
               )}
             </div>
             <p className="text-sm text-gray-500 text-center font-medium">
-              请选择你现在最想练习的岗位，系统将为你匹配相同目标的练习伙伴
+              {texts.subtitle}
             </p>
           </CardHeader>
           <CardContent className="pt-0 pb-6">
             <form onSubmit={handleSubmit} className="space-y-3">
                               <div className="space-y-1">
-                  <Label htmlFor="name">显示名称 <span className="text-red-500 ml-1">*</span></Label>
+                  <Label htmlFor="name">{texts.displayNameLabel} <span className="text-red-500 ml-1">*</span></Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="请输入您的显示名称"
+                  placeholder={texts.displayNamePlaceholder}
                   className="h-10"
                 />
-                <p className="text-sm text-gray-500">这是其他用户看到的您的名称</p>
+                <p className="text-sm text-gray-500">{texts.displayNameHelp}</p>
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="school">学校 <span className="text-red-500 ml-1">*</span></Label>
+                <Label htmlFor="school">{texts.schoolLabel} <span className="text-red-500 ml-1">*</span></Label>
                 {!profileLoading ? (
                   <SchoolAutocomplete
                     value={formData.school}
                     onChange={(value) => handleInputChange('school', value)}
-                    placeholder="请输入学校名称"
+                    placeholder={texts.schoolPlaceholder}
                     className="h-10"
                   />
                 ) : (
                   <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
-                    加载中...
+                    {texts.loading}
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="jobType">岗位类型 <span className="text-red-500 ml-1">*</span></Label>
+                  <Label htmlFor="jobType">{texts.jobTypeLabel} <span className="text-red-500 ml-1">*</span></Label>
                   {!profileLoading ? (
                     <Select key={`jobType-${profile?.jobType || 'default'}`} value={formData.jobType} onValueChange={(value) => handleInputChange('jobType', value)}>
                       <SelectTrigger className="h-10">
-                        <SelectValue placeholder="请选择岗位类型" />
+                        <SelectValue placeholder={texts.jobTypePlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="DA">数据分析 (DA)</SelectItem>
-                        <SelectItem value="DS">数据科学 (DS)</SelectItem>
-                        <SelectItem value="DE">数据工程 (DE)</SelectItem>
-                        <SelectItem value="BA">商业分析 (BA)</SelectItem>
-                        <SelectItem value="MLE">机器学习工程师 (MLE)</SelectItem>
+                        <SelectItem value="DA">{texts.jobTypeOptions['DA']}</SelectItem>
+                        <SelectItem value="DS">{texts.jobTypeOptions['DS']}</SelectItem>
+                        <SelectItem value="DE">{texts.jobTypeOptions['DE']}</SelectItem>
+                        <SelectItem value="BA">{texts.jobTypeOptions['BA']}</SelectItem>
+                        <SelectItem value="MLE">{texts.jobTypeOptions['MLE']}</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
                     <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
-                      加载中...
+                      {texts.loading}
                     </div>
                   )}
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="experienceLevel">经验水平 <span className="text-red-500 ml-1">*</span></Label>
+                  <Label htmlFor="experienceLevel">{texts.experienceLevelLabel} <span className="text-red-500 ml-1">*</span></Label>
                   {!profileLoading ? (
                     <Select key={`experienceLevel-${profile?.experienceLevel || 'default'}`} value={formData.experienceLevel} onValueChange={(value) => handleInputChange('experienceLevel', value)}>
                       <SelectTrigger className="h-10">
-                        <SelectValue placeholder="请选择经验水平" />
+                        <SelectValue placeholder={texts.experienceLevelPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="实习">实习</SelectItem>
-                        <SelectItem value="应届">应届</SelectItem>
-                        <SelectItem value="1-3年">1-3年</SelectItem>
-                        <SelectItem value="3-5年">3-5年</SelectItem>
-                        <SelectItem value="5年以上">5年以上</SelectItem>
+                        {language === 'en' ? (
+                          <>
+                            <SelectItem value="实习">{texts.experienceLevels[0]}</SelectItem>
+                            <SelectItem value="应届">{texts.experienceLevels[1]}</SelectItem>
+                            <SelectItem value="1-3年">{texts.experienceLevels[2]}</SelectItem>
+                            <SelectItem value="3-5年">{texts.experienceLevels[3]}</SelectItem>
+                            <SelectItem value="5年以上">{texts.experienceLevels[4]}</SelectItem>
+                          </>
+                        ) : (
+                          <>
+                            <SelectItem value="实习">实习</SelectItem>
+                            <SelectItem value="应届">应届</SelectItem>
+                            <SelectItem value="1-3年">1-3年</SelectItem>
+                            <SelectItem value="3-5年">3-5年</SelectItem>
+                            <SelectItem value="5年以上">5年以上</SelectItem>
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                   ) : (
                     <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
-                      加载中...
+                      {texts.loading}
                     </div>
                   )}
                 </div>
                 
                 <div className="space-y-1">
-                  <Label htmlFor="jobSeekingStatus">求职状态</Label>
+                  <Label htmlFor="jobSeekingStatus">{texts.jobSeekingLabel}</Label>
                   {!profileLoading ? (
                     <Select key={`jobSeekingStatus-${profile?.jobSeekingStatus || 'default'}`} value={formData.jobSeekingStatus || ''} onValueChange={(value) => handleInputChange('jobSeekingStatus', value)}>
                       <SelectTrigger className="h-10">
-                        <SelectValue placeholder="选择你的求职状态" />
+                        <SelectValue placeholder={texts.jobSeekingPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="保持状态">🌱 保持状态 - 想保持面试感觉</SelectItem>
-                        <SelectItem value="准备中">🔍 准备中 - 正在积极准备</SelectItem>
-                        <SelectItem value="面试中">🎯 面试中 - 已有面试机会</SelectItem>
-                        <SelectItem value="已拿offer">💼 已拿offer - 继续提升能力</SelectItem>
+                        <SelectItem value="保持状态">{texts.jobSeekingOptions['保持状态']}</SelectItem>
+                        <SelectItem value="准备中">{texts.jobSeekingOptions['准备中']}</SelectItem>
+                        <SelectItem value="面试中">{texts.jobSeekingOptions['面试中']}</SelectItem>
+                        <SelectItem value="已拿offer">{texts.jobSeekingOptions['已拿offer']}</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
                     <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
-                      加载中...
+                      {texts.loading}
                     </div>
                   )}
                 </div>
@@ -529,45 +695,48 @@ function ProfilePageContent() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="targetCompany">目标公司 <span className="text-red-500 ml-1">*</span></Label>
+                  <Label htmlFor="targetCompany">{texts.targetCompanyLabel} <span className="text-red-500 ml-1">*</span></Label>
                   {!profileLoading ? (
                     <CompanyAutocomplete
                       value={formData.targetCompany || ''}
                       onChange={(value) => handleInputChange('targetCompany', value)}
-                      placeholder="请输入公司名称"
+                      placeholder={texts.targetCompanyPlaceholder}
                       className="h-10"
                     />
                   ) : (
                     <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
-                      加载中...
+                      {texts.loading}
                     </div>
                   )}
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="targetIndustry">目标行业 <span className="text-red-500 ml-1">*</span></Label>
+                  <Label htmlFor="targetIndustry">{texts.targetIndustryLabel} <span className="text-red-500 ml-1">*</span></Label>
                   {!profileLoading ? (
                     <Select key={`targetIndustry-${profile?.targetIndustry || 'default'}`} value={formData.targetIndustry} onValueChange={(value) => handleInputChange('targetIndustry', value)}>
                       <SelectTrigger className="h-10">
-                        <SelectValue placeholder="请选择目标行业" />
+                        <SelectValue placeholder={texts.targetIndustryPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
-                        {TARGET_INDUSTRIES.map((industry) => (
-                          <SelectItem key={industry.value} value={industry.value}>
-                            {industry.label}
-                          </SelectItem>
-                        ))}
+                        {TARGET_INDUSTRIES.map((industry) => {
+                          const label = mapIndustryLabel(industry.value, industry.label);
+                          return (
+                            <SelectItem key={industry.value} value={industry.value}>
+                              {label}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   ) : (
                     <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
-                      加载中...
+                      {texts.loading}
                     </div>
                   )}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>期望练习内容 <span className="text-red-500 ml-1">*</span></Label>
+                <Label>{texts.practiceLabel} <span className="text-red-500 ml-1">*</span></Label>
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -575,7 +744,7 @@ function ProfilePageContent() {
                       checked={formData.technicalInterview}
                       onCheckedChange={(checked) => handleInputChange('technicalInterview', checked)}
                     />
-                    <Label htmlFor="technicalInterview">技术面</Label>
+                    <Label htmlFor="technicalInterview">{texts.practiceOptions.technical}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -583,7 +752,7 @@ function ProfilePageContent() {
                       checked={formData.behavioralInterview}
                       onCheckedChange={(checked) => handleInputChange('behavioralInterview', checked)}
                     />
-                    <Label htmlFor="behavioralInterview">行为面</Label>
+                    <Label htmlFor="behavioralInterview">{texts.practiceOptions.behavioral}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -591,7 +760,7 @@ function ProfilePageContent() {
                       checked={formData.caseAnalysis}
                       onCheckedChange={(checked) => handleInputChange('caseAnalysis', checked)}
                     />
-                    <Label htmlFor="caseAnalysis">案例分析</Label>
+                    <Label htmlFor="caseAnalysis">{texts.practiceOptions.case}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -599,44 +768,63 @@ function ProfilePageContent() {
                       checked={formData.statsQuestions || false}
                       onCheckedChange={(checked) => handleInputChange('statsQuestions', checked)}
                     />
-                    <Label htmlFor="statsQuestions">统计题目</Label>
+                    <Label htmlFor="statsQuestions">{texts.practiceOptions.stats}</Label>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>联系方式 (匹配成功后可见，推荐添加微信)</Label>
+                <Label>{texts.contactLabel}</Label>
                 <div className="space-y-2">
                   <Input
-                    placeholder="邮箱"
+                    placeholder={texts.emailPlaceholder}
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className="h-10"
                   />
-                  <Input
-                    placeholder="微信"
-                    value={formData.wechat}
-                    onChange={(e) => handleInputChange('wechat', e.target.value)}
-                    className="h-10"
-                  />
-                  <Input
-                    placeholder="LinkedIn https://www.linkedin.com/in/your-profile"
-                    value={formData.linkedin}
-                    onChange={(e) => handleInputChange('linkedin', e.target.value)}
-                    className="h-10"
-                  />
+                  {language === 'en' ? (
+                    <>
+                      <Input
+                        placeholder={texts.linkedinPlaceholder}
+                        value={formData.linkedin}
+                        onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                        className="h-10"
+                      />
+                      <Input
+                        placeholder={texts.wechatPlaceholder}
+                        value={formData.wechat}
+                        onChange={(e) => handleInputChange('wechat', e.target.value)}
+                        className="h-10"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Input
+                        placeholder={texts.wechatPlaceholder}
+                        value={formData.wechat}
+                        onChange={(e) => handleInputChange('wechat', e.target.value)}
+                        className="h-10"
+                      />
+                      <Input
+                        placeholder={texts.linkedinPlaceholder}
+                        value={formData.linkedin}
+                        onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                        className="h-10"
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>我的技能</Label>
+                <Label>{texts.skillsLabel}</Label>
                 <div className="flex flex-wrap gap-2 items-center">
                   {(formData.skills || []).map((skill, index) => (
                     <div key={index} className="relative inline-block">
                       <Input
                         value={skill}
                         onChange={(e) => handleSkillChange(index, e.target.value)}
-                        placeholder={`技能 ${index + 1}`}
+                        placeholder={`${texts.skillPlaceholderPrefix} ${index + 1}`}
                         className="h-10 pr-8"
                         style={{ width: `${Math.max(80, Math.min(200, getTextWidth(skill) + 40))}px` }}
                         maxLength={20}
@@ -667,23 +855,23 @@ function ProfilePageContent() {
                     </Button>
                   )}
                 </div>
-                <p className="text-sm text-gray-500">💡 最多可添加3个技能，例如: A/B Testing, ML, Product..</p>
+                <p className="text-sm text-gray-500">{texts.skillsAddHint}</p>
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="bio">简单介绍一下自己 <span className="text-red-500 ml-1">*</span></Label>
+                <Label htmlFor="bio">{texts.bioLabel} <span className="text-red-500 ml-1">*</span></Label>
                 <Input
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => handleInputChange('bio', e.target.value)}
-                  placeholder="如：三年DS经验，擅长Case，坐标纽约，工作日晚上有空～"
+                  placeholder={texts.bioPlaceholder}
                   className="h-10"
                 />
-                <p className="text-sm text-gray-500">💡 建议包含：目前状态、擅长技能、所在时区、可Mock时间段，让匹配更精准！</p>
+                <p className="text-sm text-gray-500">{texts.bioHelp}</p>
               </div>
 
               <Button type="submit" className="w-full px-8 py-2 text-base font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600" disabled={isLoading}>
-                {isLoading ? '保存中...' : '保存资料'}
+                {isLoading ? texts.submitting : texts.submit}
               </Button>
             </form>
           </CardContent>
