@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { toast } from 'sonner';
@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Mail, Lock } from 'lucide-react';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 
 function AuthPageContent() {
   const router = useRouter();
@@ -22,6 +24,104 @@ function AuthPageContent() {
   const [password, setPassword] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [inviteCode, setInviteCode] = useState('');
+  const [language] = useAtom(languageAtom);
+  
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        login: 'Sign In',
+        register: 'Sign Up',
+        welcomeLogin: 'Welcome back, start your mock interview journey',
+        welcomeRegister: 'Welcome, start your mock interview journey',
+        passwordLogin: 'Password Login',
+        emailLogin: 'Email Login',
+        email: 'Email',
+        emailPlaceholder: 'Enter your email address',
+        password: 'Password',
+        passwordPlaceholder: 'Enter your password',
+        loginButton: 'Sign In',
+        loggingIn: 'Signing in...',
+        emailAddress: 'Email Address',
+        sendVerificationEmail: 'Send Verification Email',
+        sending: 'Sending...',
+        emailLinkSent: 'We will send a login link to your email',
+        or: 'OR',
+        googleLogin: 'Sign in with Google',
+        googleRegister: 'Sign up with Google',
+        inviteCode: 'Invite Code',
+        optional: '(Optional)',
+        inviteCodePlaceholder: 'Enter invite code if you have one',
+        inviteCodeTip: '💡 Using an invite code will give your friend extra quota rewards',
+        sendPasswordEmail: 'Send Password Setup Email',
+        passwordEmailSent: 'We will send a password setup link to your email',
+        noAccount: "Don't have an account?",
+        hasAccount: 'Already have an account?',
+        registerNow: 'Sign up now',
+        loginNow: 'Sign in now',
+        errors: {
+          googleCallbackFailed: 'Google sign-in callback failed, please check configuration',
+          oauthSigninFailed: 'OAuth sign-in failed, please try again',
+          oauthCallbackFailed: 'OAuth callback failed, please check configuration',
+          configError: 'Authentication configuration error, please contact administrator',
+          loginFailed: 'Sign in failed: ',
+          emailRequired: 'Please enter your email address',
+          loginSuccess: 'Sign in successful',
+          emailOrPasswordError: 'Email or password incorrect',
+          loginError: 'Sign in failed, please try again later',
+          emailSent: 'Verification email sent, please check your inbox',
+          sendEmailError: 'Failed to send email, please try again later',
+          registrationError: 'Registration failed, please try again later',
+          googleAuthError: 'Google authentication failed, please try again later',
+        },
+      };
+    }
+    return {
+      login: '登录',
+      register: '注册',
+      welcomeLogin: '欢迎登录，开启你的模拟面试之旅',
+      welcomeRegister: '欢迎注册，开启你的模拟面试之旅',
+      passwordLogin: '密码登录',
+      emailLogin: '邮箱登录',
+      email: '邮箱',
+      emailPlaceholder: '请输入邮箱地址',
+      password: '密码',
+      passwordPlaceholder: '请输入密码',
+      loginButton: '登录',
+      loggingIn: '登录中...',
+      emailAddress: '邮箱地址',
+      sendVerificationEmail: '发送验证邮件',
+      sending: '发送中...',
+      emailLinkSent: '我们将向您的邮箱发送一个登录链接',
+      or: '或',
+      googleLogin: '使用 Google 账号登录',
+      googleRegister: '使用 Google 账号注册',
+      inviteCode: '邀请码',
+      optional: '(选填)',
+      inviteCodePlaceholder: '如有好友分享的邀请码，请输入',
+      inviteCodeTip: '💡 使用邀请码注册，好友将获得额外配额奖励',
+      sendPasswordEmail: '发送设置密码邮件',
+      passwordEmailSent: '我们将向您的邮箱发送设置密码的链接',
+      noAccount: '还没有账号？',
+      hasAccount: '已有账号？',
+      registerNow: '立即注册',
+      loginNow: '立即登录',
+      errors: {
+        googleCallbackFailed: 'Google登录回调失败，请检查配置',
+        oauthSigninFailed: 'OAuth登录失败，请重试',
+        oauthCallbackFailed: 'OAuth回调失败，请检查配置',
+        configError: '认证配置错误，请联系管理员',
+        loginFailed: '登录失败：',
+        emailRequired: '请输入邮箱地址',
+        loginSuccess: '登录成功',
+        emailOrPasswordError: '邮箱或密码错误',
+        loginError: '登录失败，请稍后再试',
+        emailSent: '验证邮件已发送，请查看您的邮箱',
+        sendEmailError: '发送邮件失败，请稍后再试',
+        registrationError: '注册失败，请稍后再试',
+        googleAuthError: 'Google认证失败，请稍后再试',
+      },
+    };
+  }, [language]);
 
   useEffect(() => {
     // 根据 URL 参数决定显示模式
@@ -36,18 +136,18 @@ function AuthPageContent() {
     const error = searchParams.get('error');
     if (error && authMode === 'login') {
       if (error === 'Callback') {
-        toast.error('Google登录回调失败，请检查配置');
+        toast.error(t.errors.googleCallbackFailed);
       } else if (error === 'OAuthSignin') {
-        toast.error('OAuth登录失败，请重试');
+        toast.error(t.errors.oauthSigninFailed);
       } else if (error === 'OAuthCallback') {
-        toast.error('OAuth回调失败，请检查配置');
+        toast.error(t.errors.oauthCallbackFailed);
       } else if (error === 'Configuration') {
-        toast.error('认证配置错误，请联系管理员');
+        toast.error(t.errors.configError);
       } else {
-        toast.error('登录失败：' + error);
+        toast.error(t.errors.loginFailed + error);
       }
     }
-  }, [searchParams, authMode]);
+  }, [searchParams, authMode, t]);
 
   // 邮箱+密码登录
   const handleEmailPasswordLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -62,14 +162,14 @@ function AuthPageContent() {
       });
 
       if (result?.ok) {
-        toast.success('登录成功');
+        toast.success(t.errors.loginSuccess);
         router.push('/matches');
       } else {
-        toast.error('邮箱或密码错误');
+        toast.error(t.errors.emailOrPasswordError);
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('登录失败，请稍后再试');
+      toast.error(t.errors.loginError);
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +178,7 @@ function AuthPageContent() {
   // 邮箱验证登录
   const handleEmailAuth = async () => {
     if (!email) {
-      toast.error('请输入邮箱地址');
+      toast.error(t.errors.emailRequired);
       return;
     }
 
@@ -90,11 +190,11 @@ function AuthPageContent() {
         callbackUrl: '/matches',
       });
       
-      toast.success('验证邮件已发送，请查看您的邮箱');
+      toast.success(t.errors.emailSent);
       router.push(`/verify-request?email=${encodeURIComponent(email)}`);
     } catch (error) {
       console.error('Email auth error:', error);
-      toast.error('发送邮件失败，请稍后再试');
+      toast.error(t.errors.sendEmailError);
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +203,7 @@ function AuthPageContent() {
   // 邮箱注册 - 发送设置密码链接
   const handleEmailRegister = async () => {
     if (!registerEmail) {
-      toast.error('请输入邮箱地址');
+      toast.error(t.errors.emailRequired);
       return;
     }
 
@@ -119,7 +219,7 @@ function AuthPageContent() {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      toast.error('注册失败，请稍后再试');
+      toast.error(t.errors.registrationError);
     } finally {
       setIsLoading(false);
     }
@@ -134,7 +234,7 @@ function AuthPageContent() {
       await signIn('google', { callbackUrl });
     } catch (error) {
       console.error('Google auth error:', error);
-      toast.error(`Google${authMode === 'register' ? '注册' : '登录'}失败，请稍后再试`);
+      toast.error(t.errors.googleAuthError);
       setIsLoading(false);
     }
   };
@@ -152,10 +252,10 @@ function AuthPageContent() {
         <Card className="w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10 mt-8">
           <CardHeader>
             <CardTitle className="text-2xl font-extrabold text-center tracking-tight text-gray-900 mb-2">
-              <span style={{color: '#3b82f6'}}>{authMode === 'login' ? '登录' : '注册'}</span> MockPal
+              <span style={{color: '#3b82f6'}}>{authMode === 'login' ? t.login : t.register}</span> MockPal
             </CardTitle>
             <p className="text-base text-gray-500 text-center font-medium">
-              {authMode === 'login' ? '欢迎登录，开启你的模拟面试之旅' : '欢迎注册，开启你的模拟面试之旅'}
+              {authMode === 'login' ? t.welcomeLogin : t.welcomeRegister}
             </p>
           </CardHeader>
           <CardContent>
@@ -165,22 +265,22 @@ function AuthPageContent() {
                 <>
                   <Tabs defaultValue="password" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="password">密码登录</TabsTrigger>
-                      <TabsTrigger value="email">邮箱登录</TabsTrigger>
+                      <TabsTrigger value="password">{t.passwordLogin}</TabsTrigger>
+                      <TabsTrigger value="email">{t.emailLogin}</TabsTrigger>
                     </TabsList>
 
                     {/* 邮箱密码登录 */}
                     <TabsContent value="password" className="space-y-4">
                       <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="email">邮箱</Label>
+                          <Label htmlFor="email">{t.email}</Label>
                           <div className="relative">
                             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                               id="email"
                               name="email"
                               type="email"
-                              placeholder="请输入邮箱地址"
+                              placeholder={t.emailPlaceholder}
                               className="pl-10"
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
@@ -189,14 +289,14 @@ function AuthPageContent() {
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="password">密码</Label>
+                          <Label htmlFor="password">{t.password}</Label>
                           <div className="relative">
                             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                               id="password"
                               name="password"
                               type="password"
-                              placeholder="请输入密码"
+                              placeholder={t.passwordPlaceholder}
                               className="pl-10"
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
@@ -210,7 +310,7 @@ function AuthPageContent() {
                           style={{background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)'}}
                           disabled={isLoading}
                         >
-                          {isLoading ? '登录中...' : '登录'}
+                          {isLoading ? t.loggingIn : t.loginButton}
                         </Button>
                       </form>
                     </TabsContent>
@@ -219,13 +319,13 @@ function AuthPageContent() {
                     <TabsContent value="email" className="space-y-4">
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="email-magic">邮箱地址</Label>
+                          <Label htmlFor="email-magic">{t.emailAddress}</Label>
                           <div className="relative">
                             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                               id="email-magic"
                               type="email"
-                              placeholder="请输入邮箱地址"
+                              placeholder={t.emailPlaceholder}
                               className="pl-10"
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
@@ -240,10 +340,10 @@ function AuthPageContent() {
                           style={{background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)'}}
                           disabled={isLoading}
                         >
-                          {isLoading ? '发送中...' : '发送验证邮件'}
+                          {isLoading ? t.sending : t.sendVerificationEmail}
                         </Button>
                         <p className="text-sm text-gray-500 text-center">
-                          我们将向您的邮箱发送一个登录链接
+                          {t.emailLinkSent}
                         </p>
                       </div>
                     </TabsContent>
@@ -254,7 +354,7 @@ function AuthPageContent() {
                       <span className="w-full border-t" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-gray-500">或</span>
+                      <span className="bg-white px-2 text-gray-500">{t.or}</span>
                     </div>
                   </div>
 
@@ -284,7 +384,7 @@ function AuthPageContent() {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                       />
                     </svg>
-                    使用 Google 账号登录
+                    {t.googleLogin}
                   </Button>
                 </>
               ) : (
@@ -293,13 +393,13 @@ function AuthPageContent() {
                   {/* 邮箱注册表单 */}
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="register-email">邮箱地址</Label>
+                      <Label htmlFor="register-email">{t.emailAddress}</Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
                           id="register-email"
                           type="email"
-                          placeholder="请输入邮箱地址"
+                          placeholder={t.emailPlaceholder}
                           className="pl-10"
                           value={registerEmail}
                           onChange={(e) => setRegisterEmail(e.target.value)}
@@ -309,19 +409,18 @@ function AuthPageContent() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="invite-code">
-                        邀请码 <span className="text-xs text-gray-400 font-normal">(选填)</span>
+                        {t.inviteCode} <span className="text-xs text-gray-400 font-normal">{t.optional}</span>
                       </Label>
                       <Input
                         id="invite-code"
                         type="text"
-                        placeholder="如有好友分享的邀请码，请输入"
-                        className="uppercase"
+                        placeholder={t.inviteCodePlaceholder}
                         value={inviteCode}
                         onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                         maxLength={12}
                       />
                       <p className="text-xs text-gray-500">
-                        💡 使用邀请码注册，好友将获得额外配额奖励
+                        {t.inviteCodeTip}
                       </p>
                     </div>
                     <Button
@@ -331,10 +430,10 @@ function AuthPageContent() {
                       style={{background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)'}}
                       disabled={isLoading}
                     >
-                      {isLoading ? '发送中...' : '发送设置密码邮件'}
+                      {isLoading ? t.sending : t.sendPasswordEmail}
                     </Button>
                     <p className="text-sm text-gray-500 text-center">
-                      我们将向您的邮箱发送设置密码的链接
+                      {t.passwordEmailSent}
                     </p>
                   </div>
 
@@ -343,7 +442,7 @@ function AuthPageContent() {
                       <span className="w-full border-t" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-gray-500">或</span>
+                      <span className="bg-white px-2 text-gray-500">{t.or}</span>
                     </div>
                   </div>
 
@@ -373,7 +472,7 @@ function AuthPageContent() {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                       />
                     </svg>
-                    使用 Google 账号注册
+                    {t.googleRegister}
                   </Button>
                 </div>
               )}
@@ -381,13 +480,13 @@ function AuthPageContent() {
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-center">
-              {authMode === 'login' ? '还没有账号？' : '已有账号？'}{' '}
+              {authMode === 'login' ? t.noAccount : t.hasAccount}{' '}
               <button
                 onClick={switchAuthMode}
                 className="font-semibold hover:underline"
                 style={{color: '#3b82f6'}}
               >
-                {authMode === 'login' ? '立即注册' : '立即登录'}
+                {authMode === 'login' ? t.registerNow : t.loginNow}
               </button>
             </p>
           </CardFooter>

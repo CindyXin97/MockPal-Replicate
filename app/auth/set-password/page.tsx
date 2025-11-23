@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { setUserPassword } from '@/app/actions/auth';
@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Lock } from 'lucide-react';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 
 function SetPasswordForm() {
   const router = useRouter();
@@ -20,6 +22,58 @@ function SetPasswordForm() {
   const [email, setEmail] = useState('');
   const [token, setToken] = useState('');
   const [inviteCode, setInviteCode] = useState('');
+  const [language] = useAtom(languageAtom);
+  
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        setPassword: 'Set Password',
+        setPasswordFor: 'Set password for your account',
+        password: 'Password',
+        passwordPlaceholder: 'Enter password (at least 6 characters)',
+        confirmPassword: 'Confirm Password',
+        confirmPasswordPlaceholder: 'Enter password again',
+        inviteCode: 'Invite Code',
+        optional: '(Optional)',
+        inviteCodePlaceholder: 'Have an invite code from a friend? Enter it here',
+        inviteCodeTip: '💡 Using an invite code will give your friend extra quota rewards',
+        setting: 'Setting...',
+        setPasswordButton: 'Set Password',
+        loading: 'Loading...',
+        errors: {
+          invalidLink: 'Invalid password setup link',
+          passwordTooShort: 'Password must be at least 6 characters',
+          passwordMismatch: 'Passwords do not match',
+          setPasswordSuccess: 'Password set successfully, please sign in',
+          setPasswordSuccessWithInvite: 'Password set successfully, inviter has received extra quota!',
+          setPasswordError: 'Failed to set password, please try again later',
+        },
+      };
+    }
+    return {
+      setPassword: '设置密码',
+      setPasswordFor: '为您的账号设置密码',
+      password: '密码',
+      passwordPlaceholder: '请输入密码 (至少6位)',
+      confirmPassword: '确认密码',
+      confirmPasswordPlaceholder: '请再次输入密码',
+      inviteCode: '邀请码',
+      optional: '(可选)',
+      inviteCodePlaceholder: '有好友分享的邀请码？请输入',
+      inviteCodeTip: '💡 使用邀请码注册，好友将获得额外配额奖励',
+      setting: '设置中...',
+      setPasswordButton: '设置密码',
+      loading: '加载中...',
+      errors: {
+        invalidLink: '无效的设置密码链接',
+        passwordTooShort: '密码长度至少为6位',
+        passwordMismatch: '两次输入的密码不一致',
+        setPasswordSuccess: '密码设置成功，请登录',
+        setPasswordSuccessWithInvite: '密码设置成功，邀请人已获得额外配额！',
+        setPasswordError: '设置密码失败，请稍后再试',
+      },
+    };
+  }, [language]);
 
   useEffect(() => {
     // 从URL获取token和email
@@ -28,7 +82,7 @@ function SetPasswordForm() {
     const inviteCodeParam = searchParams.get('inviteCode');
     
     if (!emailParam || !tokenParam) {
-      toast.error('无效的设置密码链接');
+      toast.error(t.errors.invalidLink);
       router.push('/auth');
       return;
     }
@@ -40,18 +94,18 @@ function SetPasswordForm() {
     if (inviteCodeParam) {
       setInviteCode(inviteCodeParam.toUpperCase());
     }
-  }, [searchParams, router]);
+  }, [searchParams, router, t]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (password.length < 6) {
-      toast.error('密码长度至少为6位');
+      toast.error(t.errors.passwordTooShort);
       return;
     }
     
     if (password !== confirmPassword) {
-      toast.error('两次输入的密码不一致');
+      toast.error(t.errors.passwordMismatch);
       return;
     }
 
@@ -74,17 +128,17 @@ function SetPasswordForm() {
             const inviteData = await inviteResult.json();
             
             if (inviteData.success) {
-              toast.success('密码设置成功，邀请人已获得额外配额！');
+              toast.success(t.errors.setPasswordSuccessWithInvite);
             } else {
-              toast.success('密码设置成功！');
+              toast.success(t.errors.setPasswordSuccess);
               console.log('Invite code error:', inviteData.message);
             }
           } catch (error) {
             console.error('Invite code error:', error);
-            toast.success('密码设置成功！');
+            toast.success(t.errors.setPasswordSuccess);
           }
         } else {
-          toast.success('密码设置成功，请登录');
+          toast.success(t.errors.setPasswordSuccess);
         }
         
         router.push('/auth');
@@ -93,7 +147,7 @@ function SetPasswordForm() {
       }
     } catch (error) {
       console.error('Set password error:', error);
-      toast.error('设置密码失败，请稍后再试');
+      toast.error(t.errors.setPasswordError);
     } finally {
       setIsLoading(false);
     }
@@ -106,23 +160,23 @@ function SetPasswordForm() {
         <Card className="w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 bg-white relative z-10 mt-8">
           <CardHeader>
             <CardTitle className="text-2xl font-extrabold text-center tracking-tight text-gray-900 mb-2">
-              设置密码
+              {t.setPassword}
             </CardTitle>
             <p className="text-base text-gray-500 text-center font-medium">
-              为您的账号 {email} 设置密码
+              {t.setPasswordFor} {email}
             </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="password">密码</Label>
+                <Label htmlFor="password">{t.password}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
                     name="password"
                     type="password"
-                    placeholder="请输入密码 (至少6位)"
+                    placeholder={t.passwordPlaceholder}
                     className="pl-10"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -132,14 +186,14 @@ function SetPasswordForm() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">确认密码</Label>
+                <Label htmlFor="confirmPassword">{t.confirmPassword}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
-                    placeholder="请再次输入密码"
+                    placeholder={t.confirmPasswordPlaceholder}
                     className="pl-10"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -152,20 +206,20 @@ function SetPasswordForm() {
               {/* 邀请码输入（可选） */}
               <div className="space-y-2">
                 <Label htmlFor="inviteCode">
-                  邀请码 <span className="text-xs text-gray-400 font-normal">(可选)</span>
+                  {t.inviteCode} <span className="text-xs text-gray-400 font-normal">{t.optional}</span>
                 </Label>
                 <Input
                   id="inviteCode"
                   name="inviteCode"
                   type="text"
-                  placeholder="有好友分享的邀请码？请输入"
+                  placeholder={t.inviteCodePlaceholder}
                   value={inviteCode}
                   onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                   maxLength={12}
                   className="uppercase"
                 />
                 <p className="text-xs text-gray-500">
-                  💡 使用邀请码注册，好友将获得额外配额奖励
+                  {t.inviteCodeTip}
                 </p>
               </div>
               
@@ -174,7 +228,7 @@ function SetPasswordForm() {
                 className="w-full px-10 py-2 text-lg font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-md hover:from-blue-600 hover:to-indigo-600"
                 disabled={isLoading}
               >
-                {isLoading ? '设置中...' : '设置密码'}
+                {isLoading ? t.setting : t.setPasswordButton}
               </Button>
             </form>
           </CardContent>

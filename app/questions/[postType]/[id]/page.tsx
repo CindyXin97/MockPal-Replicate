@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { AuthLayout } from '@/components/base-layout';
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { VoteButtons } from '@/components/vote-buttons';
 import { CommentSection } from '@/components/comment-section';
 import { toast } from 'sonner';
+import { useAtom } from 'jotai';
+import { languageAtom } from '@/lib/store';
 
 interface QuestionDetail {
   id: number;
@@ -34,6 +36,7 @@ interface QuestionDetail {
   userEmail?: string | null;
   isAnonymous?: boolean;
   interviewDate?: string;
+  createdAt?: string | Date;
 }
 
 export default function QuestionDetailPage() {
@@ -42,9 +45,71 @@ export default function QuestionDetailPage() {
   const { data: session } = useSession();
   const [question, setQuestion] = useState<QuestionDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [language] = useAtom(languageAtom);
 
   const postType = params.postType as 'system' | 'user';
   const postId = params.id as string;
+  
+  const t = useMemo(() => {
+    if (language === 'en') {
+      return {
+        fetchFailed: 'Failed to fetch question details',
+        loadFailed: 'Failed to load, please try again later',
+        questionNotFound: 'Question Not Found',
+        questionNotFoundDesc: 'This question may have been deleted or does not exist',
+        back: 'Back',
+        backToLibrary: '← Back to Question Bank',
+        myPost: 'My Post',
+        userShared: 'User Shared',
+        difficulty: {
+          easy: 'Easy',
+          medium: 'Medium',
+          hard: 'Hard',
+        },
+        questionType: {
+          technical: '🔧 Technical Interview',
+          behavioral: '🧑‍🤝‍🧑 Behavioral Interview',
+          case_study: '🧩 Case Study',
+          stats: '📊 Statistics Question',
+        },
+        year: (y: number) => `📅 ${y}`,
+        source: '📌 Source:',
+        sharer: '👤 Shared by:',
+        question: '📝 Question',
+        recommendedAnswer: '💡 Recommended Answer',
+        communityRating: '👥 Community Rating',
+        discussion: '💬 Discussion',
+      } as const;
+    }
+    return {
+      fetchFailed: '获取题目详情失败',
+      loadFailed: '加载失败，请稍后重试',
+      questionNotFound: '题目不存在',
+      questionNotFoundDesc: '该题目可能已被删除或不存在',
+      back: '返回',
+      backToLibrary: '← 返回题库',
+      myPost: '我的发布',
+      userShared: '用户分享',
+      difficulty: {
+        easy: '简单',
+        medium: '中等',
+        hard: '困难',
+      },
+      questionType: {
+        technical: '🔧 技术面试',
+        behavioral: '🧑‍🤝‍🧑 行为面试',
+        case_study: '🧩 案例分析',
+        stats: '📊 统计问题',
+      },
+      year: (y: number) => '📅 ' + y + '年',
+      source: '📌 来源:',
+      sharer: '👤 分享者:',
+      question: '📝 问题',
+      recommendedAnswer: '💡 推荐答案',
+      communityRating: '👥 社区评价',
+      discussion: '💬 讨论区',
+    };
+  }, [language]);
 
   useEffect(() => {
     fetchQuestionDetail();
@@ -66,11 +131,11 @@ export default function QuestionDetailPage() {
         setQuestion(data.data);
       } else {
         console.error('🟢 [前端] 获取失败:', data.message);
-        toast.error('获取题目详情失败');
+        toast.error(t.fetchFailed);
       }
     } catch (error) {
       console.error('🟢 [前端] 网络错误:', error);
-      toast.error('加载失败，请稍后重试');
+      toast.error(t.loadFailed);
     } finally {
       setLoading(false);
       console.log('🟢 [前端] 刷新完成');
@@ -78,13 +143,7 @@ export default function QuestionDetailPage() {
   };
 
   const getQuestionTypeLabel = (type: string) => {
-    const typeMap: Record<string, string> = {
-      technical: '🔧 技术面试',
-      behavioral: '🧑‍🤝‍🧑 行为面试',
-      case_study: '🧩 案例分析',
-      stats: '📊 统计问题'
-    };
-    return typeMap[type] || type;
+    return t.questionType[type as keyof typeof t.questionType] || type;
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -97,12 +156,7 @@ export default function QuestionDetailPage() {
   };
 
   const getDifficultyLabel = (difficulty: string) => {
-    const labelMap: Record<string, string> = {
-      easy: '简单',
-      medium: '中等',
-      hard: '困难'
-    };
-    return labelMap[difficulty] || difficulty;
+    return t.difficulty[difficulty as keyof typeof t.difficulty] || difficulty;
   };
 
   if (loading) {
@@ -129,9 +183,9 @@ export default function QuestionDetailPage() {
           <Card>
             <CardContent className="p-12 text-center">
               <div className="text-4xl mb-4">😕</div>
-              <h2 className="text-xl font-semibold mb-2">题目不存在</h2>
-              <p className="text-gray-600 mb-6">该题目可能已被删除或不存在</p>
-              <Button onClick={() => router.back()}>返回</Button>
+              <h2 className="text-xl font-semibold mb-2">{t.questionNotFound}</h2>
+              <p className="text-gray-600 mb-6">{t.questionNotFoundDesc}</p>
+              <Button onClick={() => router.back()}>{t.back}</Button>
             </CardContent>
           </Card>
         </div>
@@ -148,7 +202,7 @@ export default function QuestionDetailPage() {
           onClick={() => router.push('/matches?tab=questions')}
           className="mb-4"
         >
-          ← 返回题库
+          {t.backToLibrary}
         </Button>
 
         {/* 题目详情卡片 */}
@@ -158,12 +212,12 @@ export default function QuestionDetailPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 {question.isOwnPost && (
                   <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">
-                    我的发布
+                    {t.myPost}
                   </span>
                 )}
                 {question.postType === 'user' && !question.isOwnPost && (
                   <span className="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-medium rounded-full">
-                    用户分享
+                    {t.userShared}
                   </span>
                 )}
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(question.difficulty)}`}>
@@ -178,10 +232,19 @@ export default function QuestionDetailPage() {
             </CardTitle>
 
             <div className="flex items-center gap-4 text-sm text-gray-500">
-              <span>📅 {question.year}年</span>
-              {question.source && <span>📌 来源: {question.source}</span>}
+              <span>
+                {(() => {
+                  // 优先使用创建时间的年份，如果没有则使用 year 字段
+                  if (question.createdAt) {
+                    const createdYear = new Date(question.createdAt).getFullYear();
+                    return t.year(createdYear);
+                  }
+                  return t.year(question.year ?? 0);
+                })()}
+              </span>
+              {question.source && <span>{t.source} {question.source}</span>}
               {question.postType === 'user' && !question.isAnonymous && question.userName && (
-                <span>👤 分享者: {question.userName}</span>
+                <span>{t.sharer} {question.userName}</span>
               )}
             </div>
           </CardHeader>
@@ -189,7 +252,7 @@ export default function QuestionDetailPage() {
           <CardContent className="space-y-6">
             {/* 问题内容 */}
             <div>
-              <h3 className="text-lg font-semibold mb-3 text-gray-800">📝 问题</h3>
+              <h3 className="text-lg font-semibold mb-3 text-gray-800">{t.question}</h3>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {question.question}
@@ -200,7 +263,7 @@ export default function QuestionDetailPage() {
             {/* 推荐答案 */}
             {question.recommendedAnswer && (
               <div>
-                <h3 className="text-lg font-semibold mb-3 text-gray-800">💡 推荐答案</h3>
+                <h3 className="text-lg font-semibold mb-3 text-gray-800">{t.recommendedAnswer}</h3>
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                     {question.recommendedAnswer}
@@ -212,7 +275,7 @@ export default function QuestionDetailPage() {
             {/* 点赞/踩 */}
             {question.stats && (
               <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">👥 社区评价</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">{t.communityRating}</h3>
                 <VoteButtons
                   postType={question.postType}
                   postId={question.id}
@@ -230,7 +293,7 @@ export default function QuestionDetailPage() {
         {question.stats && (
           <Card>
             <CardHeader>
-              <CardTitle>💬 讨论区</CardTitle>
+              <CardTitle>{t.discussion}</CardTitle>
             </CardHeader>
             <CardContent>
               <CommentSection
