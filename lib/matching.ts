@@ -177,14 +177,45 @@ export async function getPotentialMatches(userId: number) {
     const achievementsData = await getBatchUserAchievements(candidateUserIds);
     const achievementsMap = new Map(achievementsData.map(a => [a.userId, a]));
     
-    // 优先级排序：对方已发出邀请且内容重叠 > 内容重叠 > 经验相同 > 岗位相同 > 其他
+    // 获取当前用户的语言偏好
+    const userLanguagePreference = userProfile.preferredCommunicationLanguage || '不限制';
+    
+    // 优先级排序：语言偏好匹配（第一优先级）> 对方已发出邀请且内容重叠 > 内容重叠 > 经验相同 > 岗位相同 > 其他
+    // 如果用户语言偏好是"不限制"，则不进行语言筛选
+    const languageMatchList: typeof filteredMatches = [];
+    const languageMismatchList: typeof filteredMatches = [];
+    
+    // 先按语言偏好分组
+    for (const user of filteredMatches) {
+      const profile = user.profile as any;
+      const candidateLanguage = profile?.preferredCommunicationLanguage || '不限制';
+      
+      // 如果用户语言偏好是"不限制"，所有候选人都进入语言匹配列表
+      if (userLanguagePreference === '不限制') {
+        languageMatchList.push(user);
+      } 
+      // 如果候选人的语言偏好是"不限制"，也进入语言匹配列表
+      else if (candidateLanguage === '不限制') {
+        languageMatchList.push(user);
+      }
+      // 如果语言偏好相同，进入语言匹配列表
+      else if (candidateLanguage === userLanguagePreference) {
+        languageMatchList.push(user);
+      }
+      // 否则进入语言不匹配列表
+      else {
+        languageMismatchList.push(user);
+      }
+    }
+    
+    // 在语言匹配的列表中，按原有优先级排序
     const invitedOverlapList: typeof filteredMatches = [];
     const overlapList: typeof filteredMatches = [];
     const expList: typeof filteredMatches = [];
     const jobList: typeof filteredMatches = [];
     const otherList: typeof filteredMatches = [];
     
-    for (const user of filteredMatches) {
+    for (const user of languageMatchList) {
       const profile = user.profile as any;
       const overlap =
         (profile?.technicalInterview && userProfile.technicalInterview) ||
@@ -270,8 +301,17 @@ export async function getPotentialMatches(userId: number) {
     jobList.sort(sortByMixedScore);
     otherList.sort(sortByMixedScore);
     
+    // 对语言不匹配的列表也进行排序（作为备选）
+    languageMismatchList.sort(sortByMixedScore);
+    
     // 使用动态配额限制返回的匹配数量
-    const finalList = [...invitedOverlapList, ...overlapList, ...expList, ...jobList, ...otherList].slice(0, dailyLimit);
+    // 优先返回语言匹配的用户，如果语言匹配的用户不够，再补充语言不匹配的用户
+    const languageMatchedList = [...invitedOverlapList, ...overlapList, ...expList, ...jobList, ...otherList];
+    const remainingSlots = dailyLimit - languageMatchedList.length;
+    const finalList = [
+      ...languageMatchedList,
+      ...(remainingSlots > 0 ? languageMismatchList.slice(0, remainingSlots) : [])
+    ].slice(0, dailyLimit);
     return {
       success: true,
       matches: finalList.map(user => {
@@ -292,6 +332,7 @@ export async function getPotentialMatches(userId: number) {
           },
           bio: profile?.bio,
           skills: profile?.skills ? JSON.parse(profile.skills) : [],
+          preferredCommunicationLanguage: profile?.preferredCommunicationLanguage || null,
         };
       })
     };
@@ -684,6 +725,7 @@ export async function getSuccessfulMatches(userId: number) {
           },
           bio: profile.bio,
           skills: profile.skills ? JSON.parse(profile.skills) : [],
+          preferredCommunicationLanguage: profile.preferredCommunicationLanguage || null,
           // 添加匹配相关信息
           contactStatus: match.contactStatus,
           createdAt: match.createdAt?.toISOString(),

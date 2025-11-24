@@ -33,6 +33,7 @@ export type ProfileFormData = {
   bio?: string;
   school: string; // 学校信息（必填）
   skills?: string[]; // 技能列表，最多3个，每个不超过12个字符
+  preferredCommunicationLanguage?: '不限制' | '中文' | '英文'; // 交流语言偏好
 };
 
 type GetProfileResult =
@@ -67,6 +68,7 @@ async function saveProfileHistory(
       bio: profileData.bio || null,
       school: profileData.school || null,
       skills: profileData.skills ? JSON.stringify(profileData.skills) : null,
+      preferredCommunicationLanguage: profileData.preferredCommunicationLanguage || null,
       changeType,
       changedFields: changedFields || null,
     });
@@ -83,7 +85,7 @@ function getChangedFields(oldProfile: any, newData: Partial<ProfileFormData>): s
   const fieldsToCheck: (keyof ProfileFormData)[] = [
     'jobType', 'experienceLevel', 'jobSeekingStatus', 'targetCompany', 'targetIndustry',
     'technicalInterview', 'behavioralInterview', 'caseAnalysis', 'statsQuestions',
-    'email', 'wechat', 'linkedin', 'bio', 'school', 'skills'
+    'email', 'wechat', 'linkedin', 'bio', 'school', 'skills', 'preferredCommunicationLanguage'
   ];
 
   for (const field of fieldsToCheck) {
@@ -156,6 +158,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
       if (profileData.bio !== undefined) updateData.bio = profileData.bio || null;
       if (profileData.school !== undefined) updateData.school = profileData.school;
       if (profileData.skills !== undefined) updateData.skills = profileData.skills ? JSON.stringify(profileData.skills) : null;
+      if (profileData.preferredCommunicationLanguage !== undefined) updateData.preferredCommunicationLanguage = profileData.preferredCommunicationLanguage || null;
 
       // 验证更新后至少有一种练习内容（如果提供了练习内容字段）
       const practiceFieldsProvided = profileData.technicalInterview !== undefined || 
@@ -220,6 +223,7 @@ export async function saveUserProfile(userId: number, profileData: Partial<Profi
         bio: profileData.bio || null,
         school: profileData.school,
         skills: profileData.skills ? JSON.stringify(profileData.skills) : null,
+        preferredCommunicationLanguage: profileData.preferredCommunicationLanguage || null,
       }).returning({ id: userProfiles.id });
 
       // 保存创建历史记录
@@ -263,6 +267,7 @@ export async function createProfile(userId: number, profileData: ProfileFormData
       bio: profileData.bio || null,
       school: profileData.school,
       skills: profileData.skills ? JSON.stringify(profileData.skills) : null,
+      preferredCommunicationLanguage: profileData.preferredCommunicationLanguage || null,
     });
     return { success: true };
   } catch (error) {

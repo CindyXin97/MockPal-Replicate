@@ -775,6 +775,8 @@ export default function MatchesPage() {
         experience: 'Experience Level',
         jobSeeking: 'Job Search Status',
         targetIndustry: 'Target Industry',
+        preferredLanguage: 'Preferred Language',
+        noPreference: 'No preference',
         contactTitle: 'Contact:',
         email: 'Email',
         wechat: 'WhatsApp',
@@ -834,10 +836,12 @@ export default function MatchesPage() {
       case: '案例分析',
       stats: '统计题目',
       skills: '💡 技能标签',
-      experience: '经验水平',
-      jobSeeking: '求职状态',
-      targetIndustry: '目标行业',
-      contactTitle: '联系方式：',
+        experience: '经验水平',
+        jobSeeking: '求职状态',
+        targetIndustry: '目标行业',
+        preferredLanguage: '交流语言偏好',
+        noPreference: '不限制',
+        contactTitle: '联系方式：',
       email: '邮箱',
       wechat: '微信',
       linkedin: '领英',
@@ -1441,6 +1445,19 @@ export default function MatchesPage() {
     return level;
   };
 
+  const translatePreferredLanguage = (lang?: string | null) => {
+    // 如果为null或undefined，返回默认值（根据当前语言）
+    if (!lang) return t.noPreference;
+    // 如果当前是英文界面，需要翻译
+    if (language === 'en') {
+      if (lang === '不限制') return 'No preference';
+      if (lang === '中文') return 'Chinese';
+      if (lang === '英文') return 'English';
+    }
+    // 中文界面直接返回原值
+    return lang;
+  };
+
   // 渲染成就等级的函数
   const renderAchievement = (userId: number) => {
     const achievement = getUserAchievementData(userId);
@@ -1683,6 +1700,8 @@ export default function MatchesPage() {
                           )}
                           <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">{t.targetIndustry}</div>
                           <div className="font-bold text-lg text-gray-700">{currentMatch.targetIndustry || t.notSet}</div>
+                          <div className="mt-4 font-semibold flex items-center gap-1 text-base text-blue-500">{t.preferredLanguage}</div>
+                          <div className="font-bold text-lg text-gray-700">{translatePreferredLanguage((currentMatch as any).preferredCommunicationLanguage)}</div>
                         </div>
                       </div>
                       <div className="flex justify-center gap-6 mt-4">
@@ -2110,6 +2129,11 @@ export default function MatchesPage() {
                               {match.practicePreferences?.statsQuestions && (
                                 <span className="tag">统计题目</span>
                               )}
+                            </div>
+                            {/* 显示语言偏好 */}
+                            <div className="mt-3 mb-2">
+                              <div className="text-xs font-medium text-gray-600 mb-1">{t.preferredLanguage}</div>
+                              <div className="text-sm text-gray-700">{translatePreferredLanguage((match as any).preferredCommunicationLanguage)}</div>
                             </div>
                             {match.contactInfo && (
                               <div className="contact">

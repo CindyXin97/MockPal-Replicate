@@ -27,6 +27,7 @@ export type UserProfile = {
   bio?: string;
   school?: string; // 学校信息
   skills?: string[]; // 技能列表
+  preferredCommunicationLanguage?: '不限制' | '中文' | '英文'; // 交流语言偏好
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -53,6 +54,7 @@ export type Match = {
   };
   bio?: string | null;
   skills?: string[] | null; // 技能列表
+  preferredCommunicationLanguage?: string | null; // 交流语言偏好
   // 新增状态跟踪字段
   contactStatus?: string | null;
   contactUpdatedAt?: string | null;

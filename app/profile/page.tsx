@@ -77,6 +77,13 @@ function ProfilePageContent() {
         bioLabel: 'Brief self-introduction',
         bioPlaceholder: 'e.g., 3 years DS, strong in Case, NYC timezone, free on weekday evenings.',
         bioHelp: 'Tip: Share status, strengths, timezone, availability to improve matching.',
+        preferredLanguageLabel: 'Preferred Communication Language',
+        preferredLanguagePlaceholder: 'Select communication language',
+        preferredLanguageOptions: {
+          '不限制': 'No preference',
+          '中文': 'Chinese',
+          '英文': 'English',
+        } as Record<string, string>,
         submitting: 'Saving...',
         submit: 'Save profile',
         pageLoading: 'Loading...',
@@ -147,12 +154,19 @@ function ProfilePageContent() {
       skillsLabel: '我的技能',
       skillsAddHint: '💡 最多可添加3个技能，例如: A/B Testing, ML, Product..',
       skillPlaceholderPrefix: '技能',
-      bioLabel: '简单介绍一下自己',
-      bioPlaceholder: '如：三年DS经验，擅长Case，坐标纽约，工作日晚上有空～',
-      bioHelp: '💡 建议包含：目前状态、擅长技能、所在时区、可Mock时间段，让匹配更精准！',
-      submitting: '保存中...',
-      submit: '保存资料',
-      pageLoading: '加载中...',
+        bioLabel: '简单介绍一下自己',
+        bioPlaceholder: '如：三年DS经验，擅长Case，坐标纽约，工作日晚上有空～',
+        bioHelp: '💡 建议包含：目前状态、擅长技能、所在时区、可Mock时间段，让匹配更精准！',
+        preferredLanguageLabel: '交流语言偏好',
+        preferredLanguagePlaceholder: '请选择交流语言偏好',
+        preferredLanguageOptions: {
+          '不限制': '不限制',
+          '中文': '中文',
+          '英文': '英文',
+        } as Record<string, string>,
+        submitting: '保存中...',
+        submit: '保存资料',
+        pageLoading: '加载中...',
       industriesEn: {} as Record<string, string>, // not used in zh
     };
   }, [language]);
@@ -198,6 +212,7 @@ function ProfilePageContent() {
     bio: '',
     school: '',
     skills: [],
+    preferredCommunicationLanguage: undefined,
   });
 
   useEffect(() => {
@@ -252,6 +267,7 @@ function ProfilePageContent() {
           bio: '',
           school: '',
           skills: [],
+          preferredCommunicationLanguage: undefined,
         });
       }
       
@@ -326,6 +342,7 @@ function ProfilePageContent() {
         bio: profile.bio || '',
         school: schoolValue,
         skills: profile.skills || [],
+        preferredCommunicationLanguage: profile.preferredCommunicationLanguage || undefined,
       };
       
       console.log('📋 设置表单数据:', { 
@@ -683,6 +700,26 @@ function ProfilePageContent() {
                         <SelectItem value="准备中">{texts.jobSeekingOptions['准备中']}</SelectItem>
                         <SelectItem value="面试中">{texts.jobSeekingOptions['面试中']}</SelectItem>
                         <SelectItem value="已拿offer">{texts.jobSeekingOptions['已拿offer']}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="h-10 bg-gray-100 animate-pulse rounded-md flex items-center px-3 text-gray-500 text-sm">
+                      {texts.loading}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-1">
+                  <Label htmlFor="preferredCommunicationLanguage">{texts.preferredLanguageLabel}</Label>
+                  {!profileLoading ? (
+                    <Select key={`preferredCommunicationLanguage-${profile?.preferredCommunicationLanguage || 'default'}`} value={formData.preferredCommunicationLanguage || ''} onValueChange={(value) => handleInputChange('preferredCommunicationLanguage', value)}>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder={texts.preferredLanguagePlaceholder} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="不限制">{texts.preferredLanguageOptions['不限制']}</SelectItem>
+                        <SelectItem value="中文">{texts.preferredLanguageOptions['中文']}</SelectItem>
+                        <SelectItem value="英文">{texts.preferredLanguageOptions['英文']}</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
