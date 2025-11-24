@@ -81,6 +81,12 @@ const InterviewQuestionsTab = () => {
         difficultyAll: 'All difficulties',
         year: 'Year',
         yearAll: 'All years',
+        language: 'Language',
+        languageAll: 'All languages',
+        languageLabels: {
+          zh: '🇨🇳 Chinese',
+          en: '🇺🇸 English'
+        } as Record<string, string>,
         typeLabels: {
           technical: '🔧 Technical',
           behavioral: '🧑‍🤝‍🧑 Behavioral',
@@ -120,6 +126,12 @@ const InterviewQuestionsTab = () => {
       difficultyAll: '全部难度',
       year: '年份',
       yearAll: '全部年份',
+      language: '语言',
+      languageAll: '全部语言',
+      languageLabels: {
+        zh: '🇨🇳 中文',
+        en: '🇺🇸 英文'
+      } as Record<string, string>,
       typeLabels: {
         technical: '🔧 技术面试',
         behavioral: '🧑‍🤝‍🧑 行为面试',
@@ -148,6 +160,7 @@ const InterviewQuestionsTab = () => {
     questionType: 'all',
     difficulty: 'all',
     year: 'all',
+    language: 'all', // 新增：语言筛选
     source: 'all' // 新增：来源筛选（all/system/user/mine）
   });
   const [filterOptions, setFilterOptions] = useState({
@@ -155,7 +168,8 @@ const InterviewQuestionsTab = () => {
     positions: [] as string[],
     years: [] as number[],
     questionTypes: ['technical', 'behavioral', 'case_study', 'stats'],
-    difficulties: ['easy', 'medium', 'hard']
+    difficulties: ['easy', 'medium', 'hard'],
+    languages: ['zh', 'en'] as string[]
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -207,7 +221,10 @@ const InterviewQuestionsTab = () => {
       if (data.success) {
         setQuestions(data.data.questions);
         setPagination(data.data.pagination);
-        setFilterOptions(data.data.filters);
+        setFilterOptions({
+          ...data.data.filters,
+          languages: data.data.filters.languages || ['zh', 'en'] // 确保 languages 始终有值
+        });
       }
     } catch (error) {
       console.error('Error fetching questions:', error);
@@ -360,6 +377,19 @@ const InterviewQuestionsTab = () => {
                 <option value="all">{t.yearAll}</option>
                 {filterOptions.years.map(year => (
                   <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t.language}</label>
+              <select
+                value={filters.language}
+                onChange={(e) => handleFilterChange('language', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md text-sm font-medium"
+              >
+                <option value="all">{t.languageAll}</option>
+                {(filterOptions.languages || ['zh', 'en']).map(lang => (
+                  <option key={lang} value={lang}>{t.languageLabels[lang]}</option>
                 ))}
               </select>
             </div>

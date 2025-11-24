@@ -7,6 +7,33 @@ import { eq, desc, and, sql } from 'drizzle-orm';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
+// 检测文本主要语言
+function detectLanguage(text: string): 'zh' | 'en' {
+  if (!text) return 'zh';
+  
+  // 计算中文字符和英文字符（不含空格和标点）
+  const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+  const englishChars = (text.match(/[a-zA-Z]/g) || []).length;
+  
+  // 如果中文字符超过15个，判定为中文
+  if (chineseChars > 15) {
+    return 'zh';
+  }
+  
+  // 如果英文字符数量明显多于中文字符（3倍以上），判定为英文
+  if (englishChars > chineseChars * 3) {
+    return 'en';
+  }
+  
+  // 如果中文字符多于英文字符，判定为中文
+  if (chineseChars > englishChars * 0.3) {
+    return 'zh';
+  }
+  
+  // 默认判定为英文
+  return 'en';
+}
+
 // POST - 创建用户发布的面试题目
 export async function POST(request: NextRequest) {
   try {
@@ -94,6 +121,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 自动检测语言
+    const detectedLanguage = detectLanguage(question + ' ' + (recommendedAnswer || ''));
+    
     // 插入数据
     const newPost = await db
       .insert(userInterviewPosts)
@@ -106,6 +136,7 @@ export async function POST(request: NextRequest) {
         interviewDate: new Date(interviewDate),
         question,
         recommendedAnswer: recommendedAnswer || null,
+        language: detectedLanguage, // 自动检测的语言
         isAnonymous,
         status: 'active',
         viewsCount: 0,

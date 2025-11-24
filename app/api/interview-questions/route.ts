@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const questionType = searchParams.get('questionType');
     const difficulty = searchParams.get('difficulty');
     const year = searchParams.get('year');
+    const language = searchParams.get('language'); // 新增：语言筛选
     const includeUserPosts = searchParams.get('includeUserPosts') === 'true';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -57,6 +58,10 @@ export async function GET(request: NextRequest) {
     if (year && year !== 'all') {
       conditions.push(eq(interviewQuestions.year, parseInt(year)));
     }
+    
+    if (language && language !== 'all') {
+      conditions.push(eq(interviewQuestions.language, language));
+    }
 
     // 查询系统题目数据
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -93,6 +98,10 @@ export async function GET(request: NextRequest) {
         if (difficulty && difficulty !== 'all') {
           userPostConditions.push(eq(userInterviewPosts.difficulty, difficulty));
         }
+        
+        if (language && language !== 'all') {
+          userPostConditions.push(eq(userInterviewPosts.language, language));
+        }
 
         const userPostWhereClause = userPostConditions.length > 0 ? and(...userPostConditions) : undefined;
         
@@ -107,6 +116,7 @@ export async function GET(request: NextRequest) {
             difficulty: userInterviewPosts.difficulty,
             question: userInterviewPosts.question,
             recommendedAnswer: userInterviewPosts.recommendedAnswer,
+            language: userInterviewPosts.language,
             isAnonymous: userInterviewPosts.isAnonymous,
             viewsCount: userInterviewPosts.viewsCount,
             createdAt: userInterviewPosts.createdAt,
@@ -446,7 +456,8 @@ export async function GET(request: NextRequest) {
           positions,
           years,
           questionTypes: ['technical', 'behavioral', 'case_study', 'stats'],
-          difficulties: ['easy', 'medium', 'hard']
+          difficulties: ['easy', 'medium', 'hard'],
+          languages: ['zh', 'en'] // 新增：语言选项
         },
         currentUserId,
       }

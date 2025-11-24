@@ -173,6 +173,7 @@ export const interviewQuestions = pgTable('interview_questions', {
   tags: text('tags'), // 标签，JSON格式存储
   source: varchar('source', { length: 100 }), // 来源
   year: integer('year').notNull(), // 年份
+  language: varchar('language', { length: 10 }).default('zh').notNull(), // 题目语言: zh (中文) 或 en (英文)
   isVerified: boolean('is_verified').default(false), // 是否已验证
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -200,6 +201,7 @@ export const userInterviewPosts = pgTable('user_interview_posts', {
   interviewDate: timestamp('interview_date').notNull(), // 面试日期
   question: text('question').notNull(),
   recommendedAnswer: text('recommended_answer'), // 可选的推荐答案
+  language: varchar('language', { length: 10 }).default('zh').notNull(), // 题目语言: zh (中文) 或 en (英文)
   isAnonymous: boolean('is_anonymous').default(false), // 是否匿名发布
   status: varchar('status', { length: 20 }).default('active'), // active, hidden, deleted
   viewsCount: integer('views_count').default(0), // 浏览次数
@@ -398,4 +400,30 @@ export type InterviewVote = InferModel<typeof interviewVotes>;
 export type UserSavedQuestion = InferModel<typeof userSavedQuestions>;
 export type UserDailyBonus = InferModel<typeof userDailyBonus>;
 export type UserInviteCode = InferModel<typeof userInviteCodes>;
-export type InviteCodeUsage = InferModel<typeof inviteCodeUsage>; 
+export type InviteCodeUsage = InferModel<typeof inviteCodeUsage>;
+
+// 用户行为日志表
+export const userActionsLog = pgTable('user_actions_log', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  
+  // 行为类型和目标
+  actionType: varchar('action_type', { length: 50 }).notNull(),
+  targetType: varchar('target_type', { length: 50 }),
+  targetId: integer('target_id'),
+  
+  // 元数据
+  metadata: text('metadata'), // JSON格式存储详细信息
+  
+  // 会话信息
+  sessionId: varchar('session_id', { length: 255 }),
+  ipAddress: varchar('ip_address', { length: 50 }),
+  userAgent: text('user_agent'),
+  
+  // 时间字段
+  actionDate: varchar('action_date', { length: 10 }).notNull(), // YYYY-MM-DD格式
+  actionTimestamp: timestamp('action_timestamp').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export type UserActionLog = InferModel<typeof userActionsLog>;
