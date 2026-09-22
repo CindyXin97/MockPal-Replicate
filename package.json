@@ -55,7 +55,7 @@
     "drizzle-orm": "^0.43.1",
     "jotai": "^2.7.1",
     "lucide-react": "^0.362.0",
-    "next": "15.3.2",
+    "next": "^15.5.25",
     "next-auth": "^4.24.11",
     "next-themes": "^0.4.6",
     "react": "^19.0.0",
