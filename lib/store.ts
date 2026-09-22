@@ -85,4 +85,4 @@ export const isLoadingAtom = atom(false);
 export const toastMessageAtom = atom<{ type: 'success' | 'error'; message: string } | null>(null);
 
 // Global UI preferences
-export const languageAtom = atomWithStorage<'zh' | 'en'>('language', 'zh');
+export const languageAtom = atomWithStorage<'zh' | 'en'>('language', 'en');
